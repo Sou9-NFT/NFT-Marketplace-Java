@@ -1,6 +1,6 @@
-package org.esprit;
+package org.esprit.main;
 
-public class Main {
+public class TestConnection {
     public static void main(String[] args) {
         System.out.println("Hello world!");
     }
