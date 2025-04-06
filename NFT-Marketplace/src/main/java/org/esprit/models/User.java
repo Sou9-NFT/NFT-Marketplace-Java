@@ -22,6 +22,7 @@ public class User {
     // Default constructor
     public User() {
         this.roles = new ArrayList<>();
+        this.roles.add("ROLE_USER"); // Set default role to ROLE_USER
         this.balance = new BigDecimal("0.000");
         this.createdAt = LocalDateTime.now();
     }
