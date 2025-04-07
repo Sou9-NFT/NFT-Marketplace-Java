@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import java.lang.String?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.esprit.controllers.user.MainViewController"
+            prefHeight="700.0" prefWidth="1000.0">
+    <top>
+        <VBox>
+            <MenuBar>
+                <Menu text="File">
+                    <MenuItem text="Exit" onAction="#handleExit"/>
+                </Menu>
+                <Menu text="User" fx:id="userMenu">
+                    <MenuItem fx:id="loginMenuItem" text="Login" onAction="#handleLogin"/>
+                    <MenuItem fx:id="registerMenuItem" text="Register" onAction="#handleRegister"/>
+                    <MenuItem fx:id="profileMenuItem" text="My Profile" onAction="#handleProfile" visible="false"/>
+                    <MenuItem fx:id="logoutMenuItem" text="Logout" onAction="#handleLogout" visible="false"/>
+                </Menu>
+                <Menu text="Admin" fx:id="adminMenu" visible="false">
+                    <MenuItem text="Manage Users" onAction="#handleManageUsers"/>
+                    <MenuItem text="Top-up Requests" onAction="#handleTopupRequests"/>
+                </Menu>
+            </MenuBar>
+            
+            <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="10">
+                <padding>
+                    <Insets top="10" right="10" bottom="10" left="10"/>
+                </padding>
+                <Label text="NFT Marketplace" styleClass="app-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="userInfoLabel" text="Not logged in" styleClass="user-info"/>
+            </HBox>
+        </VBox>
+    </top>
+    
+    <left>
+        <VBox styleClass="sidebar" prefWidth="200" spacing="10">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Button text="Home" onAction="#handleHome" maxWidth="Infinity"/>
+            <Button text="Browse NFTs" onAction="#handleBrowseNFTs" maxWidth="Infinity"/>
+            <Button fx:id="myNFTsButton" text="My NFTs" onAction="#handleMyNFTs" maxWidth="Infinity" visible="false"/>
+            <Button fx:id="myAuctionsButton" text="My Auctions" onAction="#handleMyAuctions" maxWidth="Infinity" visible="false"/>
+            <Button fx:id="topupButton" text="Top-up Balance" onAction="#handleTopup" maxWidth="Infinity" visible="false"/>
+        </VBox>
+    </left>
+    
+    <center>
+        <StackPane fx:id="contentArea">
+            <!-- Dynamic content will be loaded here -->
+            <VBox alignment="CENTER">
+                <Label text="Welcome to NFT Marketplace" styleClass="welcome-title"/>
+                <Label text="Please login or register to start" styleClass="welcome-subtitle"/>
+            </VBox>
+        </StackPane>
+    </center>
+    
+    <stylesheets>
+        <String fx:value="/css/styles.css"/>
+    </stylesheets>
+</BorderPane>

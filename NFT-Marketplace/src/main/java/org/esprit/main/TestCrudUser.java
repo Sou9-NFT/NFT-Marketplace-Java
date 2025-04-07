@@ -4,11 +4,9 @@ import org.esprit.models.User;
 import org.esprit.services.UserService;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
-public class TestCrud {
+public class TestCrudUser {
     
     public static void main(String[] args) {
         try {
