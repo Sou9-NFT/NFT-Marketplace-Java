@@ -1,5 +1,11 @@
 package org.esprit.controllers;
 
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+
+import org.esprit.models.User;
+import org.esprit.services.UserService;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -8,11 +14,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
-import org.esprit.models.User;
-import org.esprit.services.UserService;
-
-import java.io.IOException;
-import java.time.format.DateTimeFormatter;
 
 public class ProfileController {
 
