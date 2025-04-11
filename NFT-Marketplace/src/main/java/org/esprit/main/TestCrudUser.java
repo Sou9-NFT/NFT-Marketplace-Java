@@ -14,25 +14,61 @@ public class TestCrudUser {
 
             System.out.println("========== USER CRUD TESTING ==========");
 
-            // Create first dummy user
+            // Check and create first dummy user
             System.out.println("\n----- Creating First User -----");
-            User user1 = new User("john.doe@example.com", "password123", "John Doe");
-            user1.setBalance(new BigDecimal("100.000"));
-            user1.setWalletAddress("0x123456789abcdef");
-            userService.add(user1);
-            System.out.println("User 1 created with ID: " + user1.getId());
+            String email1 = "john.doe@example.com";
+            User existingUser1 = userService.getByEmail(email1);
+            User user1;
+            
+            if (existingUser1 != null) {
+                System.out.println("User with email " + email1 + " already exists with ID: " + existingUser1.getId());
+                user1 = existingUser1;
+            } else {
+                user1 = new User(email1, "password123", "John Doe");
+                user1.setBalance(new BigDecimal("100.000"));
+                user1.setWalletAddress("0x123456789abcdef");
+                userService.add(user1);
+                System.out.println("User 1 created with ID: " + user1.getId());
+            }
 
-            // Create second dummy user
+            // Check and create second dummy user
             System.out.println("\n----- Creating Second User -----");
-            User user2 = new User("jane.smith@example.com", "securepass456", "Jane Smith");
-            user2.getRoles().add("ROLE_ADMIN"); // Adding ROLE_ADMIN in addition to default ROLE_USER
-            user2.setBalance(new BigDecimal("200.000"));
-            user2.setWalletAddress("0xabcdef123456789");
-            user2.setGithubUsername("janesmith");
-            userService.add(user2);
-            System.out.println("User 2 created with ID: " + user2.getId());
+            String email2 = "jane.smith@example.com";
+            User existingUser2 = userService.getByEmail(email2);
+            User user2;
+            
+            if (existingUser2 != null) {
+                System.out.println("User with email " + email2 + " already exists with ID: " + existingUser2.getId());
+                user2 = existingUser2;
+            } else {
+                user2 = new User(email2, "securepass456", "Jane Smith");
+                user2.getRoles().add("ROLE_ADMIN"); // Adding ROLE_ADMIN in addition to default ROLE_USER
+                user2.setBalance(new BigDecimal("200.000"));
+                user2.setWalletAddress("0xabcdef123456789");
+                user2.setGithubUsername("janesmith");
+                userService.add(user2);
+                System.out.println("User 2 created with ID: " + user2.getId());
+            }
 
-            // Verify both users were added
+            // Check and create admin user
+            System.out.println("\n----- Creating Admin User -----");
+            String adminEmail = "admin@admin.com";
+            User existingAdmin = userService.getByEmail(adminEmail);
+            User adminUser;
+            
+            if (existingAdmin != null) {
+                System.out.println("Admin user with email " + adminEmail + " already exists with ID: " + existingAdmin.getId());
+                adminUser = existingAdmin;
+            } else {
+                adminUser = new User(adminEmail, "123456", "Administrator");
+                adminUser.getRoles().add("ROLE_ADMIN"); // Adding ROLE_ADMIN in addition to default ROLE_USER
+                adminUser.setBalance(new BigDecimal("500.000"));
+                adminUser.setWalletAddress("0xadmin123456789");
+                userService.add(adminUser);
+                System.out.println("Admin user created with ID: " + adminUser.getId());
+            }
+
+            // Verify all users were added
             System.out.println("\n----- All Users After Creation -----");
             List<User> allUsers = userService.getAll();
             System.out.println("Total users: " + allUsers.size());

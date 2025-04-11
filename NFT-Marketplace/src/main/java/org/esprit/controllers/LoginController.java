@@ -49,13 +49,42 @@ public class LoginController {
             User user = userService.getByEmail(email);
             
             if (user != null && user.getPassword().equals(password)) {
-                // Authentication successful - Navigate to profile page
-                navigateToProfile(event, user);
+                // Authentication successful
+                
+                // Check if user has admin role
+                if (user.getRoles().contains("ROLE_ADMIN")) {
+                    // Route to admin dashboard
+                    navigateToAdminDashboard(event, user);
+                } else {
+                    // Route to normal user profile
+                    navigateToProfile(event, user);
+                }
             } else {
                 showError("Invalid email or password.");
             }
         } catch (Exception e) {
             showError("An error occurred: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void navigateToAdminDashboard(ActionEvent event, User user) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminDashboard.fxml"));
+            Parent adminView = loader.load();
+            
+            // Pass the authenticated admin user to the admin dashboard controller
+            AdminDashboardController controller = loader.getController();
+            controller.setCurrentUser(user);
+            
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            
+            stage.setScene(new Scene(adminView, 900, 600));
+            stage.setTitle("NFT Marketplace - Admin Dashboard");
+            stage.show();
+        } catch (IOException e) {
+            showError("Error loading admin dashboard: " + e.getMessage());
             e.printStackTrace();
         }
     }
