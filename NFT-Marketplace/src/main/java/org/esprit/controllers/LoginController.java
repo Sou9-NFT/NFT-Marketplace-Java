@@ -49,14 +49,34 @@ public class LoginController {
             User user = userService.getByEmail(email);
             
             if (user != null && user.getPassword().equals(password)) {
-                // Authentication successful
-                // TODO: Implement dashboard or main screen navigation
-                showError("Login successful! Dashboard to be implemented.");
+                // Authentication successful - Navigate to profile page
+                navigateToProfile(event, user);
             } else {
                 showError("Invalid email or password.");
             }
         } catch (Exception e) {
             showError("An error occurred: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void navigateToProfile(ActionEvent event, User user) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Profile.fxml"));
+            Parent profileView = loader.load();
+            
+            // Pass the authenticated user to the profile controller
+            ProfileController controller = loader.getController();
+            controller.setUser(user);
+            
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            
+            stage.setScene(new Scene(profileView, 800, 600));
+            stage.setTitle("NFT Marketplace - Profile");
+            stage.show();
+        } catch (IOException e) {
+            showError("Error loading profile page: " + e.getMessage());
             e.printStackTrace();
         }
     }
