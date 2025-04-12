@@ -55,7 +55,7 @@ public class EditProfileController {
 
     private User currentUser;
     private UserService userService;
-    private String selectedProfilePicPath;
+    private File selectedProfilePicFile;
 
     public EditProfileController() {
         userService = new UserService();
@@ -136,30 +136,15 @@ public class EditProfileController {
 
         if (selectedFile != null) {
             try {
-                // Create user-specific filename to avoid conflicts
-                String fileName = "user_" + currentUser.getId() + "_" + selectedFile.getName();
+                // Store the selected file for later use when saving
+                selectedProfilePicFile = selectedFile;
 
-                // Path to the uploads directory
-                Path uploadsDir = Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "uploads");
-
-                // Create directory if it doesn't exist
-                if (!Files.exists(uploadsDir)) {
-                    Files.createDirectories(uploadsDir);
-                }
-
-                // Copy file to uploads directory
-                Path targetPath = uploadsDir.resolve(fileName);
-                Files.copy(selectedFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
-
-                // Save the relative path to be stored in database
-                selectedProfilePicPath = "/uploads/" + fileName;
-
-                // Display the image
+                // Just display the selected image temporarily
                 Image newImage = new Image(selectedFile.toURI().toString());
                 profileImageView.setImage(newImage);
 
                 showStatus("Profile picture selected. Click Save Changes to update.");
-            } catch (IOException e) {
+            } catch (Exception e) {
                 showStatus("Error processing image: " + e.getMessage());
                 e.printStackTrace();
             }
@@ -222,9 +207,31 @@ public class EditProfileController {
                 }
             }
 
-            // Update profile picture if selected
-            if (selectedProfilePicPath != null) {
-                currentUser.setProfilePicture(selectedProfilePicPath);
+            // Process and save profile picture if one was selected
+            if (selectedProfilePicFile != null) {
+                try {
+                    // Create user-specific filename to avoid conflicts
+                    String fileName = "user_" + currentUser.getId() + "_" + selectedProfilePicFile.getName();
+
+                    // Path to the uploads directory
+                    Path uploadsDir = Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "uploads");
+
+                    // Create directory if it doesn't exist
+                    if (!Files.exists(uploadsDir)) {
+                        Files.createDirectories(uploadsDir);
+                    }
+
+                    // Copy file to uploads directory
+                    Path targetPath = uploadsDir.resolve(fileName);
+                    Files.copy(selectedProfilePicFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+                    // Save the relative path to be stored in database
+                    currentUser.setProfilePicture("/uploads/" + fileName);
+                } catch (IOException e) {
+                    showStatus("Error saving profile picture: " + e.getMessage());
+                    e.printStackTrace();
+                    return;
+                }
             }
 
             // Update other fields
