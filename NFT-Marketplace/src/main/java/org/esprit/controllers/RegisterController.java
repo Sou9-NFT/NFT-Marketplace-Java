@@ -3,6 +3,7 @@ package org.esprit.controllers;
 import java.io.IOException;
 
 import org.esprit.models.User;
+import org.esprit.models.User.ValidationResult;
 import org.esprit.services.UserService;
 
 import javafx.event.ActionEvent;
@@ -46,20 +47,9 @@ public class RegisterController {
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
         
-        // Validate input
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            showError("All fields are required.");
-            return;
-        }
-        
+        // Basic confirmation password check (this is still in controller as it involves 2 fields)
         if (!password.equals(confirmPassword)) {
             showError("Passwords do not match.");
-            return;
-        }
-        
-        // Email validation (simple check)
-        if (!email.contains("@") || !email.contains(".")) {
-            showError("Please enter a valid email address.");
             return;
         }
         
@@ -71,8 +61,24 @@ public class RegisterController {
                 return;
             }
             
-            // Create and save new user
+            // Create new user with form data
             User newUser = new User(email, password, name);
+            
+            // Set default profile picture
+            newUser.setProfilePicture("/assets/default/default_profile.jpg");
+            
+            // Validate user at entity level
+            ValidationResult validationResult = newUser.validate();
+            
+            if (!validationResult.isValid()) {
+                // Show the first validation error found
+                for (String errorMessage : validationResult.getErrors().values()) {
+                    showError(errorMessage);
+                    return;
+                }
+            }
+            
+            // If validation passed, save the user
             userService.add(newUser);
             
             // Show success and navigate to login

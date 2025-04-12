@@ -3,7 +3,10 @@ package org.esprit.models;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class User {
     private int id;
@@ -51,6 +54,149 @@ public class User {
         this.githubUsername = githubUsername;
         this.passwordResetToken = passwordResetToken;
         this.passwordResetTokenExpiresAt = passwordResetTokenExpiresAt;
+    }
+
+    // Validation class to store validation results
+    public static class ValidationResult {
+        private boolean valid;
+        private Map<String, String> errors;
+
+        public ValidationResult() {
+            this.valid = true;
+            this.errors = new HashMap<>();
+        }
+
+        public void addError(String field, String message) {
+            this.valid = false;
+            this.errors.put(field, message);
+        }
+
+        public boolean isValid() {
+            return valid;
+        }
+
+        public Map<String, String> getErrors() {
+            return errors;
+        }
+
+        public String getError(String field) {
+            return errors.get(field);
+        }
+
+        public boolean hasError(String field) {
+            return errors.containsKey(field);
+        }
+
+        @Override
+        public String toString() {
+            return "ValidationResult{" +
+                    "valid=" + valid +
+                    ", errors=" + errors +
+                    '}';
+        }
+    }
+
+    // Validation method for the entire user entity
+    public ValidationResult validate() {
+        ValidationResult result = new ValidationResult();
+        
+        // Email validation
+        if (email == null || email.trim().isEmpty()) {
+            result.addError("email", "Email cannot be blank");
+        } else if (!isValidEmail(email)) {
+            result.addError("email", "The email " + email + " is not a valid email.");
+        }
+        
+        // Name validation
+        if (name == null || name.trim().isEmpty()) {
+            result.addError("name", "Name cannot be blank");
+        } else if (name.length() < 2) {
+            result.addError("name", "Your name must be at least 2 characters long");
+        } else if (name.length() > 32) {
+            result.addError("name", "Your name cannot be longer than 32 characters");
+        } else if (!isValidName(name)) {
+            result.addError("name", "Name can only contain letters and spaces");
+        }
+        
+        // Password validation for new users (id = 0) or password changes
+        if (id == 0 || (password != null && !password.trim().isEmpty())) {
+            if (password == null || password.trim().isEmpty()) {
+                result.addError("password", "Password cannot be blank");
+            } else if (password.length() < 6) {
+                result.addError("password", "Your password must be at least 6 characters long");
+            } else if (password.length() > 50) {
+                result.addError("password", "Your password cannot be longer than 50 characters");
+            } else if (!isValidPassword(password)) {
+                result.addError("password", "Password must contain at least one uppercase letter and one number");
+            }
+        }
+        
+        // Balance validation (if set)
+        if (balance != null && balance.compareTo(BigDecimal.ZERO) < 0) {
+            result.addError("balance", "Balance cannot be negative");
+        }
+        
+        // Profile picture URL validation (if set)
+        if (profilePicture != null && !profilePicture.trim().isEmpty() && !profilePicture.startsWith("/")) {
+            if (!isValidProfilePicture(profilePicture)) {
+                result.addError("profilePicture", "The profile picture must be a valid URL");
+            }
+        }
+        
+        // Ethereum wallet address validation (if set)
+        if (walletAddress != null && !walletAddress.trim().isEmpty()) {
+            if (walletAddress.length() != 42) {
+                result.addError("walletAddress", "Ethereum address must be exactly 42 characters");
+            } else if (!isValidWalletAddress(walletAddress)) {
+                result.addError("walletAddress", "Invalid Ethereum address format");
+            }
+        }
+        
+        // GitHub username validation (if set)
+        if (githubUsername != null && !githubUsername.trim().isEmpty()) {
+            if (!isValidGithubUsername(githubUsername)) {
+                result.addError("githubUsername", "Invalid GitHub username format");
+            }
+        }
+        
+        return result;
+    }
+    
+    // Helper validation methods
+    private boolean isValidEmail(String email) {
+        // Strict email validation regex (similar to Symfony's strict mode)
+        String emailRegex = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
+        return Pattern.compile(emailRegex).matcher(email).matches();
+    }
+
+    private boolean isValidPassword(String password) {
+        // Must contain at least one uppercase letter and one number
+        String passwordRegex = "^(?=.*[A-Z])(?=.*\\d).+$";
+        return Pattern.compile(passwordRegex).matcher(password).matches();
+    }
+
+    private boolean isValidName(String name) {
+        // Must contain only letters and spaces
+        String nameRegex = "^[a-zA-Z\\s]+$";
+        return Pattern.compile(nameRegex).matcher(name).matches();
+    }
+
+    private boolean isValidWalletAddress(String walletAddress) {
+        // Ethereum address format: 0x followed by 40 hex characters
+        String walletRegex = "^0x[a-fA-F0-9]{40}$";
+        return Pattern.compile(walletRegex).matcher(walletAddress).matches();
+    }
+
+    private boolean isValidProfilePicture(String url) {
+        // Simple URL validation (could be enhanced)
+        String urlRegex = "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$";
+        return url.startsWith("/") || Pattern.compile(urlRegex).matcher(url).matches();
+    }
+
+    private boolean isValidGithubUsername(String username) {
+        // GitHub username validation (alphanumeric with hyphens, no consecutive hyphens)
+        String githubRegex = "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$";
+        return Pattern.compile(githubRegex).matcher(username).matches();
     }
 
     // Getters and Setters

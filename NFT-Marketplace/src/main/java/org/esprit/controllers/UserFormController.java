@@ -99,22 +99,22 @@ public class UserFormController {
         if (userToEdit != null && mode == FormMode.EDIT) {
             nameField.setText(userToEdit.getName());
             emailField.setText(userToEdit.getEmail());
-            
+
             // Leave password field empty when editing
-            
+
             if (userToEdit.getBalance() != null) {
                 balanceField.setText(userToEdit.getBalance().toString());
             }
-            
+
             // Set role checkboxes
             List<String> roles = userToEdit.getRoles();
             roleUserCheckbox.setSelected(roles.contains("ROLE_USER"));
             roleAdminCheckbox.setSelected(roles.contains("ROLE_ADMIN"));
-            
+
             if (userToEdit.getWalletAddress() != null) {
                 walletField.setText(userToEdit.getWalletAddress());
             }
-            
+
             if (userToEdit.getGithubUsername() != null) {
                 githubField.setText(userToEdit.getGithubUsername());
             }
@@ -130,7 +130,7 @@ public class UserFormController {
                 } else {
                     updateExistingUser();
                 }
-                
+
                 // Close the form and refresh the parent list
                 if (parentController != null) {
                     parentController.refreshUserList();
@@ -148,32 +148,32 @@ public class UserFormController {
         String email = emailField.getText().trim();
         String password = passwordField.getText();
         String balanceText = balanceField.getText().trim();
-        
+
         if (name.isEmpty()) {
             showError("Name is required.");
             return false;
         }
-        
+
         if (email.isEmpty()) {
             showError("Email is required.");
             return false;
         }
-        
+
         if (!email.contains("@") || !email.contains(".")) {
             showError("Please enter a valid email address.");
             return false;
         }
-        
+
         if (mode == FormMode.ADD && password.isEmpty()) {
             showError("Password is required for new users.");
             return false;
         }
-        
+
         if (mode == FormMode.EDIT && !password.isEmpty() && password.length() < 6) {
             showError("Password must be at least 6 characters.");
             return false;
         }
-        
+
         if (!balanceText.isEmpty()) {
             try {
                 new BigDecimal(balanceText);
@@ -182,12 +182,12 @@ public class UserFormController {
                 return false;
             }
         }
-        
+
         if (!roleUserCheckbox.isSelected() && !roleAdminCheckbox.isSelected()) {
             showError("At least one role must be selected.");
             return false;
         }
-        
+
         return true;
     }
 
@@ -195,51 +195,57 @@ public class UserFormController {
         String name = nameField.getText().trim();
         String email = emailField.getText().trim();
         String password = passwordField.getText();
-        
+
         // Check if user with this email already exists
         User existingUser = userService.getByEmail(email);
         if (existingUser != null) {
             showError("A user with this email already exists.");
             return;
         }
-        
+
         // Create new user
         User newUser = new User(email, password, name);
-        
+
+        // Set default profile picture
+        newUser.setProfilePicture("/assets/default/default_profile.jpg");
+
         // Set roles
         List<String> roles = new ArrayList<>();
-        if (roleUserCheckbox.isSelected()) roles.add("ROLE_USER");
-        if (roleAdminCheckbox.isSelected()) roles.add("ROLE_ADMIN");
+        if (roleUserCheckbox.isSelected())
+            roles.add("ROLE_USER");
+        if (roleAdminCheckbox.isSelected())
+            roles.add("ROLE_ADMIN");
         newUser.setRoles(roles);
-        
+
         // Set balance
         String balanceText = balanceField.getText().trim();
         if (!balanceText.isEmpty()) {
             newUser.setBalance(new BigDecimal(balanceText));
         }
-        
+
         // Set optional fields
         String walletAddress = walletField.getText().trim();
         if (!walletAddress.isEmpty()) {
             newUser.setWalletAddress(walletAddress);
         }
-        
+
         String githubUsername = githubField.getText().trim();
         if (!githubUsername.isEmpty()) {
             newUser.setGithubUsername(githubUsername);
         }
-        
+
         // Save to database
         userService.add(newUser);
     }
 
     private void updateExistingUser() throws Exception {
-        if (userToEdit == null) return;
-        
+        if (userToEdit == null)
+            return;
+
         String name = nameField.getText().trim();
         String email = emailField.getText().trim();
         String password = passwordField.getText();
-        
+
         // Check if email is being changed and if it's already in use
         if (!email.equals(userToEdit.getEmail())) {
             User existingUser = userService.getByEmail(email);
@@ -248,35 +254,37 @@ public class UserFormController {
                 return;
             }
         }
-        
+
         // Update user fields
         userToEdit.setName(name);
         userToEdit.setEmail(email);
-        
+
         // Update password if provided
         if (!password.isEmpty()) {
             userToEdit.setPassword(password);
         }
-        
+
         // Update roles
         List<String> roles = new ArrayList<>();
-        if (roleUserCheckbox.isSelected()) roles.add("ROLE_USER");
-        if (roleAdminCheckbox.isSelected()) roles.add("ROLE_ADMIN");
+        if (roleUserCheckbox.isSelected())
+            roles.add("ROLE_USER");
+        if (roleAdminCheckbox.isSelected())
+            roles.add("ROLE_ADMIN");
         userToEdit.setRoles(roles);
-        
+
         // Update balance
         String balanceText = balanceField.getText().trim();
         if (!balanceText.isEmpty()) {
             userToEdit.setBalance(new BigDecimal(balanceText));
         }
-        
+
         // Update optional fields
         String walletAddress = walletField.getText().trim();
         userToEdit.setWalletAddress(walletAddress.isEmpty() ? null : walletAddress);
-        
+
         String githubUsername = githubField.getText().trim();
         userToEdit.setGithubUsername(githubUsername.isEmpty() ? null : githubUsername);
-        
+
         // Save to database
         userService.update(userToEdit);
     }
