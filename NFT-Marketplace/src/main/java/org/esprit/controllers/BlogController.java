@@ -34,12 +34,23 @@ public class BlogController implements Initializable {
     private final String UPLOAD_DIR = "src/main/resources/uploads/";
     private final ObservableList<String> languages = FXCollections.observableArrayList(
         "French", "Spanish", "German", "Italian", "Arabic"
-    );
-
-    @Override
+    );    @Override
     public void initialize(URL url, ResourceBundle rb) {
         blogService = new BlogService();
         languageComboBox.setItems(languages);
+        
+        // Set up the ListView cell factory for custom display
+        blogListView.setCellFactory(lv -> new ListCell<Blog>() {
+            @Override
+            protected void updateItem(Blog blog, boolean empty) {
+                super.updateItem(blog, empty);
+                if (empty || blog == null) {
+                    setText(null);
+                } else {
+                    setText(blog.getTitle() + " (" + blog.getDate() + ")");
+                }
+            }
+        });
         
         // Initialize the list view
         refreshBlogList();
@@ -96,9 +107,8 @@ public class BlogController implements Initializable {
             Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION,
                 "Are you sure you want to delete this blog?");
             confirmation.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    try {
-                        blogService.delete(currentBlog.getId());
+                if (response == ButtonType.OK) {                    try {
+                        blogService.delete(currentBlog);
                         refreshBlogList();
                         clearFields();
                         showAlert(Alert.AlertType.INFORMATION, "Success", "Blog deleted successfully!");

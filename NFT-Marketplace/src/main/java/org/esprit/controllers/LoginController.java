@@ -87,25 +87,17 @@ public class LoginController {
             showError("Error loading admin dashboard: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-    
-    private void navigateToProfile(ActionEvent event, User user) {
+    }    private void navigateToProfile(ActionEvent event, User user) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Profile.fxml"));
-            Parent profileView = loader.load();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Dashboard.fxml"));
+            Parent dashboardView = loader.load();
             
-            // Pass the authenticated user to the profile controller
-            ProfileController controller = loader.getController();
-            controller.setUser(user);
-            
-            Scene currentScene = ((Node) event.getSource()).getScene();
-            Stage stage = (Stage) currentScene.getWindow();
-            
-            stage.setScene(new Scene(profileView, 800, 600));
-            stage.setTitle("NFT Marketplace - Profile");
-            stage.show();
+            Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            window.setScene(new Scene(dashboardView));
+            window.setTitle("NFT Marketplace - Dashboard");
+            window.show();
         } catch (IOException e) {
-            showError("Error loading profile page: " + e.getMessage());
+            showError("Error loading dashboard page: " + e.getMessage());
             e.printStackTrace();
         }
     }

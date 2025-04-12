@@ -132,21 +132,18 @@ public class BlogService implements IService<Blog> {
         blog.setTitle(rs.getString("title"));
         blog.setTranslatedTitle(rs.getString("translated_title"));
         blog.setContent(rs.getString("content"));
+        blog.setTranslatedContent(rs.getString("translated_content"));
+        blog.setDate(rs.getDate("date").toLocalDate());
+        blog.setImageFilename(rs.getString("image_filename"));
+        blog.setTranslationLanguage(rs.getString("translation_language"));
         
-        Date sqlDate = rs.getDate("date");
-        if (sqlDate != null) {
-            blog.setDate(sqlDate.toLocalDate());
-        }
-        
-        // Get the user object using UserService
+        // Get the user from UserService
         int userId = rs.getInt("user_id");
         User user = userService.getById(userId);
         blog.setUser(user);
         
-        blog.setTranslatedContent(rs.getString("translated_content"));
-        blog.setTranslationLanguage(rs.getString("translation_language"));
-        blog.setImageFilename(rs.getString("image_filename"));
-        
         return blog;
+    }    public List<Blog> readAll() throws Exception {
+        return getAll();
     }
 }

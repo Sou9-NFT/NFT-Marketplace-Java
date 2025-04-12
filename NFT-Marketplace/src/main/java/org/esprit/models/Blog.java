@@ -171,12 +171,6 @@ public class Blog {
 
     @Override
     public String toString() {
-        return "Blog{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", content='" + (content != null ? content.substring(0, Math.min(content.length(), 50)) + "..." : "null") + '\'' +
-                ", date=" + date +
-                ", user=" + (user != null ? user.getName() : "null") +
-                '}';
+        return title + (translatedTitle != null ? " / " + translatedTitle : "");
     }
 }
