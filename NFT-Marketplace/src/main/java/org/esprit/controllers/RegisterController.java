@@ -73,6 +73,10 @@ public class RegisterController {
             
             // Create and save new user
             User newUser = new User(email, password, name);
+            
+            // Set default profile picture
+            newUser.setProfilePicture("/assets/default/default_profile.jpg");
+            
             userService.add(newUser);
             
             // Show success and navigate to login
