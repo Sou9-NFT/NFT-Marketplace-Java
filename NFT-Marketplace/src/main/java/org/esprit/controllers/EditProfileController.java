@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import org.esprit.models.User;
+import org.esprit.models.User.ValidationResult;
 import org.esprit.services.UserService;
 
 import javafx.event.ActionEvent;
@@ -161,20 +162,22 @@ public class EditProfileController {
         String walletAddress = walletField.getText().trim();
         String githubUsername = githubField.getText().trim();
 
-        // Basic validation
-        if (name.isEmpty() || email.isEmpty()) {
-            showStatus("Name and email are required.");
-            return;
-        }
-
-        // Email validation (simple check)
-        if (!email.contains("@") || !email.contains(".")) {
-            showStatus("Please enter a valid email address.");
-            return;
-        }
-
         try {
-            // Check if user wants to change password
+            // Create a copy of the current user for validation
+            User updatedUser = new User();
+            updatedUser.setId(currentUser.getId());
+            updatedUser.setName(name);
+            updatedUser.setEmail(email);
+            updatedUser.setWalletAddress(walletAddress.isEmpty() ? null : walletAddress);
+            updatedUser.setGithubUsername(githubUsername.isEmpty() ? null : githubUsername);
+            
+            // Set other fields from current user to avoid losing data
+            updatedUser.setRoles(currentUser.getRoles());
+            updatedUser.setBalance(currentUser.getBalance());
+            updatedUser.setCreatedAt(currentUser.getCreatedAt());
+            updatedUser.setProfilePicture(currentUser.getProfilePicture());
+            
+            // Password handling - special case that requires controller-level validation
             if (!newPassword.isEmpty()) {
                 // Verify current password
                 if (!currentUser.getPassword().equals(currentPassword)) {
@@ -188,14 +191,11 @@ public class EditProfileController {
                     return;
                 }
 
-                // Password validation (simple check)
-                if (newPassword.length() < 6) {
-                    showStatus("New password must be at least 6 characters.");
-                    return;
-                }
-
-                // Update password
-                currentUser.setPassword(newPassword);
+                // Set the new password for validation
+                updatedUser.setPassword(newPassword);
+            } else {
+                // Keep the existing password
+                updatedUser.setPassword(currentUser.getPassword());
             }
 
             // Check if the email is being changed and if it's already in use
@@ -203,6 +203,17 @@ public class EditProfileController {
                 User existingUser = userService.getByEmail(email);
                 if (existingUser != null && existingUser.getId() != currentUser.getId()) {
                     showStatus("This email is already in use by another account.");
+                    return;
+                }
+            }
+
+            // Validate the user at entity level
+            ValidationResult validationResult = updatedUser.validate();
+            
+            if (!validationResult.isValid()) {
+                // Show the first validation error found
+                for (String errorMessage : validationResult.getErrors().values()) {
+                    showStatus(errorMessage);
                     return;
                 }
             }
@@ -226,7 +237,7 @@ public class EditProfileController {
                     Files.copy(selectedProfilePicFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
                     // Save the relative path to be stored in database
-                    currentUser.setProfilePicture("/uploads/" + fileName);
+                    updatedUser.setProfilePicture("/uploads/" + fileName);
                 } catch (IOException e) {
                     showStatus("Error saving profile picture: " + e.getMessage());
                     e.printStackTrace();
@@ -234,11 +245,15 @@ public class EditProfileController {
                 }
             }
 
-            // Update other fields
-            currentUser.setName(name);
-            currentUser.setEmail(email);
-            currentUser.setWalletAddress(walletAddress.isEmpty() ? null : walletAddress);
-            currentUser.setGithubUsername(githubUsername.isEmpty() ? null : githubUsername);
+            // Update the current user with validated data
+            currentUser.setName(updatedUser.getName());
+            currentUser.setEmail(updatedUser.getEmail());
+            currentUser.setWalletAddress(updatedUser.getWalletAddress());
+            currentUser.setGithubUsername(updatedUser.getGithubUsername());
+            currentUser.setPassword(updatedUser.getPassword());
+            if (updatedUser.getProfilePicture() != null) {
+                currentUser.setProfilePicture(updatedUser.getProfilePicture());
+            }
 
             // Save changes to database
             userService.update(currentUser);
