@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.esprit.controllers.BlogController"
+            prefHeight="600.0" prefWidth="800.0">
+    
+    <VBox spacing="10" AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10" 
+          AnchorPane.rightAnchor="10" AnchorPane.bottomAnchor="10">
+        
+        <!-- Header Section -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Blog Management" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="createBlogButton" text="Create New Blog" onAction="#handleCreateBlog"/>
+        </HBox>
+        
+        <!-- Main Content Section -->
+        <SplitPane VBox.vgrow="ALWAYS">
+            <!-- Blog List Section -->
+            <VBox spacing="5">
+                <ListView fx:id="blogListView" VBox.vgrow="ALWAYS"/>
+            </VBox>
+            
+            <!-- Blog Details Section -->
+            <VBox spacing="10">
+                <GridPane vgap="10" hgap="10">
+                    <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <TextField fx:id="titleField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                    
+                    <Label text="Content:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <TextArea fx:id="contentArea" wrapText="true" GridPane.rowIndex="1" 
+                             GridPane.columnIndex="1" prefRowCount="5"/>
+                    
+                    <Label text="Image:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <HBox spacing="10" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                        <ImageView fx:id="blogImageView" fitHeight="100" fitWidth="100" 
+                                 preserveRatio="true"/>
+                        <Button text="Choose Image" onAction="#handleChooseImage"/>
+                    </HBox>
+                    
+                    <Label text="Translation:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="languageComboBox" GridPane.rowIndex="3" 
+                             GridPane.columnIndex="1"/>
+                </GridPane>
+                
+                <!-- Action Buttons -->
+                <HBox spacing="10" alignment="CENTER_RIGHT">
+                    <Button fx:id="saveButton" text="Save" onAction="#handleSave"/>
+                    <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete"/>
+                    <Button fx:id="translateButton" text="Translate" onAction="#handleTranslate"/>
+                </HBox>
+            </VBox>
+        </SplitPane>
+    </VBox>
+</AnchorPane>
