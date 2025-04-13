@@ -380,6 +380,29 @@ public class AdminDashboardController implements Initializable {
         }
     }
     
+    @FXML
+private void handleBetSessions(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BetSession.fxml"));
+        Parent betSessionView = loader.load();
+        
+        // If there's a controller with setCurrentUser method, we can set the admin as a user
+        BetSessionController controller = loader.getController();
+        if (controller != null && currentAdminUser != null) {
+            controller.setCurrentUser(currentAdminUser);
+        }
+        
+        Scene scene = new Scene(betSessionView);
+        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+        stage.setScene(scene);
+        stage.setTitle("NFT Marketplace - Bet Sessions Management");
+        stage.show();
+    } catch (IOException e) {
+        System.err.println("Error in handleBetSessions: " + e.getMessage());
+        e.printStackTrace();
+        showAlert("Error", "Could not load Bet Sessions interface: " + e.getMessage());
+    }
+}
     private void setupTableColumns() {
         // Only set up if columns are properly injected
         if (idColumn != null) {
