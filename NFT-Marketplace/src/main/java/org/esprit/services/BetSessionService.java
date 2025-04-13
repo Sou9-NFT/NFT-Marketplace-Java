@@ -23,7 +23,7 @@ public class BetSessionService implements IBetSessionService {
     }
 
     public void addBetSession(BetSession betSession) {
-        String query = "INSERT INTO bet_session (author_id, artwork_id, created_at, start_time, end_time, initial_price, current_price, status, number_of_bids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO bet_session (author_id, artwork_id, created_at, start_time, end_time, initial_price, current_price, status, number_of_bids, mysterious_mode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, betSession.getAuthor().getId());
             statement.setInt(2, betSession.getArtwork().getId());
@@ -34,6 +34,7 @@ public class BetSessionService implements IBetSessionService {
             statement.setDouble(7, betSession.getCurrentPrice());
             statement.setString(8, betSession.getStatus());
             statement.setInt(9, 0); // Initialize with 0 bids
+            statement.setBoolean(10, betSession.isMysteriousMode()); // Add mysterious_mode field
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -41,7 +42,7 @@ public class BetSessionService implements IBetSessionService {
     }
 
     public void updateBetSession(BetSession betSession) {
-        String query = "UPDATE bet_session SET author_id = ?, artwork_id = ?, start_time = ?, end_time = ?, initial_price = ?, current_price = ?, status = ? WHERE id = ?";
+        String query = "UPDATE bet_session SET author_id = ?, artwork_id = ?, start_time = ?, end_time = ?, initial_price = ?, current_price = ?, status = ?, number_of_bids = ?, mysterious_mode = ? WHERE id = ?";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, betSession.getAuthor().getId());
             statement.setInt(2, betSession.getArtwork().getId());
@@ -50,7 +51,20 @@ public class BetSessionService implements IBetSessionService {
             statement.setDouble(5, betSession.getInitialPrice());
             statement.setDouble(6, betSession.getCurrentPrice());
             statement.setString(7, betSession.getStatus());
-            statement.setInt(8, betSession.getId());
+            
+            // Get current number_of_bids to preserve it (or set to 0 if new)
+            int numberOfBids = 0;
+            try (PreparedStatement getStatement = connection.prepareStatement("SELECT number_of_bids FROM bet_session WHERE id = ?")) {
+                getStatement.setInt(1, betSession.getId());
+                ResultSet rs = getStatement.executeQuery();
+                if (rs.next()) {
+                    numberOfBids = rs.getInt("number_of_bids");
+                }
+            }
+            statement.setInt(8, numberOfBids);
+            statement.setBoolean(9, betSession.isMysteriousMode()); // Add mysterious_mode field
+            statement.setInt(10, betSession.getId());
+            
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
