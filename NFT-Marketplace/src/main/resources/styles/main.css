@@ -1,0 +1,148 @@
+/* Main Colors */
+* {
+  -primary-color: #4528dc;
+  -secondary-color: #57048a;
+  -primary-text-color: #333333;
+  -secondary-text-color: #555555;
+  -primary-paragraph-color: #666666;
+  -secondary-paragraph-color: #777777;
+  -primary-border-color: #dddddd;
+
+  /* Background Colors */
+  -primary-background-color: #ffffff;
+  -primary-background-color-2: #f9f9f9;
+  -primary-background-color-3: #f5f5f5;
+  -secondary-background-color: #ffffff;
+  -secondary-background-color-2: #f7f7f7;
+  -secondary-background-color-3: #eeeeee;
+  -card-background-color: #ffffff;
+  -header-background-color: #f5f5f5;
+  -footer-background-color: #f5f5f5;
+
+  /* UI Colors */
+  -white-color: #ffffff;
+  -black-color: #333333;
+  -grey-color: #eeeeee;
+  -dark-grey-color: #999999;
+  -valid-color: #007a4d;
+  -invalid-color: #e34f4f;
+
+  /* Line Colors */
+  -primary-line-color: rgba(0, 0, 0, 0.12);
+  -secondary-line-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Apply Fonts */
+.root {
+  -fx-font-family: "Poppins", sans-serif;
+  -fx-font-size: 14px;
+  -fx-background-color: -primary-background-color;
+}
+
+/* Headings */
+.header-text {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-weight: bold;
+  -fx-text-fill: -primary-text-color;
+}
+
+.title {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-size: 32px;
+  -fx-font-weight: 900;
+  -fx-text-fill: -primary-color;
+}
+
+.subtitle {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-size: 24px;
+  -fx-font-weight: 700;
+  -fx-text-fill: -secondary-color;
+}
+
+/* Basic Controls */
+.label {
+  -fx-text-fill: -primary-text-color;
+}
+
+.text-field,
+.password-field {
+  -fx-background-color: -white-color;
+  -fx-text-fill: -primary-text-color;
+  -fx-border-color: -primary-border-color;
+  -fx-border-radius: 4px;
+  -fx-border-width: 1px;
+  -fx-padding: 10px;
+}
+
+.text-field:focused,
+.password-field:focused {
+  -fx-border-color: -primary-color;
+}
+
+/* Buttons */
+.button {
+  -fx-background-color: linear-gradient(135deg, #4528dc 10%, #57048a);
+  -fx-text-fill: -white-color;
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-weight: 600;
+  -fx-padding: 10px 20px;
+  -fx-background-radius: 100px;
+  -fx-cursor: hand;
+}
+
+.button:hover {
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0.5, 0, 0);
+}
+
+.button-secondary {
+  -fx-background-color: -white-color;
+  -fx-border-color: -primary-color;
+  -fx-border-radius: 100px;
+  -fx-text-fill: -primary-color;
+  -fx-border-width: 1px;
+}
+
+/* HyperLinks */
+.hyperlink {
+  -fx-text-fill: -primary-color;
+  -fx-underline: false;
+  -fx-border-color: transparent;
+}
+
+.hyperlink:hover {
+  -fx-text-fill: -secondary-color;
+}
+
+/* Card styling */
+.card {
+  -fx-background-color: -card-background-color;
+  -fx-padding: 20px;
+  -fx-background-radius: 8px;
+  -fx-border-color: -primary-border-color;
+  -fx-border-radius: 8px;
+  -fx-border-width: 1px;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.08), 10, 0, 0, 3);
+}
+
+/* Headers */
+.header {
+  -fx-background-color: -header-background-color;
+  -fx-padding: 10px;
+  -fx-border-color: -primary-border-color;
+  -fx-border-width: 0 0 1px 0;
+}
+
+/* Status messages */
+.status-success {
+  -fx-text-fill: -valid-color;
+}
+
+.status-error {
+  -fx-text-fill: -invalid-color;
+}
+
+/* Gradient text (not directly supported in JavaFX, but we can apply it to specific elements) */
+.gradient-text {
+  -fx-text-fill: -primary-color;
+}
