@@ -1,17 +1,23 @@
 package org.esprit.services;
 
-import org.esprit.models.Raffle;
-import org.esprit.models.User;
-import org.esprit.models.Artwork;
-import org.esprit.models.Participant;
-import org.esprit.utils.DatabaseConnection;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.Date;
+
+import org.esprit.models.Artwork;
+import org.esprit.models.Participant;
+import org.esprit.models.Raffle;
+import org.esprit.models.User;
+import org.esprit.utils.DatabaseConnection;
 
 public class RaffleService implements IService<Raffle> {
     private Connection connection;
@@ -33,7 +39,7 @@ public class RaffleService implements IService<Raffle> {
     }
 
     @Override
-    public void add(Raffle raffle) throws SQLException {
+    public void add(Raffle raffle) throws Exception {
         String query = "INSERT INTO raffle (title, raffle_description, start_time, end_time, status, creator_id, created_at, creator_name, artwork_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         
@@ -52,10 +58,8 @@ public class RaffleService implements IService<Raffle> {
         ResultSet rs = ps.getGeneratedKeys();
         if (rs.next()) {
             raffle.setId(rs.getInt(1));
-        }
-    }
-
-    @Override
+        }    }
+    
     public void update(Raffle raffle) throws SQLException {
         // First check if this raffle needs to be ended
         if (raffle.getStatus().equals("active") && raffle.getEndTime().before(new Date())) {
@@ -82,10 +86,8 @@ public class RaffleService implements IService<Raffle> {
         ps.setInt(6, raffle.getArtworkId());
         ps.setInt(7, raffle.getId());
         
-        ps.executeUpdate();
-    }
+        ps.executeUpdate();    }
 
-    @Override
     public void delete(Raffle raffle) throws SQLException {
         connection.setAutoCommit(false);
         try {

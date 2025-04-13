@@ -1,6 +1,5 @@
 package org.esprit.controllers;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -158,8 +157,7 @@ public class CreateRaffleController {
                 description,
                 Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant()),
                 currentUser,
-                artworkId
-            );
+                artworkId            );
             
             raffleService.add(raffle);
             
@@ -184,7 +182,8 @@ public class CreateRaffleController {
             
         } catch (NumberFormatException e) {
             showStatus("Please enter a valid artwork ID number", true);
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            showStatus("Error creating raffle: " + e.getMessage(), true);
             showStatus("Error creating raffle: " + e.getMessage(), true);
             e.printStackTrace();
         } catch (Exception e) {

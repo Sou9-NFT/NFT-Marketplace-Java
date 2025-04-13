@@ -27,6 +27,7 @@ public class NftMarketplaceApplication extends Application {
             }
         });
         
+
         primaryStage.show();
     }
 
