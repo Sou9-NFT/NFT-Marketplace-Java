@@ -97,6 +97,11 @@
 								<Font size="16.0" />
 							</font>
 						</Button>
+						<Button fx:id="tradeOffersButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleTradeOffers" styleClass="dashboard-button" text="Trade Offers" GridPane.columnIndex="1" GridPane.rowIndex="3">
+							<font>
+								<Font size="16.0" />
+							</font>
+						</Button>
 					</children>
 				</GridPane>
 			</children>
