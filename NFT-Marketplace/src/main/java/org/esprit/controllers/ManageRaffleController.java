@@ -132,10 +132,10 @@ public class ManageRaffleController {
     
     @FXML
     private void handleSave(ActionEvent event) {
-        // Verify current user is the creator
+        // Show warning if user is not the creator, but still allow editing
         if (currentUser == null || raffle.getCreator().getId() != currentUser.getId()) {
-            showStatus("Only the creator of this raffle can modify it", true);
-            return;
+            showStatus("Warning: You are not the creator of this raffle", true);
+            // Continue with save operation - don't return
         }
         
         String title = titleField.getText().trim();
@@ -236,10 +236,10 @@ public class ManageRaffleController {
     
     @FXML
     private void handleDelete(ActionEvent event) {
-        // Verify current user is the creator
+        // Show warning if user is not the creator, but still allow deletion
         if (currentUser == null || raffle.getCreator().getId() != currentUser.getId()) {
-            showStatus("Only the creator of this raffle can delete it", true);
-            return;
+            showStatus("Warning: You are not the creator of this raffle", true);
+            // Continue with delete operation - don't return
         }
         
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
@@ -281,7 +281,18 @@ public class ManageRaffleController {
     private void showStatus(String message, boolean isError) {
         statusLabel.setText(message);
         statusLabel.setVisible(true);
+        
+        // Remove existing style classes
         statusLabel.getStyleClass().removeAll("status-error", "status-success");
+        
+        // Apply style class
         statusLabel.getStyleClass().add(isError ? "status-error" : "status-success");
+        
+        // Apply direct styling for red warning
+        if (isError) {
+            statusLabel.setStyle("-fx-text-fill: #FF0000; -fx-font-weight: bold;");
+        } else {
+            statusLabel.setStyle("-fx-text-fill: #009900; -fx-font-weight: normal;");
+        }
     }
 }
