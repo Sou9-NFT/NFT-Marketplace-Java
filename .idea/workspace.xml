@@ -61,7 +61,7 @@
       <command value="mvn javafx:run" />
     </option>
   </component>
-  <component name="RunManager" selected="Application.TestCrudCategory">
+  <component name="RunManager" selected="Application.TestCrudArtwork">
     <configuration name="TestCrudArtwork" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.esprit.main.TestCrudArtwork" />
       <module name="NFT-Marketplace" />
@@ -103,8 +103,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.TestCrudCategory" />
         <item itemvalue="Application.TestCrudArtwork" />
+        <item itemvalue="Application.TestCrudCategory" />
         <item itemvalue="Application.TestCrudUser" />
       </list>
     </recent_temporary>
