@@ -54,7 +54,7 @@
 								<Font size="16.0" />
 							</font>
 						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Artworks" onAction="#handleManageArtworks" styleClass="dashboard-button" GridPane.columnIndex="2">
+						<Button maxWidth="Infinity" maxHeight="Infinity" text="Blog" onAction="#handleManageBlog" styleClass="dashboard-button" GridPane.columnIndex="2">
 							<font>
 								<Font size="16.0" />
 							</font>

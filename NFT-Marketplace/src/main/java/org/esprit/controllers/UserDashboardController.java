@@ -42,6 +42,9 @@ public class UserDashboardController {
     private Button notificationsButton;
     
     @FXML
+    private Button blogButton;
+  
+    @FXML
     private Button tradeOffersButton;
     
     private User currentUser;
@@ -179,6 +182,21 @@ public class UserDashboardController {
             }
         } else {
             showComingSoonView(event, "Notifications");
+        }
+    }
+    
+    @FXML
+    private void handleBlogButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Blog.fxml"));
+            Parent blogView = loader.load();
+            
+            BlogController controller = loader.getController();
+            controller.setCurrentUser(currentUser);
+            
+            navigateToView(event, blogView, "NFT Marketplace - Blog");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load blog: " + e.getMessage());
         }
     }
     

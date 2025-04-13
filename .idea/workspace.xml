@@ -6,8 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="fcec73b1-e0db-46ed-82d5-5664b449271f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/ArtworkManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/ArtworkManagementController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/AdminDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/AdminDashboardController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/UserDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/UserDashboardController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/AdminDashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/AdminDashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/UserDashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/UserDashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/styles/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/styles/main.css" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/main/TestCrudTrade.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/models/TradeOffer.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/services/TradeService.java" afterDir="false" />
@@ -33,6 +37,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "sanalar00"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/grp-ArtiTechs/NFT-Marketplace-Java.git",
+    "accountId": "a7f8f223-249e-4663-8d66-206aecbdfc0d"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -78,6 +94,12 @@
     "Application.TestCrudParticipant.executor": "Run",
     "Application.TestCrudRaffle.executor": "Run",
     "Application.TestCrudUser.executor": "Run",
+    "Maven.NFT-Marketplace [clean].executor": "Run",
+    "Maven.NFT-Marketplace [javafx:run].executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "blog",
     "Maven.NFT-Marketplace [javafx:run].executor": "Run",
     "Maven.NFT-Marketplace [org.openjfx:javafx-maven-plugin:0.0.8:run].executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -94,9 +116,10 @@
     "settings.editor.selected.configurable": "configurable.group.language",
     "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunAnythingCache">
     <option name="myCommands">
+      <command value="mvn clean" />
       <command value="mvn javafx:run" />
     </option>
   </component>
@@ -179,8 +202,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-a94e463ab2e7-intellij.indexing.shared.core-IU-243.26053.27" />
-        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-IU-243.26053.27" />
+        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.24807.4" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.24807.4" />
       </set>
     </attachedChunks>
   </component>
@@ -202,6 +225,7 @@
       <workItem from="1744544732269" duration="1713000" />
       <workItem from="1744561266430" duration="498000" />
       <workItem from="1744561774312" duration="243000" />
+      <workItem from="1744567670665" duration="2458000" />
     </task>
     <servers />
   </component>
