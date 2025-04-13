@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.esprit.controllers.BetSessionController"
+            prefWidth="800" prefHeight="600"
+            stylesheets="@../styles/main.css, @../styles/bet-session.css">
+    <top>
+        <VBox spacing="10" styleClass="bet-session-header">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            <Label text="NFT Betting Sessions" styleClass="title"/>
+            <Label text="Manage your NFT betting sessions and track their progress" styleClass="subtitle"/>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="10" right="20" bottom="10" left="20"/>
+            </padding>
+            <TableView fx:id="tableView" styleClass="bet-session-table">
+                <columns>
+                    <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="authorColumn" text="Author" prefWidth="100"/>
+                    <TableColumn fx:id="artworkColumn" text="Artwork" prefWidth="100"/>
+                    <TableColumn fx:id="createdAtColumn" text="Created At" prefWidth="120"/>
+                    <TableColumn fx:id="startTimeColumn" text="Start Time" prefWidth="120"/>
+                    <TableColumn fx:id="endTimeColumn" text="End Time" prefWidth="120"/>
+                    <TableColumn fx:id="initialPriceColumn" text="Initial Price" prefWidth="100"/>
+                    <TableColumn fx:id="currentPriceColumn" text="Current Price" prefWidth="100"/>
+                    <TableColumn fx:id="statusColumn" text="Status" prefWidth="80"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="15" alignment="CENTER" styleClass="bet-session-actions">
+            <padding>
+                <Insets top="15" right="20" bottom="15" left="20"/>
+            </padding>
+            <Button fx:id="addButton" text="Add New Session" onAction="#showAddDialog" styleClass="add-button"/>
+            <Button fx:id="updateButton" text="Update Session" onAction="#showUpdateDialog" styleClass="update-button"/>
+            <Button fx:id="deleteButton" text="Delete Session" onAction="#deleteSelectedBetSession" styleClass="delete-button"/>
+        </HBox>
+    </bottom>
+</BorderPane>

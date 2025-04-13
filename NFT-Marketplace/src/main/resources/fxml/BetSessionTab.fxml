@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.esprit.controllers.BetSessionController"
+            prefHeight="600.0" prefWidth="800.0"
+            styleClass="root">
+    
+    <top>
+        <VBox styleClass="header-container" alignment="CENTER">
+            <Label text="BetSession Management" styleClass="section-title"/>
+        </VBox>
+    </top>
+    
+    <center>
+        <VBox spacing="20" alignment="CENTER" styleClass="container" VBox.vgrow="ALWAYS">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            <TableView fx:id="betSessionTable" prefHeight="400.0" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="colAuthor" text="Author" prefWidth="150"/>
+                    <TableColumn fx:id="colArtwork" text="Artwork" prefWidth="150"/>
+                    <TableColumn fx:id="colInitialPrice" text="Initial Price" prefWidth="150"/>
+                    <TableColumn fx:id="colCurrentPrice" text="Current Price" prefWidth="150"/>
+                    <TableColumn fx:id="colStart" text="Start Time" prefWidth="200"/>
+                    <TableColumn fx:id="colEnd" text="End Time" prefWidth="200"/>
+                    <TableColumn fx:id="colStatus" text="Status" prefWidth="150"/>
+                    <TableColumn fx:id="colActions" text="Actions" prefWidth="200"/>
+                </columns>
+            </TableView>
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="Delete" onAction="#handleDeleteAction"/>
+                <Button text="Update" onAction="#handleUpdateAction"/>
+            </HBox>
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="New Bet Session" onAction="#handleAddAction"/>
+            </HBox>
+            <VBox spacing="10" alignment="CENTER">
+                <Label text="Author ID"/>
+                <TextField fx:id="authorIdField" promptText="Enter Author ID"/>
+            </VBox>
+        </VBox>
+    </center>
+    
+</BorderPane>
