@@ -549,3 +549,61 @@
   -fx-border-width: 1px;
   -fx-alignment: center;
 }
+
+/* Blog Management Styles */
+.blog-edit-form {
+    -fx-background-color: -fx-background;
+    -fx-padding: 20px;
+}
+
+.blog-edit-form .section-header {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10 0;
+}
+
+.blog-table-view {
+    -fx-padding: 10px;
+}
+
+.button-danger {
+    -fx-background-color: #dc3545;
+    -fx-text-fill: white;
+}
+
+.button-danger:hover {
+    -fx-background-color: #c82333;
+}
+
+.button-primary {
+    -fx-background-color: #007bff;
+    -fx-text-fill: white;
+}
+
+.button-primary:hover {
+    -fx-background-color: #0056b3;
+}
+
+/* Blog List Styles */
+.blog-list-view {
+    -fx-background-insets: 0;
+    -fx-padding: 10px;
+}
+
+.blog-list-view .list-cell {
+    -fx-padding: 15px;
+    -fx-background-color: white;
+    -fx-border-color: #e9ecef;
+    -fx-border-width: 0 0 1 0;
+}
+
+.blog-list-view .list-cell:hover {
+    -fx-background-color: #f8f9fa;
+}
+
+/* Blog Search Field */
+.search-field {
+    -fx-pref-height: 35px;
+    -fx-background-radius: 20px;
+    -fx-padding: 0 15px;
+}
