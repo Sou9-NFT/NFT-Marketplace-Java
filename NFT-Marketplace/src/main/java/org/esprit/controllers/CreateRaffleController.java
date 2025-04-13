@@ -1,25 +1,29 @@
 package org.esprit.controllers;
 
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.stage.Stage;
-import javafx.collections.FXCollections;
-import org.esprit.models.Artwork;
-import org.esprit.models.Raffle;
-import org.esprit.models.User;
-import org.esprit.services.ArtworkService;
-import org.esprit.services.RaffleService;
-
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.esprit.models.Artwork;
+import org.esprit.models.Raffle;
+import org.esprit.models.User;
+import org.esprit.services.ArtworkService;
+import org.esprit.services.RaffleService;
+
+import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 public class CreateRaffleController {
     @FXML
@@ -132,7 +136,15 @@ public class CreateRaffleController {
         try {
             // Parse and validate artwork ID
             int artworkId = Integer.parseInt(artworkIdStr);
-            Artwork artwork = artworkService.getOne(artworkId);
+            
+            // Catch the Exception thrown by getOne()
+            Artwork artwork;
+            try {
+                artwork = artworkService.getOne(artworkId);
+            } catch (Exception e) {
+                showStatus("Error retrieving artwork: " + e.getMessage(), true);
+                return;
+            }
             
             if (artwork == null) {
                 showStatus("Artwork with ID " + artworkId + " not found", true);

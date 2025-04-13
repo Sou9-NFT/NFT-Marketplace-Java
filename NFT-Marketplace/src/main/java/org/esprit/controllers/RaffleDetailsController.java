@@ -1,18 +1,23 @@
 package org.esprit.controllers;
 
-import javafx.fxml.FXML;
-import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.stage.Stage;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+
 import org.esprit.models.Artwork;
 import org.esprit.models.Raffle;
 import org.esprit.models.User;
 import org.esprit.services.ArtworkService;
 import org.esprit.services.RaffleService;
 
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.Stage;
 
 public class RaffleDetailsController {
     @FXML
@@ -75,7 +80,7 @@ public class RaffleDetailsController {
         try {
             Artwork artwork = artworkService.getOne(raffle.getArtworkId());
             loadArtworkImage(artwork);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

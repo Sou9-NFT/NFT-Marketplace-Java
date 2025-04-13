@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+<BorderPane 
+	xmlns="http://javafx.com/javafx/8.0.171" 
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.esprit.controllers.ComingSoonController">
+	<top>
+		<HBox alignment="CENTER_LEFT" style="-fx-background-color: #1e3c72;" BorderPane.alignment="CENTER">
+			<padding>
+				<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+			</padding>
+			<children>
+				<Label text="NFT Marketplace" textFill="WHITE">
+					<font>
+						<Font name="System Bold" size="18.0" />
+					</font>
+				</Label>
+				<Pane HBox.hgrow="ALWAYS" />
+				<Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 3;" text="Back to Dashboard">
+					<HBox.margin>
+						<Insets left="15.0" />
+					</HBox.margin>
+				</Button>
+			</children>
+		</HBox>
+	</top>
+	<center>
+		<VBox alignment="CENTER" spacing="30.0" BorderPane.alignment="CENTER">
+			<padding>
+				<Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+			</padding>
+			<children>
+				<Label fx:id="featureNameLabel" text="Feature" textAlignment="CENTER">
+					<font>
+						<Font name="System Bold" size="36.0" />
+					</font>
+				</Label>
+				<Label text="Coming Soon!" textAlignment="CENTER" styleClass="coming-soon-text">
+					<font>
+						<Font size="48.0" />
+					</font>
+				</Label>
+				<Label text="We're working on this feature and will release it soon." textAlignment="CENTER">
+					<font>
+						<Font size="18.0" />
+					</font>
+				</Label>
+				<Label text="Thank you for your patience." textAlignment="CENTER">
+					<font>
+						<Font size="16.0" />
+					</font>
+				</Label>
+			</children>
+		</VBox>
+	</center>
+</BorderPane>
