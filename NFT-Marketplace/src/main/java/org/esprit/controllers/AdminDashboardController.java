@@ -237,6 +237,23 @@ public class AdminDashboardController implements Initializable {
     }
     
     @FXML
+    private void handleManageBlog(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BlogManagement.fxml"));
+            Parent blogView = loader.load();
+            
+            BlogController controller = loader.getController();
+            controller.setAdminMode(true); // Enable admin-specific features
+            controller.setCurrentUser(currentAdminUser);
+            
+            navigateToView(event, blogView, "NFT Marketplace - Blog Management");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load blog management: " + e.getMessage());
+            System.err.println("Error in handleManageBlog: " + e.getMessage());
+        }
+    }
+
+    @FXML
     private void handleManageRaffles(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleManagement.fxml"));
