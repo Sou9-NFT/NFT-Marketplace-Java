@@ -23,7 +23,7 @@ public class BetSessionService implements IBetSessionService {
     }
 
     public void addBetSession(BetSession betSession) {
-        String query = "INSERT INTO bet_session (author_id, artwork_id, created_at, start_time, end_time, initial_price, current_price, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO bet_session (author_id, artwork_id, created_at, start_time, end_time, initial_price, current_price, status, number_of_bids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setInt(1, betSession.getAuthor().getId());
             statement.setInt(2, betSession.getArtwork().getId());
@@ -33,10 +33,12 @@ public class BetSessionService implements IBetSessionService {
             statement.setDouble(6, betSession.getInitialPrice());
             statement.setDouble(7, betSession.getCurrentPrice());
             statement.setString(8, betSession.getStatus());
+            statement.setInt(9, 0); // Initialize with 0 bids
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-        }    }
+        }    
+    }
 
     public void updateBetSession(BetSession betSession) {
         String query = "UPDATE bet_session SET author_id = ?, artwork_id = ?, start_time = ?, end_time = ?, initial_price = ?, current_price = ?, status = ? WHERE id = ?";
@@ -52,7 +54,8 @@ public class BetSessionService implements IBetSessionService {
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-        }    }
+        }    
+    }
 
     public void deleteBetSession(int id) {
         String query = "DELETE FROM bet_session WHERE id = ?";
@@ -61,7 +64,8 @@ public class BetSessionService implements IBetSessionService {
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-        }    }
+        }    
+    }
 
     public BetSession getBetSessionById(int id) {
         String query = "SELECT * FROM bet_session WHERE id = ?";
@@ -76,7 +80,8 @@ public class BetSessionService implements IBetSessionService {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }        return null;
+        }        
+        return null;
     }    
     
     public List<BetSession> getAllBetSessions() {
