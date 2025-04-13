@@ -1,28 +1,5 @@
 package org.esprit.controllers;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.util.Callback;
-import org.esprit.models.Blog;
-import org.esprit.models.User;
-import org.esprit.services.BlogService;
-import org.esprit.services.UserService;
-
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -36,7 +13,41 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+
+import org.esprit.models.Blog;
+import org.esprit.models.User;
+import org.esprit.services.BlogService;
+import org.esprit.services.UserService;
+
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 public class AdminDashboardController implements Initializable {
 
@@ -352,43 +363,36 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void setupActionsColumn() {
-        Callback<TableColumn<User, Void>, TableCell<User, Void>> cellFactory = new Callback<>() {
-            @Override
-            public TableCell<User, Void> call(final TableColumn<User, Void> param) {
-                return new TableCell<>() {
-                    private final Button editButton = new Button("Edit");
-                    private final Button deleteButton = new Button("Delete");
-                    private final HBox hbox = new HBox(5, editButton, deleteButton);
+        actionsColumn.setCellFactory(param -> new TableCell<>() {
+            private final Button editButton = new Button("Edit");
+            private final Button deleteButton = new Button("Delete");
+            private final HBox hbox = new HBox(5, editButton, deleteButton);
 
-                    {
-                        editButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
-                        deleteButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
-                        
-                        editButton.setOnAction(event -> {
-                            User user = getTableView().getItems().get(getIndex());
-                            openEditUserForm(user);
-                        });
-                        
-                        deleteButton.setOnAction(event -> {
-                            User user = getTableView().getItems().get(getIndex());
-                            confirmAndDeleteUser(user);
-                        });
-                    }
-
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            setGraphic(hbox);
-                        }
-                    }
-                };
+            {
+                editButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
+                deleteButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
+                
+                editButton.setOnAction(event -> {
+                    User user = getTableView().getItems().get(getIndex());
+                    openEditUserForm(user);
+                });
+                
+                deleteButton.setOnAction(event -> {
+                    User user = getTableView().getItems().get(getIndex());
+                    confirmAndDeleteUser(user);
+                });
             }
-        };
-        
-        actionsColumn.setCellFactory(cellFactory);
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(hbox);
+                }
+            }
+        });
     }
 
     private void loadAllUsers() {
@@ -399,7 +403,7 @@ public class AdminDashboardController implements Initializable {
             userTable.setItems(userList);
         } catch (Exception e) {
             showStatus("Error loading users: " + e.getMessage(), true);
-            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Database Error", "Could not load users: " + e.getMessage());
         }
     }
 
@@ -554,18 +558,17 @@ public class AdminDashboardController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ComingSoon.fxml"));
             
-            Parent comingSoonView;
             if (loader.getLocation() == null) {
                 showAlert("Coming Soon", featureName + " feature is coming soon!");
-                return;
             } else {
-                comingSoonView = loader.load();
+                Parent comingSoonView = loader.load();
                 
                 if (loader.getController() != null) {
                     try {
                         loader.getController().getClass().getMethod("setFeatureName", String.class)
                             .invoke(loader.getController(), featureName);
                     } catch (Exception e) {
+                        // Silently ignore if method not available
                     }
                 }
                 
@@ -680,7 +683,7 @@ public class AdminDashboardController implements Initializable {
                 
                 currentBlog.setImageFilename(fileName);
                 blogImageView.setImage(new Image(destination.toUri().toString()));
-            } catch (Exception e) {
+            } catch (IOException | RuntimeException e) {
                 showAlert(Alert.AlertType.ERROR, "Error", 
                     "Failed to upload image: " + e.getMessage());
             }

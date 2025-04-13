@@ -89,7 +89,7 @@ public class CreateRaffleController {
     }
     
     @FXML
-    private void handleCreateRaffle(ActionEvent event) {
+    private void handleCreateRaffle(ActionEvent actionEvent) {
         String title = titleField.getText().trim();
         String description = descriptionField.getText().trim();
         String artworkIdStr = artworkIdField.getText().trim();
@@ -157,7 +157,8 @@ public class CreateRaffleController {
                 description,
                 Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant()),
                 currentUser,
-                artworkId            );
+                artworkId
+            );
             
             raffleService.add(raffle);
             
@@ -184,16 +185,12 @@ public class CreateRaffleController {
             showStatus("Please enter a valid artwork ID number", true);
         } catch (Exception e) {
             showStatus("Error creating raffle: " + e.getMessage(), true);
-            showStatus("Error creating raffle: " + e.getMessage(), true);
-            e.printStackTrace();
-        } catch (Exception e) {
-            showStatus("Error: " + e.getMessage(), true);
             e.printStackTrace();
         }
     }
     
     @FXML
-    private void handleCancel(ActionEvent event) {
+    private void handleCancel(ActionEvent actionEvent) {
         ((Stage) titleField.getScene().getWindow()).close();
     }
     
