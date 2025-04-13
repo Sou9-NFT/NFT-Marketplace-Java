@@ -369,6 +369,62 @@ public class ArtworkManagementController {
         return filename.substring(lastDotIndex + 1);
     }
     
+    private boolean validateForm() {
+        try {
+            // Create a temporary artwork object for validation
+            Artwork artwork = new Artwork();
+            
+            // Validate title
+            if (titleField.getText() != null && !titleField.getText().trim().isEmpty()) {
+                artwork.setTitle(titleField.getText().trim());
+            } else {
+                errorMessageLabel.setText("Title is required.");
+                return false;
+            }
+            
+            // Validate price
+            try {
+                double price = Double.parseDouble(priceField.getText().trim());
+                artwork.setPrice(price);
+            } catch (NumberFormatException e) {
+                errorMessageLabel.setText("Price must be a valid number.");
+                return false;
+            } catch (IllegalArgumentException e) {
+                errorMessageLabel.setText(e.getMessage());
+                return false;
+            }
+            
+            // Validate description
+            if (descriptionArea.getText() != null && !descriptionArea.getText().trim().isEmpty()) {
+                artwork.setDescription(descriptionArea.getText().trim());
+            } else {
+                errorMessageLabel.setText("Description is required.");
+                return false;
+            }
+            
+            // Check category
+            if (categoryComboBox.getValue() == null) {
+                errorMessageLabel.setText("Category must be selected.");
+                return false;
+            }
+            
+            // Check file
+            if (selectedFile == null) {
+                errorMessageLabel.setText("You must upload a file.");
+                return false;
+            }
+            
+            // All validations passed
+            errorMessageLabel.setText("");
+            return true;
+            
+        } catch (IllegalArgumentException e) {
+            // Catch any validation errors from the Artwork entity
+            errorMessageLabel.setText(e.getMessage());
+            return false;
+        }
+    }
+    
     @FXML
     private void handleSubmitArtwork() {
         // Validate form
@@ -402,6 +458,9 @@ public class ArtworkManagementController {
             artwork.setCreatedAt(LocalDateTime.now());
             artwork.setUpdatedAt(LocalDateTime.now());
             
+            // Perform final validation
+            artwork.validate();
+            
             // Save to the database
             artworkService.add(artwork);
             
@@ -415,52 +474,11 @@ public class ArtworkManagementController {
             // Refresh the table
             loadUserArtworks();
             
+        } catch (IllegalArgumentException e) {
+            showAlert(AlertType.ERROR, "Validation Error", e.getMessage());
         } catch (Exception e) {
             showAlert(AlertType.ERROR, "Error", "Failed to create artwork: " + e.getMessage());
             e.printStackTrace();
-        }
-    }
-    
-    private boolean validateForm() {
-        StringBuilder errorMessage = new StringBuilder();
-        
-        // Check title
-        if (titleField.getText() == null || titleField.getText().trim().isEmpty()) {
-            errorMessage.append("Title is required.\n");
-        }
-        
-        // Check price
-        try {
-            double price = Double.parseDouble(priceField.getText().trim());
-            if (price <= 0) {
-                errorMessage.append("Price must be greater than 0.\n");
-            }
-        } catch (NumberFormatException e) {
-            errorMessage.append("Price must be a valid number.\n");
-        }
-        
-        // Check description
-        if (descriptionArea.getText() == null || descriptionArea.getText().trim().isEmpty()) {
-            errorMessage.append("Description is required.\n");
-        }
-        
-        // Check category
-        if (categoryComboBox.getValue() == null) {
-            errorMessage.append("Category must be selected.\n");
-        }
-        
-        // Check file
-        if (selectedFile == null) {
-            errorMessage.append("You must upload a file.\n");
-        }
-        
-        // Display error message if any
-        if (errorMessage.length() > 0) {
-            errorMessageLabel.setText(errorMessage.toString());
-            return false;
-        } else {
-            errorMessageLabel.setText("");
-            return true;
         }
     }
     
@@ -607,49 +625,30 @@ public class ArtworkManagementController {
             // Handle OK button action
             Optional<ButtonType> result = dialog.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                // Validate the input
-                if (titleField.getText().trim().isEmpty()) {
-                    showAlert(AlertType.ERROR, "Validation Error", "Title cannot be empty.");
-                    return;
-                }
-                
-                double price;
                 try {
-                    price = Double.parseDouble(priceField.getText().trim());
-                    if (price <= 0) {
-                        showAlert(AlertType.ERROR, "Validation Error", "Price must be greater than 0.");
-                        return;
-                    }
+                    // Update artwork details using the entity's validation
+                    artwork.setTitle(titleField.getText().trim());
+                    artwork.setPrice(Double.parseDouble(priceField.getText().trim()));
+                    artwork.setDescription(descriptionArea.getText().trim());
+                    artwork.setCategoryId(categoryComboBox.getValue().getId());
+                    artwork.setUpdatedAt(LocalDateTime.now());
+                    
+                    // Final validation
+                    artwork.validate();
+                    
+                    // Save changes to the database
+                    artworkService.update(artwork);
+                    
+                    // Refresh the table
+                    loadUserArtworks();
+                    
+                    showAlert(AlertType.INFORMATION, "Success", 
+                             "Artwork '" + artwork.getTitle() + "' updated successfully.");
                 } catch (NumberFormatException e) {
                     showAlert(AlertType.ERROR, "Validation Error", "Price must be a valid number.");
-                    return;
+                } catch (IllegalArgumentException e) {
+                    showAlert(AlertType.ERROR, "Validation Error", e.getMessage());
                 }
-                
-                if (descriptionArea.getText().trim().isEmpty()) {
-                    showAlert(AlertType.ERROR, "Validation Error", "Description cannot be empty.");
-                    return;
-                }
-                
-                if (categoryComboBox.getValue() == null) {
-                    showAlert(AlertType.ERROR, "Validation Error", "Category must be selected.");
-                    return;
-                }
-                
-                // Update artwork details
-                artwork.setTitle(titleField.getText().trim());
-                artwork.setPrice(price);
-                artwork.setDescription(descriptionArea.getText().trim());
-                artwork.setCategoryId(categoryComboBox.getValue().getId());
-                artwork.setUpdatedAt(LocalDateTime.now());
-                
-                // Save changes to the database
-                artworkService.update(artwork);
-                
-                // Refresh the table
-                loadUserArtworks();
-                
-                showAlert(AlertType.INFORMATION, "Success", 
-                         "Artwork '" + artwork.getTitle() + "' updated successfully.");
             }
         } catch (Exception e) {
             showAlert(AlertType.ERROR, "Error", "Failed to update artwork: " + e.getMessage());
