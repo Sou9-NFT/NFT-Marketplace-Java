@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15" alignment="CENTER" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.ManageRaffleController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Manage Raffle" styleClass="title-label"/>
+    
+    <GridPane hgap="10" vgap="10">
+        <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="titleField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        
+        <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextArea fx:id="descriptionField" 
+                  wrapText="true" 
+                  prefRowCount="3" 
+                  GridPane.rowIndex="1" 
+                  GridPane.columnIndex="1"/>
+        
+        <Label text="End Date:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <HBox spacing="10" GridPane.rowIndex="2" GridPane.columnIndex="1">
+            <DatePicker fx:id="endDatePicker"/>
+            <Label text="Time:"/>
+            <TextField fx:id="hoursField" prefWidth="50" promptText="HH"/>
+            <Label text=":"/>
+            <TextField fx:id="minutesField" prefWidth="50" promptText="MM"/>
+        </HBox>
+        
+        <Label text="Status:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="statusComboBox" 
+                  GridPane.rowIndex="3" 
+                  GridPane.columnIndex="1"/>
+                  
+        <Label text="Winner:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="winnerComboBox" 
+                  GridPane.rowIndex="4" 
+                  GridPane.columnIndex="1"/>
+    </GridPane>
+    
+    <VBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Participants:" styleClass="subtitle-label"/>
+        <ListView fx:id="participantsListView" prefHeight="150"/>
+    </VBox>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Save Changes" 
+                onAction="#handleSave"
+                styleClass="primary-button"/>
+        <Button text="Delete Raffle" 
+                onAction="#handleDelete"
+                styleClass="delete-button"/>
+        <Button text="Cancel" 
+                onAction="#handleCancel"
+                styleClass="secondary-button"/>
+    </HBox>
+    
+    <Label fx:id="statusLabel" visible="false" wrapText="true"/>
+</VBox>
