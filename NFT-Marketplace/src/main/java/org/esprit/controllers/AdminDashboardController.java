@@ -1,28 +1,5 @@
 package org.esprit.controllers;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.util.Callback;
-import org.esprit.models.Blog;
-import org.esprit.models.User;
-import org.esprit.services.BlogService;
-import org.esprit.services.UserService;
-
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -36,7 +13,42 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+
+import org.esprit.models.Blog;
+import org.esprit.models.User;
+import org.esprit.services.BlogService;
+import org.esprit.services.UserService;
+
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 public class AdminDashboardController implements Initializable {
 
@@ -89,6 +101,7 @@ public class AdminDashboardController implements Initializable {
     private UserService userService;
     private BlogService blogService;
     private ObservableList<User> userList = FXCollections.observableArrayList();
+    private FilteredList<User> filteredUserList;
     private User currentAdminUser;
     private Blog currentBlog;
     private final String UPLOAD_DIR = "src/main/resources/uploads/";
@@ -102,22 +115,31 @@ public class AdminDashboardController implements Initializable {
         userService = new UserService();
         setupTableColumns();
         loadAllUsers();
+        
+        // Setup real-time search filtering
+        setupSearchFilter();
 
-        // Initialize blog management
+        // Initialize blog management only if UI components are available
         blogService = new BlogService();
-        languageComboBox.setItems(languages);
         
-        // Initialize blog list view
-        refreshBlogList();
-        
-        // Add selection listener to the blog list view
-        blogListView.getSelectionModel().selectedItemProperty().addListener(
-            (obs, oldSelection, newSelection) -> {
-                if (newSelection != null) {
-                    loadBlogDetails(newSelection);
-                }
+        // Check if blog UI components exist before using them
+        if (languageComboBox != null) {
+            languageComboBox.setItems(languages);
+            
+            // Initialize blog list view if it exists
+            if (blogListView != null) {
+                refreshBlogList();
+                
+                // Add selection listener to the blog list view
+                blogListView.getSelectionModel().selectedItemProperty().addListener(
+                    (obs, oldSelection, newSelection) -> {
+                        if (newSelection != null) {
+                            loadBlogDetails(newSelection);
+                        }
+                    }
+                );
             }
-        );
+        }
     }
 
     public void setCurrentUser(User user) {
@@ -129,13 +151,49 @@ public class AdminDashboardController implements Initializable {
     
     @FXML
     private void handleManageUsers(ActionEvent event) {
-        // Show the user management section instead of reloading the whole view
-        if (userManagementSection != null) {
-            userManagementSection.setVisible(true);
-            userManagementSection.setManaged(true);
-            loadAllUsers();
-        } else {
-            showAlert("Error", "User management section not found in the interface");
+        try {
+            // Create a new FXML loader for a standalone user management page
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserManagement.fxml"));
+            // If UserManagement.fxml doesn't exist, we'll need to create it
+            // For now, we'll handle the fallback to show an alert
+            
+            if (loader.getLocation() == null) {
+                // Temporary fallback until UserManagement.fxml is created
+                showAlert("Information", "User Management will open in a new page. Please create UserManagement.fxml.");
+                
+                // Fall back to the old behavior temporarily
+                if (userManagementSection != null) {
+                    userManagementSection.setVisible(true);
+                    userManagementSection.setManaged(true);
+                    loadAllUsers();
+                    
+                    VBox contentArea = (VBox) ((Button) event.getSource()).getScene().lookup("#contentArea");
+                    if (contentArea != null) {
+                        contentArea.setVisible(true);
+                        contentArea.setManaged(true);
+                    }
+                }
+            } else {
+                // If UserManagement.fxml exists, load it
+                Parent userManagementView = loader.load();
+                
+                // Pass the current admin user to the controller if it has a setCurrentUser method
+                Object controller = loader.getController();
+                if (controller != null) {
+                    try {
+                        controller.getClass().getMethod("setCurrentUser", User.class)
+                            .invoke(controller, currentAdminUser);
+                    } catch (Exception e) {
+                        // Silently ignore if method not available
+                    }
+                }
+                
+                // Navigate to the user management view in a new scene
+                navigateToView(event, userManagementView, "NFT Marketplace - User Management");
+            }
+        } catch (IOException e) {
+            showAlert("Error", "Could not load user management: " + e.getMessage());
+            System.err.println("Error in handleManageUsers: " + e.getMessage());
         }
     }
     
@@ -151,7 +209,7 @@ public class AdminDashboardController implements Initializable {
             navigateToView(event, categoriesView, "NFT Marketplace - Category Management");
         } catch (IOException e) {
             showAlert("Error", "Could not load category management: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error in handleManageCategories: " + e.getMessage());
         }
     }
     
@@ -170,7 +228,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, artworkView, "NFT Marketplace - Artwork Management");
             } catch (IOException e) {
                 showAlert("Error", "Could not load artwork management: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleManageArtworks: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Artwork Management");
@@ -179,23 +237,18 @@ public class AdminDashboardController implements Initializable {
     
     @FXML
     private void handleManageRaffles(ActionEvent event) {
-        if (getClass().getResource("/fxml/RaffleManagement.fxml") != null) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleManagement.fxml"));
-                Parent raffleView = loader.load();
-                
-                if (loader.getController() instanceof RaffleManagementController) {
-                    RaffleManagementController controller = loader.getController();
-                    controller.setCurrentUser(currentAdminUser);
-                }
-                
-                navigateToView(event, raffleView, "NFT Marketplace - Raffle Management");
-            } catch (IOException e) {
-                showAlert("Error", "Could not load raffle management: " + e.getMessage());
-                e.printStackTrace();
-            }
-        } else {
-            showComingSoonView(event, "Raffle Management");
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleManagement.fxml"));
+            Parent raffleView = loader.load();
+            
+            RaffleManagementController controller = loader.getController();
+            controller.setCurrentUser(currentAdminUser);
+            
+            navigateToView(event, raffleView, "NFT Marketplace - Raffle Management");
+            
+        } catch (IOException e) {
+            showAlert("Error", "Could not load raffle management: " + e.getMessage());
+            System.err.println("Error in handleManageRaffles: " + e.getMessage());
         }
     }
     
@@ -214,7 +267,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, transactionView, "NFT Marketplace - Transaction Management");
             } catch (IOException e) {
                 showAlert("Error", "Could not load transaction management: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleManageTransactions: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Transaction Management");
@@ -236,7 +289,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, analyticsView, "NFT Marketplace - Analytics");
             } catch (IOException e) {
                 showAlert("Error", "Could not load analytics: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleAnalytics: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Analytics");
@@ -258,7 +311,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, settingsView, "NFT Marketplace - Settings");
             } catch (IOException e) {
                 showAlert("Error", "Could not load settings: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleSettings: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Settings");
@@ -280,7 +333,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, reportsView, "NFT Marketplace - Reports");
             } catch (IOException e) {
                 showAlert("Error", "Could not load reports: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleReports: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Reports");
@@ -302,7 +355,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, logsView, "NFT Marketplace - System Logs");
             } catch (IOException e) {
                 showAlert("Error", "Could not load system logs: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleSystemLogs: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "System Logs");
@@ -352,43 +405,36 @@ public class AdminDashboardController implements Initializable {
     }
 
     private void setupActionsColumn() {
-        Callback<TableColumn<User, Void>, TableCell<User, Void>> cellFactory = new Callback<>() {
-            @Override
-            public TableCell<User, Void> call(final TableColumn<User, Void> param) {
-                return new TableCell<>() {
-                    private final Button editButton = new Button("Edit");
-                    private final Button deleteButton = new Button("Delete");
-                    private final HBox hbox = new HBox(5, editButton, deleteButton);
+        actionsColumn.setCellFactory(param -> new TableCell<>() {
+            private final Button editButton = new Button("Edit");
+            private final Button deleteButton = new Button("Delete");
+            private final HBox hbox = new HBox(5, editButton, deleteButton);
 
-                    {
-                        editButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
-                        deleteButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
-                        
-                        editButton.setOnAction(event -> {
-                            User user = getTableView().getItems().get(getIndex());
-                            openEditUserForm(user);
-                        });
-                        
-                        deleteButton.setOnAction(event -> {
-                            User user = getTableView().getItems().get(getIndex());
-                            confirmAndDeleteUser(user);
-                        });
-                    }
-
-                    @Override
-                    protected void updateItem(Void item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                        } else {
-                            setGraphic(hbox);
-                        }
-                    }
-                };
+            {
+                editButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
+                deleteButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
+                
+                editButton.setOnAction(event -> {
+                    User user = getTableView().getItems().get(getIndex());
+                    openEditUserForm(user);
+                });
+                
+                deleteButton.setOnAction(event -> {
+                    User user = getTableView().getItems().get(getIndex());
+                    confirmAndDeleteUser(user);
+                });
             }
-        };
-        
-        actionsColumn.setCellFactory(cellFactory);
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(hbox);
+                }
+            }
+        });
     }
 
     private void loadAllUsers() {
@@ -396,11 +442,25 @@ public class AdminDashboardController implements Initializable {
             List<User> users = userService.getAll();
             userList.clear();
             userList.addAll(users);
-            userTable.setItems(userList);
+            filteredUserList = new FilteredList<>(userList, p -> true);
+            userTable.setItems(filteredUserList);
         } catch (Exception e) {
             showStatus("Error loading users: " + e.getMessage(), true);
-            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Database Error", "Could not load users: " + e.getMessage());
         }
+    }
+
+    private void setupSearchFilter() {
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredUserList.setPredicate(user -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                String lowerCaseFilter = newValue.toLowerCase();
+                return user.getName().toLowerCase().contains(lowerCaseFilter) ||
+                       user.getEmail().toLowerCase().contains(lowerCaseFilter);
+            });
+        });
     }
 
     @FXML
@@ -426,7 +486,7 @@ public class AdminDashboardController implements Initializable {
             userTable.setItems(userList);
         } catch (Exception e) {
             showStatus("Error searching for user: " + e.getMessage(), true);
-            e.printStackTrace();
+            System.err.println("Error in handleSearch: " + e.getMessage());
         }
     }
 
@@ -458,7 +518,7 @@ public class AdminDashboardController implements Initializable {
             stage.showAndWait();
         } catch (IOException e) {
             showStatus("Error opening add user form: " + e.getMessage(), true);
-            e.printStackTrace();
+            System.err.println("Error opening add user form: " + e.getMessage());
         }
     }
 
@@ -479,7 +539,7 @@ public class AdminDashboardController implements Initializable {
             stage.showAndWait();
         } catch (IOException e) {
             showStatus("Error opening edit user form: " + e.getMessage(), true);
-            e.printStackTrace();
+            System.err.println("Error opening edit user form: " + e.getMessage());
         }
     }
 
@@ -524,7 +584,7 @@ public class AdminDashboardController implements Initializable {
             stage.show();
         } catch (IOException e) {
             showStatus("Error loading profile page: " + e.getMessage(), true);
-            e.printStackTrace();
+            System.err.println("Error loading profile page: " + e.getMessage());
         }
     }
 
@@ -554,18 +614,17 @@ public class AdminDashboardController implements Initializable {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ComingSoon.fxml"));
             
-            Parent comingSoonView;
             if (loader.getLocation() == null) {
                 showAlert("Coming Soon", featureName + " feature is coming soon!");
-                return;
             } else {
-                comingSoonView = loader.load();
+                Parent comingSoonView = loader.load();
                 
                 if (loader.getController() != null) {
                     try {
                         loader.getController().getClass().getMethod("setFeatureName", String.class)
                             .invoke(loader.getController(), featureName);
                     } catch (Exception e) {
+                        // Silently ignore if method not available
                     }
                 }
                 
@@ -680,7 +739,7 @@ public class AdminDashboardController implements Initializable {
                 
                 currentBlog.setImageFilename(fileName);
                 blogImageView.setImage(new Image(destination.toUri().toString()));
-            } catch (Exception e) {
+            } catch (IOException | RuntimeException e) {
                 showAlert(Alert.AlertType.ERROR, "Error", 
                     "Failed to upload image: " + e.getMessage());
             }
