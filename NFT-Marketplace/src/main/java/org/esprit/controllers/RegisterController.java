@@ -1,8 +1,10 @@
 package org.esprit.controllers;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.esprit.models.User;
+import org.esprit.models.User.ValidationResult;
 import org.esprit.services.UserService;
 
 import javafx.event.ActionEvent;
@@ -33,6 +35,19 @@ public class RegisterController {
     @FXML
     private Label errorLabel;
     
+    // Field-specific error labels
+    @FXML
+    private Label nameErrorLabel;
+    
+    @FXML
+    private Label emailErrorLabel;
+    
+    @FXML
+    private Label passwordErrorLabel;
+    
+    @FXML
+    private Label confirmPasswordErrorLabel;
+    
     private UserService userService;
     
     public RegisterController() {
@@ -41,25 +56,48 @@ public class RegisterController {
     
     @FXML
     private void handleRegister(ActionEvent event) {
+        // Clear all error messages first
+        clearAllErrors();
+        
         String name = nameField.getText().trim();
         String email = emailField.getText().trim();
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
         
-        // Validate input
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
-            showError("All fields are required.");
-            return;
+        boolean hasErrors = false;
+        
+        // Validation for name field
+        if (name.isEmpty()) {
+            showFieldError(nameErrorLabel, "Name cannot be empty");
+            hasErrors = true;
         }
         
+        // Validation for email field
+        if (email.isEmpty()) {
+            showFieldError(emailErrorLabel, "Email cannot be empty");
+            hasErrors = true;
+        } else if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            showFieldError(emailErrorLabel, "Invalid email format");
+            hasErrors = true;
+        }
+        
+        // Validation for password
+        if (password.isEmpty()) {
+            showFieldError(passwordErrorLabel, "Password cannot be empty");
+            hasErrors = true;
+        } else if (password.length() < 6) {
+            showFieldError(passwordErrorLabel, "Password must be at least 6 characters");
+            hasErrors = true;
+        }
+        
+        // Basic confirmation password check
         if (!password.equals(confirmPassword)) {
-            showError("Passwords do not match.");
-            return;
+            showFieldError(confirmPasswordErrorLabel, "Passwords do not match");
+            hasErrors = true;
         }
         
-        // Email validation (simple check)
-        if (!email.contains("@") || !email.contains(".")) {
-            showError("Please enter a valid email address.");
+        // If basic validations failed, stop here
+        if (hasErrors) {
             return;
         }
         
@@ -67,20 +105,48 @@ public class RegisterController {
             // Check if user with this email already exists
             User existingUser = userService.getByEmail(email);
             if (existingUser != null) {
-                showError("A user with this email already exists.");
+                showFieldError(emailErrorLabel, "A user with this email already exists");
                 return;
             }
             
-            // Create and save new user
+            // Create new user with form data
             User newUser = new User(email, password, name);
             
             // Set default profile picture
             newUser.setProfilePicture("/assets/default/default_profile.jpg");
             
+            // Validate user at entity level
+            ValidationResult validationResult = newUser.validate();
+            
+            if (!validationResult.isValid()) {
+                // Show validation errors on specific fields
+                Map<String, String> errors = validationResult.getErrors();
+                
+                if (errors.containsKey("name")) {
+                    showFieldError(nameErrorLabel, errors.get("name"));
+                }
+                if (errors.containsKey("email")) {
+                    showFieldError(emailErrorLabel, errors.get("email"));
+                }
+                if (errors.containsKey("password")) {
+                    showFieldError(passwordErrorLabel, errors.get("password"));
+                }
+                
+                // If other errors exist, show them in the general error label
+                for (Map.Entry<String, String> error : errors.entrySet()) {
+                    if (!error.getKey().equals("name") && !error.getKey().equals("email") && !error.getKey().equals("password")) {
+                        showError("Error: " + error.getValue());
+                    }
+                }
+                
+                return;
+            }
+            
+            // If validation passed, save the user
             userService.add(newUser);
             
             // Show success and navigate to login
-            showError("Registration successful! Please login.");
+            showSuccess("Registration successful! Please login.");
             switchToLogin(event);
         } catch (Exception e) {
             showError("An error occurred: " + e.getMessage());
@@ -106,8 +172,34 @@ public class RegisterController {
         }
     }
     
+    // Show error in the specific field error label
+    private void showFieldError(Label errorLabel, String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+    }
+    
+    // Show general error in the main error label
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
+        errorLabel.getStyleClass().removeAll("status-success");
+        errorLabel.getStyleClass().add("status-error");
+    }
+    
+    // Show success message in the main error label
+    private void showSuccess(String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.getStyleClass().removeAll("status-error");
+        errorLabel.getStyleClass().add("status-success");
+    }
+    
+    // Clear all error messages
+    private void clearAllErrors() {
+        nameErrorLabel.setVisible(false);
+        emailErrorLabel.setVisible(false);
+        passwordErrorLabel.setVisible(false);
+        confirmPasswordErrorLabel.setVisible(false);
+        errorLabel.setVisible(false);
     }
 }
