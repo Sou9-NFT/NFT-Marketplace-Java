@@ -6,21 +6,29 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.control.ToggleGroup;
 
 import org.esprit.models.Raffle;
 import org.esprit.models.User;
+import org.esprit.models.Participant;
 import org.esprit.services.RaffleService;
+import org.esprit.services.ParticipantService;
 import org.esprit.utils.AlertUtils;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Date;
 
 public class RaffleManagementController {
+    // Existing raffle table fields
     @FXML private TableView<Raffle> raffleTable;
     @FXML private TableColumn<Raffle, Integer> idColumn;
     @FXML private TableColumn<Raffle, String> titleColumn;
@@ -28,33 +36,71 @@ public class RaffleManagementController {
     @FXML private TableColumn<Raffle, String> startDateColumn;
     @FXML private TableColumn<Raffle, String> endDateColumn;
     @FXML private TableColumn<Raffle, String> statusColumn;
-    @FXML private TableColumn<Raffle, Double> ticketPriceColumn;
-    @FXML private TableColumn<Raffle, Integer> totalTicketsColumn;
     @FXML private TableColumn<Raffle, Void> actionsColumn;
+    
+    // New participant table fields
+    @FXML private TableView<Participant> participantTable;
+    @FXML private TableColumn<Participant, Integer> participantIdColumn;
+    @FXML private TableColumn<Participant, String> participantNameColumn;
+    @FXML private TableColumn<Participant, String> raffleNameColumn;
+    @FXML private TableColumn<Participant, Date> participationDateColumn;
+    @FXML private TableColumn<Participant, String> winnerStatusColumn;
+    @FXML private TableColumn<Participant, Void> participantActionsColumn;
     
     @FXML private TextField searchField;
     @FXML private ComboBox<String> statusFilter;
+    @FXML private ToggleButton rafflesToggle;
+    @FXML private ToggleButton participantsToggle;
     
     private RaffleService raffleService;
+    private ParticipantService participantService;
     private User currentUser;
     private ObservableList<Raffle> raffleList;
+    private ObservableList<Participant> participantList;
 
     public void initialize() {
         raffleService = new RaffleService();
+        participantService = new ParticipantService();
+        
+        setupToggles();
         setupTable();
+        setupParticipantTable();
         setupFilters();
         loadRaffles();
+        loadParticipants();
+    }
+
+    private void setupToggles() {
+        // Create toggle group
+        ToggleGroup viewToggle = new ToggleGroup();
+        rafflesToggle.setToggleGroup(viewToggle);
+        participantsToggle.setToggleGroup(viewToggle);
+
+        // Handle toggle changes
+        viewToggle.selectedToggleProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal == rafflesToggle) {
+                raffleTable.setVisible(true);
+                raffleTable.setManaged(true);
+                participantTable.setVisible(false);
+                participantTable.setManaged(false);
+                loadRaffles();
+            } else {
+                raffleTable.setVisible(false);
+                raffleTable.setManaged(false);
+                participantTable.setVisible(true);
+                participantTable.setManaged(true);
+                loadParticipants();
+            }
+        });
     }
 
     private void setupTable() {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         artworkColumn.setCellValueFactory(new PropertyValueFactory<>("artworkTitle"));
-        startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startDate"));
-        endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endDate"));
+        startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startTime"));
+        endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endTime"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        ticketPriceColumn.setCellValueFactory(new PropertyValueFactory<>("ticketPrice"));
-        totalTicketsColumn.setCellValueFactory(new PropertyValueFactory<>("totalTickets"));
         
         setupActionButtons();
     }
@@ -89,6 +135,49 @@ public class RaffleManagementController {
         });
     }
 
+    private void setupParticipantTable() {
+        participantIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        participantNameColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(cellData.getValue().getUser().getName()));
+        raffleNameColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(cellData.getValue().getRaffle().getTitle()));
+        participationDateColumn.setCellValueFactory(cellData -> 
+            new SimpleObjectProperty<>(Date.from(cellData.getValue().getJoinedAt().atZone(ZoneId.systemDefault()).toInstant())));
+        winnerStatusColumn.setCellValueFactory(cellData -> {
+            Participant participant = cellData.getValue();
+            Raffle raffle = participant.getRaffle();
+            if (raffle.getStatus().equals("ended") && raffle.getWinnerId() != null) {
+                return new SimpleStringProperty(raffle.getWinnerId().equals(participant.getUser().getId()) ? 
+                    "Winner" : "Not Winner");
+            }
+            return new SimpleStringProperty("Pending");
+        });
+        
+        setupParticipantActions();
+    }
+
+    private void setupParticipantActions() {
+        participantActionsColumn.setCellFactory(param -> new TableCell<>() {
+            private final Button viewButton = new Button("View");
+            private final HBox buttons = new HBox(5, viewButton);
+            
+            {
+                viewButton.setOnAction(event -> {
+                    Participant participant = getTableRow().getItem();
+                    if (participant != null) {
+                        showRaffleDetails(participant.getRaffle());
+                    }
+                });
+            }
+            
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : buttons);
+            }
+        });
+    }
+
     private void setupFilters() {
         statusFilter.setItems(FXCollections.observableArrayList(
             "All", "Active", "Upcoming", "Completed", "Cancelled"
@@ -102,8 +191,31 @@ public class RaffleManagementController {
 
     private void loadRaffles() {
         List<Raffle> raffles = raffleService.getAllRaffles();
+        
+        // Ensure each raffle has a creator object
+        for (Raffle raffle : raffles) {
+            // If the raffle has no creator, set the current user as creator
+            // This is a temporary fix to prevent NullPointerException
+            if (raffle.getCreator() == null) {
+                User tempCreator = new User();
+                tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
+                tempCreator.setName("Unknown Creator");
+                raffle.setCreator(tempCreator);
+            }
+        }
+        
         raffleList = FXCollections.observableArrayList(raffles);
         raffleTable.setItems(raffleList);
+    }
+
+    private void loadParticipants() {
+        try {
+            List<Participant> participants = participantService.getAll();
+            participantList = FXCollections.observableArrayList(participants);
+            filterParticipants();
+        } catch (Exception e) {
+            AlertUtils.showError("Error", "Could not load participants: " + e.getMessage());
+        }
     }
 
     private void filterRaffles() {
@@ -116,6 +228,20 @@ public class RaffleManagementController {
         );
         
         raffleTable.setItems(filteredList);
+    }
+
+    private void filterParticipants() {
+        String searchText = searchField.getText().toLowerCase();
+        String status = statusFilter.getValue();
+        
+        ObservableList<Participant> filteredList = participantList.filtered(participant -> 
+            (searchText.isEmpty() || 
+             participant.getUser().getName().toLowerCase().contains(searchText) ||
+             participant.getRaffle().getTitle().toLowerCase().contains(searchText)) &&
+            (status.equals("All") || participant.getRaffle().getStatus().equals(status))
+        );
+        
+        participantTable.setItems(filteredList);
     }
 
     @FXML
@@ -153,6 +279,15 @@ public class RaffleManagementController {
     }
 
     private void handleEditRaffle(Raffle raffle) {
+        // Check if raffle has a creator - still create one if needed
+        if (raffle.getCreator() == null) {
+            // Create a temporary creator for this raffle for data consistency
+            User tempCreator = new User();
+            tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
+            tempCreator.setName("Unknown Creator");
+            raffle.setCreator(tempCreator);
+        }
+        
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ManageRaffle.fxml"));
             Parent root = loader.load();
@@ -175,6 +310,15 @@ public class RaffleManagementController {
     }
 
     private void handleDeleteRaffle(Raffle raffle) {
+        // Check if raffle has a creator - still create one if needed
+        if (raffle.getCreator() == null) {
+            // Create a temporary creator for this raffle for data consistency
+            User tempCreator = new User();
+            tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
+            tempCreator.setName("Unknown Creator");
+            raffle.setCreator(tempCreator);
+        }
+        
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete Raffle");
         alert.setHeaderText("Delete Raffle");
@@ -188,6 +332,27 @@ public class RaffleManagementController {
             } catch (Exception e) {
                 AlertUtils.showError("Error", "Could not delete raffle: " + e.getMessage());
             }
+        }
+    }
+
+    private void showRaffleDetails(Raffle raffle) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleDetails.fxml"));
+            Parent detailsView = loader.load();
+            
+            RaffleDetailsController controller = loader.getController();
+            controller.setRaffle(raffle);
+            controller.setCurrentUser(currentUser);
+            
+            Stage stage = new Stage();
+            Scene scene = new Scene(detailsView);
+            stage.setScene(scene);
+            stage.setTitle("Raffle Details: " + raffle.getTitle());
+            stage.setMinWidth(600);
+            stage.setMinHeight(650);
+            stage.show();
+        } catch (IOException e) {
+            AlertUtils.showError("Error", "Could not open raffle details: " + e.getMessage());
         }
     }
 

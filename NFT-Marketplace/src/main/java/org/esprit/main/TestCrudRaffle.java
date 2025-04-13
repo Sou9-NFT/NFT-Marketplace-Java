@@ -12,7 +12,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Calendar;
 
-public class TestCrudRaffle {
+public class
+TestCrudRaffle {
     public static void main(String[] args) {
         try {
             // Initialize services

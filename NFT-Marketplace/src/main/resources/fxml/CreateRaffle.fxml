@@ -3,6 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
 
 <VBox spacing="15" alignment="CENTER" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.CreateRaffleController">
     <padding>
