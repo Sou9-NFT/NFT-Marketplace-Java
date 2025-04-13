@@ -23,12 +23,10 @@ public class RaffleService implements IService<Raffle> {
     private Connection connection;
     private ArtworkService artworkService;
     private ParticipantService participantService;
-    private UserService userService;
 
     public RaffleService() {
         connection = DatabaseConnection.getInstance().getConnection();
         artworkService = new ArtworkService();
-        userService = new UserService();
     }
 
     private ParticipantService getParticipantService() {
@@ -309,8 +307,8 @@ public class RaffleService implements IService<Raffle> {
 
     public List<Raffle> getAllRaffles() {
         List<Raffle> raffles = new ArrayList<>();
-        String query = "SELECT r.*, a.title as artwork_title FROM raffles r " +
-                      "LEFT JOIN artworks a ON r.artwork_id = a.id " +
+        String query = "SELECT r.*, a.title as artwork_title FROM raffle r " +
+                      "LEFT JOIN artwork a ON r.artwork_id = a.id " +
                       "ORDER BY r.created_at DESC";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -319,13 +317,12 @@ public class RaffleService implements IService<Raffle> {
                 Raffle raffle = new Raffle();
                 raffle.setId(rs.getInt("id"));
                 raffle.setTitle(rs.getString("title"));
-                raffle.setRaffleDescription(rs.getString("description"));
+                raffle.setRaffleDescription(rs.getString("raffle_description"));
                 raffle.setArtworkId(rs.getInt("artwork_id"));
                 raffle.setArtworkTitle(rs.getString("artwork_title"));
-                raffle.setStartTime(rs.getTimestamp("start_date"));
-                raffle.setEndTime(rs.getTimestamp("end_date"));
+                raffle.setStartTime(rs.getTimestamp("start_time"));
+                raffle.setEndTime(rs.getTimestamp("end_time"));
                 raffle.setStatus(rs.getString("status"));
-                raffle.setTicketPrice(rs.getDouble("ticket_price"));
                 raffle.setCreatedAt(rs.getTimestamp("created_at"));
                 raffles.add(raffle);
             }
@@ -335,67 +332,9 @@ public class RaffleService implements IService<Raffle> {
         return raffles;
     }
 
-    public void createRaffle(Raffle raffle) throws SQLException {
-        String query = "INSERT INTO raffles (title, description, artwork_id, start_date, end_date, " +
-                      "status, ticket_price, total_tickets, sold_tickets) " +
-                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, raffle.getTitle());
-            stmt.setInt(3, raffle.getArtworkId());
-            stmt.setTimestamp(4, new Timestamp(raffle.getStartTime().getTime()));
-            stmt.setTimestamp(5, new Timestamp(raffle.getEndTime().getTime()));
-            stmt.setString(6, raffle.getStatus());
-            stmt.setDouble(7, raffle.getTicketPrice());
-            stmt.setInt(9, 0); // Initially no tickets sold
-
-            stmt.executeUpdate();
-            
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                raffle.setId(rs.getInt(1));
-            }
-        }
-    }
-
-    public void updateRaffle(Raffle raffle) throws SQLException {
-        String query = "UPDATE raffles SET title = ?, description = ?, artwork_id = ?, " +
-                      "start_date = ?, end_date = ?, status = ?, ticket_price = ?, " +
-                      "total_tickets = ?, updated_at = CURRENT_TIMESTAMP " +
-                      "WHERE id = ?";
-
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, raffle.getTitle());
-            stmt.setInt(3, raffle.getArtworkId());
-            stmt.setTimestamp(4, new Timestamp(raffle.getStartTime().getTime()));
-            stmt.setTimestamp(5, new Timestamp(raffle.getEndTime().getTime()));
-            stmt.setString(6, raffle.getStatus());
-            stmt.setDouble(7, raffle.getTicketPrice());
-            stmt.setInt(9, raffle.getId());
-
-            stmt.executeUpdate();
-        }
-    }
-
-    public void deleteRaffle(int raffleId) throws SQLException {
-        // First delete related records in tickets table
-        String deleteTickets = "DELETE FROM tickets WHERE raffle_id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(deleteTickets)) {
-            stmt.setInt(1, raffleId);
-            stmt.executeUpdate();
-        }
-
-        // Then delete the raffle
-        String deleteRaffle = "DELETE FROM raffles WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(deleteRaffle)) {
-            stmt.setInt(1, raffleId);
-            stmt.executeUpdate();
-        }
-    }
-
     public Raffle getRaffleById(int raffleId) {
-        String query = "SELECT r.*, a.title as artwork_title FROM raffles r " +
-                      "LEFT JOIN artworks a ON r.artwork_id = a.id " +
+        String query = "SELECT r.*, a.title as artwork_title FROM raffle r " +
+                      "LEFT JOIN artwork a ON r.artwork_id = a.id " +
                       "WHERE r.id = ?";
         
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -406,13 +345,12 @@ public class RaffleService implements IService<Raffle> {
                 Raffle raffle = new Raffle();
                 raffle.setId(rs.getInt("id"));
                 raffle.setTitle(rs.getString("title"));
-                raffle.setRaffleDescription(rs.getString("description"));
+                raffle.setRaffleDescription(rs.getString("raffle_description"));
                 raffle.setArtworkId(rs.getInt("artwork_id"));
-                raffle.setArtworkTitle(rs.getString("artwork_title")); // Fixed: using correct setter
-                raffle.setStartTime(rs.getTimestamp("start_date"));
-                raffle.setEndTime(rs.getTimestamp("end_date"));
+                raffle.setArtworkTitle(rs.getString("artwork_title"));
+                raffle.setStartTime(rs.getTimestamp("start_time"));
+                raffle.setEndTime(rs.getTimestamp("end_time"));
                 raffle.setStatus(rs.getString("status"));
-                raffle.setTicketPrice(rs.getDouble("ticket_price"));
                 raffle.setCreatedAt(rs.getTimestamp("created_at"));
                 return raffle;
             }
@@ -422,12 +360,29 @@ public class RaffleService implements IService<Raffle> {
         return null;
     }
 
-    public void updateRaffleStatus(int raffleId, String status) throws SQLException {
-        String query = "UPDATE raffles SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, status);
-            stmt.setInt(2, raffleId);
-            stmt.executeUpdate();
+    public void deleteRaffle(int raffleId) throws SQLException {
+        connection.setAutoCommit(false);
+        try {
+            // First delete all participants
+            String deleteParticipants = "DELETE FROM participant WHERE raffle_id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(deleteParticipants)) {
+                stmt.setInt(1, raffleId);
+                stmt.executeUpdate();
+            }
+
+            // Then delete the raffle
+            String deleteRaffle = "DELETE FROM raffle WHERE id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(deleteRaffle)) {
+                stmt.setInt(1, raffleId);
+                stmt.executeUpdate();
+            }
+            
+            connection.commit();
+        } catch (Exception e) {
+            connection.rollback();
+            throw new SQLException("Error deleting raffle: " + e.getMessage());
+        } finally {
+            connection.setAutoCommit(true);
         }
     }
 }

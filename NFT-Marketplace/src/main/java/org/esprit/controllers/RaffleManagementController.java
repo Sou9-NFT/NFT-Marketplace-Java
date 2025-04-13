@@ -6,7 +6,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -28,8 +27,6 @@ public class RaffleManagementController {
     @FXML private TableColumn<Raffle, String> startDateColumn;
     @FXML private TableColumn<Raffle, String> endDateColumn;
     @FXML private TableColumn<Raffle, String> statusColumn;
-    @FXML private TableColumn<Raffle, Double> ticketPriceColumn;
-    @FXML private TableColumn<Raffle, Integer> totalTicketsColumn;
     @FXML private TableColumn<Raffle, Void> actionsColumn;
     
     @FXML private TextField searchField;
@@ -50,11 +47,9 @@ public class RaffleManagementController {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         artworkColumn.setCellValueFactory(new PropertyValueFactory<>("artworkTitle"));
-        startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startDate"));
-        endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endDate"));
+        startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startTime"));
+        endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endTime"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        ticketPriceColumn.setCellValueFactory(new PropertyValueFactory<>("ticketPrice"));
-        totalTicketsColumn.setCellValueFactory(new PropertyValueFactory<>("totalTickets"));
         
         setupActionButtons();
     }
