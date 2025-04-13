@@ -1,6 +1,5 @@
 package org.esprit.controllers;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -163,28 +162,34 @@ public class CreateRaffleController {
                 description,
                 Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant()),
                 currentUser,
-                artworkId
-            );
+                artworkId            );
             
-            // Save raffle to database
-            raffleService.add(raffle);
-            
-            // Show success and close dialog
-            showStatus("Raffle created successfully!", false);
-            
-            // Refresh parent view
-            if (parentController != null) {
-                parentController.refreshRaffles();
+            try {
+                // Save raffle to database
+                raffleService.add(raffle);
+                
+                // Show success and close dialog
+                showStatus("Raffle created successfully!", false);
+                
+                // Refresh parent view
+                if (parentController != null) {
+                    parentController.refreshRaffles();
+                }
+                
+                // Close the dialog
+                ((Stage) titleField.getScene().getWindow()).close();
+            } catch (Exception e) {
+                showStatus("Error saving raffle: " + e.getMessage(), true);
+                // Log error instead of printStackTrace
+                System.err.println("Error saving raffle: " + e.getMessage());
             }
-            
-            // Close the dialog
-            ((Stage) titleField.getScene().getWindow()).close();
-            
         } catch (NumberFormatException e) {
             showStatus("Please enter a valid artwork ID number", true);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             showStatus("Error creating raffle: " + e.getMessage(), true);
-            e.printStackTrace();
+            showStatus("Error creating raffle: " + e.getMessage(), true);
+            // Log error instead of printStackTrace
+            System.err.println("Error in createRaffle: " + e.getMessage());
         }
     }
     

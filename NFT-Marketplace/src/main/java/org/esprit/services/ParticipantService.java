@@ -1,14 +1,17 @@
 package org.esprit.services;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.esprit.models.Participant;
 import org.esprit.models.Raffle;
 import org.esprit.models.User;
 import org.esprit.utils.DatabaseConnection;
-
-import java.sql.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ParticipantService implements IService<Participant> {
     private Connection connection;

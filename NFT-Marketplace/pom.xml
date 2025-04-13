@@ -28,13 +28,11 @@
         <!-- END from Blackboard -->
     </dependencies>
 
-    <properties>
-
-        <maven.compiler.source>17</maven.compiler.source>
+    <properties>        <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21.0.2</javafx.version>
-        <mainClass>org.esprit.main.BetSessionApp</mainClass>
+        <mainClass>org.esprit.main.NftMarketplaceApplication</mainClass>
     </properties>
 
     <build>
