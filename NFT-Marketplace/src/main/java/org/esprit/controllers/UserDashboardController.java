@@ -41,6 +41,9 @@ public class UserDashboardController {
     @FXML
     private Button notificationsButton;
     
+    @FXML
+    private Button tradeOffersButton;
+    
     private User currentUser;
     
     public void initialize() {
@@ -164,7 +167,8 @@ public class UserDashboardController {
             showComingSoonView(event, "Wallet");
         }
     }
-      @FXML
+    
+    @FXML
     private void handleNotificationsButton(ActionEvent event) {
         if (getClass().getResource("/fxml/Notifications.fxml") != null) {
             try {
@@ -197,6 +201,22 @@ public class UserDashboardController {
             navigateToView(event, betSessionView, "NFT Marketplace - Bet Sessions");
         } catch (IOException e) {
             showAlert("Error", "Could not load bet sessions: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleTradeOffers(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeOfferList.fxml"));
+            Parent tradeOffersView = loader.load();
+            
+            // Set the current user in the trade offers controller
+            TradeOfferListController controller = loader.getController();
+            controller.setUser(currentUser);
+            
+            navigateToView(event, tradeOffersView, "NFT Marketplace - Trade Offers");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade offers: " + e.getMessage());
         }
     }
     
