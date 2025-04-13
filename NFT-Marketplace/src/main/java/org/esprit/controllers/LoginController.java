@@ -117,19 +117,26 @@ public class LoginController {
             showError("Error loading admin dashboard: " + e.getMessage());
             e.printStackTrace();
         }
-    }    private void navigateToProfile(ActionEvent event, User user) {
-        try {            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Dashboard.fxml"));
-            Parent dashboardView = loader.load();
+    }
+    
+    private void navigateToProfile(ActionEvent event, User user) {
+        try {
+            // Load UserDashboard view for regular users
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserDashboard.fxml"));
+            Parent userDashboardView = loader.load();
             
-            DashboardController dashboardController = loader.getController();
-            dashboardController.setCurrentUser(user);
+            // Pass the authenticated user to the user dashboard controller
+            UserDashboardController controller = loader.getController();
+            controller.setCurrentUser(user);
             
-            Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            window.setScene(new Scene(dashboardView));
-            window.setTitle("NFT Marketplace - Dashboard");
-            window.show();
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            
+            stage.setScene(new Scene(userDashboardView, 800, 600));
+            stage.setTitle("NFT Marketplace - User Dashboard");
+            stage.show();
         } catch (IOException e) {
-            showError("Error loading dashboard page: " + e.getMessage());
+            showError("Error loading user dashboard: " + e.getMessage());
             e.printStackTrace();
         }
     }
