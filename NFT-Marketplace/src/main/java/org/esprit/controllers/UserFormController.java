@@ -61,7 +61,7 @@ public class UserFormController {
     private UserService userService;
     private FormMode mode = FormMode.ADD;
     private User userToEdit;
-    private AdminDashboardController parentController;
+    private Object parentController; // Changed to Object to support multiple controller types
 
     public void initialize() {
         userService = new UserService();
@@ -78,7 +78,15 @@ public class UserFormController {
         populateFields();
     }
 
+    public void setParentController(Object controller) {
+        this.parentController = controller;
+    }
+
     public void setParentController(AdminDashboardController controller) {
+        this.parentController = controller;
+    }
+    
+    public void setParentController(UserManagementController controller) {
         this.parentController = controller;
     }
 
@@ -133,7 +141,11 @@ public class UserFormController {
 
                 // Close the form and refresh the parent list
                 if (parentController != null) {
-                    parentController.refreshUserList();
+                    if (parentController instanceof AdminDashboardController) {
+                        ((AdminDashboardController) parentController).refreshUserList();
+                    } else if (parentController instanceof UserManagementController) {
+                        ((UserManagementController) parentController).refreshUserList();
+                    }
                 }
                 closeForm();
             } catch (Exception e) {

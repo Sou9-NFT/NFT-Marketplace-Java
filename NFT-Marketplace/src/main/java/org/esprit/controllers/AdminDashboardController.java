@@ -114,21 +114,27 @@ public class AdminDashboardController implements Initializable {
         setupTableColumns();
         loadAllUsers();
 
-        // Initialize blog management
+        // Initialize blog management only if UI components are available
         blogService = new BlogService();
-        languageComboBox.setItems(languages);
         
-        // Initialize blog list view
-        refreshBlogList();
-        
-        // Add selection listener to the blog list view
-        blogListView.getSelectionModel().selectedItemProperty().addListener(
-            (obs, oldSelection, newSelection) -> {
-                if (newSelection != null) {
-                    loadBlogDetails(newSelection);
-                }
+        // Check if blog UI components exist before using them
+        if (languageComboBox != null) {
+            languageComboBox.setItems(languages);
+            
+            // Initialize blog list view if it exists
+            if (blogListView != null) {
+                refreshBlogList();
+                
+                // Add selection listener to the blog list view
+                blogListView.getSelectionModel().selectedItemProperty().addListener(
+                    (obs, oldSelection, newSelection) -> {
+                        if (newSelection != null) {
+                            loadBlogDetails(newSelection);
+                        }
+                    }
+                );
             }
-        );
+        }
     }
 
     public void setCurrentUser(User user) {
@@ -140,13 +146,49 @@ public class AdminDashboardController implements Initializable {
     
     @FXML
     private void handleManageUsers(ActionEvent event) {
-        // Show the user management section instead of reloading the whole view
-        if (userManagementSection != null) {
-            userManagementSection.setVisible(true);
-            userManagementSection.setManaged(true);
-            loadAllUsers();
-        } else {
-            showAlert("Error", "User management section not found in the interface");
+        try {
+            // Create a new FXML loader for a standalone user management page
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserManagement.fxml"));
+            // If UserManagement.fxml doesn't exist, we'll need to create it
+            // For now, we'll handle the fallback to show an alert
+            
+            if (loader.getLocation() == null) {
+                // Temporary fallback until UserManagement.fxml is created
+                showAlert("Information", "User Management will open in a new page. Please create UserManagement.fxml.");
+                
+                // Fall back to the old behavior temporarily
+                if (userManagementSection != null) {
+                    userManagementSection.setVisible(true);
+                    userManagementSection.setManaged(true);
+                    loadAllUsers();
+                    
+                    VBox contentArea = (VBox) ((Button) event.getSource()).getScene().lookup("#contentArea");
+                    if (contentArea != null) {
+                        contentArea.setVisible(true);
+                        contentArea.setManaged(true);
+                    }
+                }
+            } else {
+                // If UserManagement.fxml exists, load it
+                Parent userManagementView = loader.load();
+                
+                // Pass the current admin user to the controller if it has a setCurrentUser method
+                Object controller = loader.getController();
+                if (controller != null) {
+                    try {
+                        controller.getClass().getMethod("setCurrentUser", User.class)
+                            .invoke(controller, currentAdminUser);
+                    } catch (Exception e) {
+                        // Silently ignore if method not available
+                    }
+                }
+                
+                // Navigate to the user management view in a new scene
+                navigateToView(event, userManagementView, "NFT Marketplace - User Management");
+            }
+        } catch (IOException e) {
+            showAlert("Error", "Could not load user management: " + e.getMessage());
+            System.err.println("Error in handleManageUsers: " + e.getMessage());
         }
     }
     
@@ -162,7 +204,7 @@ public class AdminDashboardController implements Initializable {
             navigateToView(event, categoriesView, "NFT Marketplace - Category Management");
         } catch (IOException e) {
             showAlert("Error", "Could not load category management: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error in handleManageCategories: " + e.getMessage());
         }
     }
     
@@ -181,7 +223,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, artworkView, "NFT Marketplace - Artwork Management");
             } catch (IOException e) {
                 showAlert("Error", "Could not load artwork management: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleManageArtworks: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Artwork Management");
@@ -197,16 +239,11 @@ public class AdminDashboardController implements Initializable {
             RaffleManagementController controller = loader.getController();
             controller.setCurrentUser(currentAdminUser);
             
-            // Get the content area and set the raffle management view
-            VBox contentArea = (VBox) ((Button) event.getSource()).getScene().lookup("#contentArea");
-            if (contentArea != null) {
-                contentArea.getChildren().clear();
-                contentArea.getChildren().add(raffleView);
-            }
+            navigateToView(event, raffleView, "NFT Marketplace - Raffle Management");
             
         } catch (IOException e) {
             showAlert("Error", "Could not load raffle management: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Error in handleManageRaffles: " + e.getMessage());
         }
     }
     
@@ -225,7 +262,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, transactionView, "NFT Marketplace - Transaction Management");
             } catch (IOException e) {
                 showAlert("Error", "Could not load transaction management: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleManageTransactions: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Transaction Management");
@@ -247,7 +284,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, analyticsView, "NFT Marketplace - Analytics");
             } catch (IOException e) {
                 showAlert("Error", "Could not load analytics: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleAnalytics: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Analytics");
@@ -269,7 +306,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, settingsView, "NFT Marketplace - Settings");
             } catch (IOException e) {
                 showAlert("Error", "Could not load settings: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleSettings: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Settings");
@@ -291,7 +328,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, reportsView, "NFT Marketplace - Reports");
             } catch (IOException e) {
                 showAlert("Error", "Could not load reports: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleReports: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "Reports");
@@ -313,7 +350,7 @@ public class AdminDashboardController implements Initializable {
                 navigateToView(event, logsView, "NFT Marketplace - System Logs");
             } catch (IOException e) {
                 showAlert("Error", "Could not load system logs: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error in handleSystemLogs: " + e.getMessage());
             }
         } else {
             showComingSoonView(event, "System Logs");
@@ -430,7 +467,7 @@ public class AdminDashboardController implements Initializable {
             userTable.setItems(userList);
         } catch (Exception e) {
             showStatus("Error searching for user: " + e.getMessage(), true);
-            e.printStackTrace();
+            System.err.println("Error in handleSearch: " + e.getMessage());
         }
     }
 
@@ -462,7 +499,7 @@ public class AdminDashboardController implements Initializable {
             stage.showAndWait();
         } catch (IOException e) {
             showStatus("Error opening add user form: " + e.getMessage(), true);
-            e.printStackTrace();
+            System.err.println("Error opening add user form: " + e.getMessage());
         }
     }
 
@@ -483,7 +520,7 @@ public class AdminDashboardController implements Initializable {
             stage.showAndWait();
         } catch (IOException e) {
             showStatus("Error opening edit user form: " + e.getMessage(), true);
-            e.printStackTrace();
+            System.err.println("Error opening edit user form: " + e.getMessage());
         }
     }
 
@@ -528,7 +565,7 @@ public class AdminDashboardController implements Initializable {
             stage.show();
         } catch (IOException e) {
             showStatus("Error loading profile page: " + e.getMessage(), true);
-            e.printStackTrace();
+            System.err.println("Error loading profile page: " + e.getMessage());
         }
     }
 
