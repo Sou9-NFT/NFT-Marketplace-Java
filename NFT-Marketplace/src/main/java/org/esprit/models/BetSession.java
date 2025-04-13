@@ -92,7 +92,7 @@ public class BetSession {
 
     public ObjectProperty<LocalDateTime> createdAtProperty() {
         return createdAt;
-    }
+    }   
 
     public LocalDateTime getEndTime() {
         return endTime.get();
@@ -111,11 +111,11 @@ public class BetSession {
 
     public ObjectProperty<LocalDateTime> endTimeProperty() {
         return endTime;
-    }
-
-    public LocalDateTime getStartTime() {
+    }    public LocalDateTime getStartTime() {
         return startTime.get();
-    }    public void setStartTime(LocalDateTime startTime) {
+    }
+    
+    public void setStartTime(LocalDateTime startTime) {
         if (startTime == null) {
             throw new IllegalArgumentException("Start time cannot be null");
         }
