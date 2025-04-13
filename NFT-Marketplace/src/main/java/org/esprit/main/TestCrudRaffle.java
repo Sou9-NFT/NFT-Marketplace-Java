@@ -73,7 +73,8 @@ TestCrudRaffle {
             // Test Update
             System.out.println("\nTesting Raffle Update...");
             retrievedRaffle.setTitle("Updated Test Raffle");
-            retrievedRaffle.setStatus("completed");
+            retrievedRaffle.setStatus("ended");  // Set status first
+            retrievedRaffle.setEndTime(new Date());  // Then set end time
             raffleService.update(retrievedRaffle);
             
             // Verify update

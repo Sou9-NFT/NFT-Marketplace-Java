@@ -190,22 +190,37 @@ public class RaffleManagementController {
     }
 
     private void loadRaffles() {
-        List<Raffle> raffles = raffleService.getAllRaffles();
-        
-        // Ensure each raffle has a creator object
-        for (Raffle raffle : raffles) {
-            // If the raffle has no creator, set the current user as creator
-            // This is a temporary fix to prevent NullPointerException
-            if (raffle.getCreator() == null) {
-                User tempCreator = new User();
-                tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
-                tempCreator.setName("Unknown Creator");
-                raffle.setCreator(tempCreator);
+        try {
+            List<Raffle> raffles = raffleService.getAllRaffles();
+            
+            // Ensure each raffle has a creator object
+            for (Raffle raffle : raffles) {
+                // If the raffle has no creator, set the current user as creator
+                // This is a temporary fix to prevent NullPointerException
+                if (raffle.getCreator() == null) {
+                    // Enable loading mode to prevent validation during this temporary fix
+                    raffle.setLoadingFromDatabase(true);
+                    
+                    User tempCreator = new User();
+                    tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
+                    tempCreator.setName("Unknown Creator");
+                    raffle.setCreator(tempCreator);
+                    
+                    // Disable loading mode after setting the property
+                    raffle.setLoadingFromDatabase(false);
+                }
             }
+            
+            raffleList = FXCollections.observableArrayList(raffles);
+            raffleTable.setItems(raffleList);
+        } catch (Exception e) {
+            System.err.println("Error loading raffles: " + e.getMessage());
+            e.printStackTrace();
+            AlertUtils.showError("Error", "Could not load raffles: " + e.getMessage());
+            // Create empty list if there was an error to avoid NPE
+            raffleList = FXCollections.observableArrayList();
+            raffleTable.setItems(raffleList);
         }
-        
-        raffleList = FXCollections.observableArrayList(raffles);
-        raffleTable.setItems(raffleList);
     }
 
     private void loadParticipants() {
@@ -281,11 +296,17 @@ public class RaffleManagementController {
     private void handleEditRaffle(Raffle raffle) {
         // Check if raffle has a creator - still create one if needed
         if (raffle.getCreator() == null) {
+            // Set loading flag to prevent validation during this temporary fix
+            raffle.setLoadingFromDatabase(true);
+            
             // Create a temporary creator for this raffle for data consistency
             User tempCreator = new User();
             tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
             tempCreator.setName("Unknown Creator");
             raffle.setCreator(tempCreator);
+            
+            // Reset loading flag
+            raffle.setLoadingFromDatabase(false);
         }
         
         try {
@@ -312,11 +333,17 @@ public class RaffleManagementController {
     private void handleDeleteRaffle(Raffle raffle) {
         // Check if raffle has a creator - still create one if needed
         if (raffle.getCreator() == null) {
+            // Set loading flag to prevent validation during this temporary fix
+            raffle.setLoadingFromDatabase(true);
+            
             // Create a temporary creator for this raffle for data consistency
             User tempCreator = new User();
             tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
             tempCreator.setName("Unknown Creator");
             raffle.setCreator(tempCreator);
+            
+            // Reset loading flag
+            raffle.setLoadingFromDatabase(false);
         }
         
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
