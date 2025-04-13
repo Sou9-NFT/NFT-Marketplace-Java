@@ -15,6 +15,7 @@ import org.esprit.services.UserService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -68,6 +69,7 @@ public class UserManagementController implements Initializable {
     
     private UserService userService;
     private ObservableList<User> userList = FXCollections.observableArrayList();
+    private FilteredList<User> filteredUserList;
     private User currentAdminUser;
 
     @Override
@@ -75,6 +77,9 @@ public class UserManagementController implements Initializable {
         userService = new UserService();
         setupTableColumns();
         loadAllUsers();
+        
+        // Setup real-time search filtering
+        setupSearchFilter();
     }
 
     public void setCurrentUser(User user) {
@@ -206,11 +211,48 @@ public class UserManagementController implements Initializable {
             List<User> users = userService.getAll();
             userList.clear();
             userList.addAll(users);
-            userTable.setItems(userList);
+            
+            // Create a filtered list wrapping the observable list
+            filteredUserList = new FilteredList<>(userList, p -> true);
+            
+            // Set the filtered list as the table items
+            userTable.setItems(filteredUserList);
+            
+            showStatus("", false);
         } catch (Exception e) {
             showStatus("Error loading users: " + e.getMessage(), true);
             showAlert(Alert.AlertType.ERROR, "Database Error", "Could not load users: " + e.getMessage());
         }
+    }
+    
+    private void setupSearchFilter() {
+        // Add a listener to the search field to filter the table in real-time
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredUserList.setPredicate(user -> {
+                // If search text is empty, show all users
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                
+                // Convert search string to lowercase for case-insensitive comparison
+                String lowerCaseFilter = newValue.toLowerCase();
+                
+                // Match against name or email (partial match)
+                if (user.getName() != null && user.getName().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Filter matches name
+                } else if (user.getEmail() != null && user.getEmail().toLowerCase().contains(lowerCaseFilter)) {
+                    return true; // Filter matches email
+                }
+                return false; // No match
+            });
+            
+            // Update status based on search results
+            if (filteredUserList.isEmpty()) {
+                showStatus("No users found matching: " + newValue, true);
+            } else {
+                showStatus("", false);
+            }
+        });
     }
 
     private void openAddUserForm() {

@@ -22,6 +22,7 @@ import org.esprit.services.UserService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -100,6 +101,7 @@ public class AdminDashboardController implements Initializable {
     private UserService userService;
     private BlogService blogService;
     private ObservableList<User> userList = FXCollections.observableArrayList();
+    private FilteredList<User> filteredUserList;
     private User currentAdminUser;
     private Blog currentBlog;
     private final String UPLOAD_DIR = "src/main/resources/uploads/";
@@ -113,6 +115,9 @@ public class AdminDashboardController implements Initializable {
         userService = new UserService();
         setupTableColumns();
         loadAllUsers();
+        
+        // Setup real-time search filtering
+        setupSearchFilter();
 
         // Initialize blog management only if UI components are available
         blogService = new BlogService();
@@ -217,7 +222,8 @@ public class AdminDashboardController implements Initializable {
                 
                 if (loader.getController() instanceof ArtworkManagementController) {
                     ArtworkManagementController controller = loader.getController();
-                    controller.setCurrentUser(currentAdminUser);
+                    // Set the current user and indicate that we're coming from admin dashboard
+                    controller.setCurrentUser(currentAdminUser, true);
                 }
                 
                 navigateToView(event, artworkView, "NFT Marketplace - Artwork Management");
@@ -230,6 +236,23 @@ public class AdminDashboardController implements Initializable {
         }
     }
     
+    @FXML
+    private void handleManageBlog(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BlogManagement.fxml"));
+            Parent blogView = loader.load();
+            
+            BlogController controller = loader.getController();
+            controller.setAdminMode(true); // Enable admin-specific features
+            controller.setCurrentUser(currentAdminUser);
+            
+            navigateToView(event, blogView, "NFT Marketplace - Blog Management");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load blog management: " + e.getMessage());
+            System.err.println("Error in handleManageBlog: " + e.getMessage());
+        }
+    }
+
     @FXML
     private void handleManageRaffles(ActionEvent event) {
         try {
@@ -390,6 +413,29 @@ public class AdminDashboardController implements Initializable {
         }
     }
     
+    @FXML
+private void handleBetSessions(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BetSession.fxml"));
+        Parent betSessionView = loader.load();
+        
+        // If there's a controller with setCurrentUser method, we can set the admin as a user
+        BetSessionController controller = loader.getController();
+        if (controller != null && currentAdminUser != null) {
+            controller.setCurrentUser(currentAdminUser);
+        }
+        
+        Scene scene = new Scene(betSessionView);
+        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+        stage.setScene(scene);
+        stage.setTitle("NFT Marketplace - Bet Sessions Management");
+        stage.show();
+    } catch (IOException e) {
+        System.err.println("Error in handleBetSessions: " + e.getMessage());
+        e.printStackTrace();
+        showAlert("Error", "Could not load Bet Sessions interface: " + e.getMessage());
+    }
+}
     private void setupTableColumns() {
         // Only set up if columns are properly injected
         if (idColumn != null) {
@@ -470,11 +516,25 @@ public class AdminDashboardController implements Initializable {
             List<User> users = userService.getAll();
             userList.clear();
             userList.addAll(users);
-            userTable.setItems(userList);
+            filteredUserList = new FilteredList<>(userList, p -> true);
+            userTable.setItems(filteredUserList);
         } catch (Exception e) {
             showStatus("Error loading users: " + e.getMessage(), true);
             showAlert(Alert.AlertType.ERROR, "Database Error", "Could not load users: " + e.getMessage());
         }
+    }
+
+    private void setupSearchFilter() {
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredUserList.setPredicate(user -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                String lowerCaseFilter = newValue.toLowerCase();
+                return user.getName().toLowerCase().contains(lowerCaseFilter) ||
+                       user.getEmail().toLowerCase().contains(lowerCaseFilter);
+            });
+        });
     }
 
     @FXML
