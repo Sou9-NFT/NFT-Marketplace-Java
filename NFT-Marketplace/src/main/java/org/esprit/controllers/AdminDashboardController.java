@@ -293,6 +293,27 @@ public class AdminDashboardController {
         }
     }
     
+    @FXML
+    private void handleManageCategories(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CategoryManagement.fxml"));
+            Parent categoriesView = loader.load();
+            
+            CategoryManagementController controller = loader.getController();
+            controller.setCurrentUser(currentAdminUser);
+            
+            Scene currentScene = ((Button) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            
+            stage.setScene(new Scene(categoriesView));
+            stage.setTitle("NFT Marketplace - Category Management");
+            stage.show();
+        } catch (IOException e) {
+            showStatus("Error loading category management: " + e.getMessage(), true);
+            e.printStackTrace();
+        }
+    }
+    
     public void refreshUserList() {
         loadAllUsers();
         showStatus("User list refreshed.", false);
