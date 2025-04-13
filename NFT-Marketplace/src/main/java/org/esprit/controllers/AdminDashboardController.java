@@ -10,21 +10,34 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
+import org.esprit.models.Blog;
 import org.esprit.models.User;
+import org.esprit.services.BlogService;
 import org.esprit.services.UserService;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import javafx.fxml.Initializable;
 
-public class AdminDashboardController {
+public class AdminDashboardController implements Initializable {
 
     @FXML
     private TextField searchField;
@@ -56,14 +69,48 @@ public class AdminDashboardController {
     @FXML
     private Label statusLabel;
 
+    // Blog Management
+    @FXML private ListView<Blog> blogListView;
+    @FXML private TextField blogTitleField;
+    @FXML private TextArea blogContentArea;
+    @FXML private ImageView blogImageView;
+    @FXML private ComboBox<String> languageComboBox;
+    @FXML private Button saveBlogButton;
+    @FXML private Button deleteBlogButton;
+    @FXML private Button translateButton;
+    
     private UserService userService;
+    private BlogService blogService;
     private ObservableList<User> userList = FXCollections.observableArrayList();
     private User currentAdminUser;
+    private Blog currentBlog;
+    private final String UPLOAD_DIR = "src/main/resources/uploads/";
+    private final ObservableList<String> languages = FXCollections.observableArrayList(
+        "French", "Spanish", "German", "Italian", "Arabic"
+    );
 
-    public void initialize() {
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        // Initialize user management
         userService = new UserService();
         setupTableColumns();
         loadAllUsers();
+
+        // Initialize blog management
+        blogService = new BlogService();
+        languageComboBox.setItems(languages);
+        
+        // Initialize blog list view
+        refreshBlogList();
+        
+        // Add selection listener to the blog list view
+        blogListView.getSelectionModel().selectedItemProperty().addListener(
+            (obs, oldSelection, newSelection) -> {
+                if (newSelection != null) {
+                    loadBlogDetails(newSelection);
+                }
+            }
+        );
     }
 
     public void setCurrentUser(User user) {
@@ -309,5 +356,149 @@ public class AdminDashboardController {
             statusLabel.getStyleClass().removeAll("status-error");
             statusLabel.getStyleClass().add("status-success");
         }
+    }
+
+    @FXML
+    private void handleCreateBlog() {
+        clearBlogFields();
+        currentBlog = new Blog();
+        enableBlogFields(true);
+    }
+
+    @FXML
+    private void handleSaveBlog() {
+        if (currentBlog == null) {
+            currentBlog = new Blog();
+        }
+
+        currentBlog.setTitle(blogTitleField.getText());
+        currentBlog.setContent(blogContentArea.getText());
+        
+        Blog.ValidationResult validationResult = currentBlog.validate();
+        if (!validationResult.isValid()) {
+            showAlert(Alert.AlertType.ERROR, "Validation Error", 
+                String.join("\n", validationResult.getErrors().values()));
+            return;
+        }
+
+        try {
+            if (currentBlog.getId() == null) {
+                blogService.add(currentBlog);
+            } else {
+                blogService.update(currentBlog);
+            }
+            refreshBlogList();
+            showAlert(Alert.AlertType.INFORMATION, "Success", "Blog saved successfully!");
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to save blog: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleDeleteBlog() {
+        if (currentBlog != null && currentBlog.getId() != null) {
+            Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION,
+                "Are you sure you want to delete this blog?");
+            confirmation.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    try {
+                        blogService.delete(currentBlog);
+                        refreshBlogList();
+                        clearBlogFields();
+                        showAlert(Alert.AlertType.INFORMATION, "Success", "Blog deleted successfully!");
+                    } catch (Exception e) {
+                        showAlert(Alert.AlertType.ERROR, "Error", 
+                            "Failed to delete blog: " + e.getMessage());
+                    }
+                }
+            });
+        }
+    }
+
+    @FXML
+    private void handleChooseImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+        );
+        
+        File selectedFile = fileChooser.showOpenDialog(null);
+        if (selectedFile != null) {
+            try {
+                String fileName = "blog_" + System.currentTimeMillis() + 
+                    selectedFile.getName().substring(selectedFile.getName().lastIndexOf("."));
+                Path destination = Paths.get(UPLOAD_DIR + fileName);
+                Files.copy(selectedFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                
+                currentBlog.setImageFilename(fileName);
+                blogImageView.setImage(new Image(destination.toUri().toString()));
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Error", 
+                    "Failed to upload image: " + e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    private void handleTranslate() {
+        String selectedLanguage = languageComboBox.getValue();
+        if (selectedLanguage == null || selectedLanguage.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Warning", "Please select a language first!");
+            return;
+        }
+        showAlert(Alert.AlertType.INFORMATION, "Information", 
+            "Translation feature will be implemented soon!");
+    }
+
+    private void refreshBlogList() {
+        try {
+            blogListView.setItems(FXCollections.observableArrayList(blogService.readAll()));
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", 
+                "Failed to load blogs: " + e.getMessage());
+        }
+    }
+
+    private void loadBlogDetails(Blog blog) {
+        currentBlog = blog;
+        blogTitleField.setText(blog.getTitle());
+        blogContentArea.setText(blog.getContent());
+        
+        if (blog.getImageFilename() != null) {
+            try {
+                Path imagePath = Paths.get(UPLOAD_DIR + blog.getImageFilename());
+                blogImageView.setImage(new Image(imagePath.toUri().toString()));
+            } catch (Exception e) {
+                blogImageView.setImage(null);
+            }
+        } else {
+            blogImageView.setImage(null);
+        }
+        
+        languageComboBox.setValue(blog.getTranslationLanguage());
+        enableBlogFields(true);
+    }
+
+    private void clearBlogFields() {
+        blogTitleField.clear();
+        blogContentArea.clear();
+        blogImageView.setImage(null);
+        languageComboBox.setValue(null);
+        currentBlog = null;
+    }
+
+    private void enableBlogFields(boolean enable) {
+        blogTitleField.setDisable(!enable);
+        blogContentArea.setDisable(!enable);
+        saveBlogButton.setDisable(!enable);
+        deleteBlogButton.setDisable(!enable);
+        translateButton.setDisable(!enable);
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

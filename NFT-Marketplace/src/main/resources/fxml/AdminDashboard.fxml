@@ -3,6 +3,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <BorderPane 
 	xmlns="http://javafx.com/javafx" 
 	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.AdminDashboardController" prefWidth="900" prefHeight="600" styleClass="root" stylesheets="@../styles/main.css">
@@ -15,32 +17,83 @@
 			<Text text="NFT Marketplace" styleClass="subtitle"/>
 			<Label text="Admin Dashboard" styleClass="header-text"/>
 		</VBox>
-	</top>
-	<center>
-		<VBox spacing="10">
-			<padding>
-				<Insets top="20" right="20" bottom="20" left="20"/>
-			</padding>
-			<HBox spacing="10" alignment="CENTER_LEFT">
-				<Label text="Search by Email:" />
-				<TextField fx:id="searchField" promptText="Enter email to search" HBox.hgrow="ALWAYS" />
-				<Button text="Search" onAction="#handleSearch" />
-				<Button text="Clear" onAction="#handleClearSearch" />
-				<Region HBox.hgrow="ALWAYS" />
-				<Button text="Add New User" onAction="#handleAddUser" styleClass="button" />
-			</HBox>
-			<TableView fx:id="userTable" VBox.vgrow="ALWAYS">
-				<columns>
-					<TableColumn fx:id="idColumn" text="ID" prefWidth="50" />
-					<TableColumn fx:id="nameColumn" text="Name" prefWidth="150" />
-					<TableColumn fx:id="emailColumn" text="Email" prefWidth="200" />
-					<TableColumn fx:id="rolesColumn" text="Roles" prefWidth="150" />
-					<TableColumn fx:id="balanceColumn" text="Balance" prefWidth="100" />
-					<TableColumn fx:id="createdAtColumn" text="Created At" prefWidth="150" />
-					<TableColumn fx:id="actionsColumn" text="Actions" prefWidth="100" />
-				</columns>
-			</TableView>
-		</VBox>
+	</top>	<center>
+		<TabPane>
+			<tabs>
+				<Tab text="User Management">
+					<content>
+						<VBox spacing="10">
+							<padding>
+								<Insets top="20" right="20" bottom="20" left="20"/>
+							</padding>
+							<HBox spacing="10" alignment="CENTER_LEFT">
+								<Label text="Search by Email:" />
+								<TextField fx:id="searchField" promptText="Enter email to search" HBox.hgrow="ALWAYS" />
+								<Button text="Search" onAction="#handleSearch" />
+								<Button text="Clear" onAction="#handleClearSearch" />
+								<Region HBox.hgrow="ALWAYS" />
+								<Button text="Add New User" onAction="#handleAddUser" styleClass="button" />
+							</HBox>
+							<TableView fx:id="userTable" VBox.vgrow="ALWAYS">
+								<columns>
+									<TableColumn fx:id="idColumn" text="ID" prefWidth="50" />
+									<TableColumn fx:id="nameColumn" text="Name" prefWidth="150" />
+									<TableColumn fx:id="emailColumn" text="Email" prefWidth="200" />
+									<TableColumn fx:id="rolesColumn" text="Roles" prefWidth="150" />
+									<TableColumn fx:id="balanceColumn" text="Balance" prefWidth="100" />
+									<TableColumn fx:id="createdAtColumn" text="Created At" prefWidth="150" />
+									<TableColumn fx:id="actionsColumn" text="Actions" prefWidth="100" />
+								</columns>
+							</TableView>
+						</VBox>
+					</content>
+				</Tab>
+				<Tab text="Blog Management">
+					<content>
+						<VBox spacing="10">
+							<padding>
+								<Insets top="20" right="20" bottom="20" left="20"/>
+							</padding>
+							<HBox spacing="10" alignment="CENTER_LEFT">
+								<Button text="Create New Blog" onAction="#handleCreateBlog" styleClass="button"/>
+								<Region HBox.hgrow="ALWAYS" />
+							</HBox>
+							<SplitPane VBox.vgrow="ALWAYS">
+								<items>
+									<ListView fx:id="blogListView" />
+									<VBox spacing="10">
+										<padding>
+											<Insets top="10" right="10" bottom="10" left="10"/>
+										</padding>
+										<GridPane vgap="10" hgap="10">
+											<Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+											<TextField fx:id="blogTitleField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+											
+											<Label text="Content:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+											<TextArea fx:id="blogContentArea" wrapText="true" GridPane.rowIndex="1" GridPane.columnIndex="1" prefRowCount="5"/>
+											
+											<Label text="Image:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+											<HBox spacing="10" GridPane.rowIndex="2" GridPane.columnIndex="1">
+												<ImageView fx:id="blogImageView" fitHeight="100" fitWidth="100" preserveRatio="true"/>
+												<Button text="Choose Image" onAction="#handleChooseImage"/>
+											</HBox>
+											
+											<Label text="Translation:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+											<ComboBox fx:id="languageComboBox" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+										</GridPane>
+										<HBox spacing="10" alignment="CENTER_RIGHT">
+											<Button fx:id="saveBlogButton" text="Save" onAction="#handleSaveBlog"/>
+											<Button fx:id="deleteBlogButton" text="Delete" onAction="#handleDeleteBlog"/>
+											<Button fx:id="translateButton" text="Translate" onAction="#handleTranslate"/>
+										</HBox>
+									</VBox>
+								</items>
+							</SplitPane>
+						</VBox>
+					</content>
+				</Tab>
+			</tabs>
+		</TabPane>
 	</center>
 	<bottom>
 		<HBox styleClass="footer" alignment="CENTER_RIGHT" spacing="10">
