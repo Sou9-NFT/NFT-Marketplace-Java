@@ -35,11 +35,12 @@
         <ComboBox fx:id="statusComboBox" 
                   GridPane.rowIndex="3" 
                   GridPane.columnIndex="1"/>
-                  
-        <Label text="Winner:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="winnerComboBox" 
-                  GridPane.rowIndex="4" 
-                  GridPane.columnIndex="1"/>
+        
+        <Label text="Note:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <Label text="Winner will be selected randomly when raffle ends" 
+               GridPane.rowIndex="4" 
+               GridPane.columnIndex="1"
+               styleClass="info-label"/>
     </GridPane>
     
     <VBox spacing="10" alignment="CENTER_LEFT">

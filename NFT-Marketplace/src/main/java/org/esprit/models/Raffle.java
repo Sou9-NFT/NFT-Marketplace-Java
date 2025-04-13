@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Raffle {
     private Integer id;
-    private Integer artworkId;  // Added artwork_id field
+    private Integer artworkId;
     private Date startTime;
     private Date endTime;
     private String status = "active";
@@ -17,6 +17,8 @@ public class Raffle {
     private String creatorName;
     private String title;
     private String raffleDescription;
+    private String artworkTitle;  
+    private double ticketPrice; // Added ticket price field
 
     public Raffle() {
         this.participants = new ArrayList<>();
@@ -142,6 +144,26 @@ public class Raffle {
 
     public void setRaffleDescription(String raffleDescription) {
         this.raffleDescription = raffleDescription;
+    }
+
+    public String getArtworkTitle() {
+        return artworkTitle;
+    }
+
+    public void setArtworkTitle(String artworkTitle) {
+        this.artworkTitle = artworkTitle;
+    }
+
+    public double getTicketPrice() {
+        return ticketPrice;
+    }
+
+    public void setTicketPrice(double ticketPrice) {
+        this.ticketPrice = ticketPrice;
+    }
+
+    public boolean shouldContinueIterating() {
+        return "active".equals(status) && endTime.after(new Date());
     }
 
     @Override

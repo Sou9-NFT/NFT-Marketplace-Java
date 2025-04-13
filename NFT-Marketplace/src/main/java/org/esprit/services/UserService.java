@@ -15,7 +15,7 @@ import org.esprit.utils.DatabaseConnection;
 
 public class UserService implements IService<User> {
     
-    private Connection connection;
+    private final Connection connection;
     
     public UserService() {
         connection = DatabaseConnection.getInstance().getConnection();
@@ -155,6 +155,22 @@ public class UserService implements IService<User> {
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, email);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToUser(rs);
+                }
+            }
+        }
+        
+        return null;
+    }
+  
+    public User findByUsername(String username) throws Exception {  
+        String sql = "SELECT * FROM user WHERE name = ?";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {

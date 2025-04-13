@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" alignment="CENTER" xmlns:fx="http://javafx.com/fxml">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+    
+    <Label fx:id="titleLabel" style="-fx-font-size: 18px;" text="Create New Trade Offer"/>
+    
+    <GridPane vgap="10" hgap="10">
+        <Label text="Your Artwork ID:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="offeredArtworkField" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        
+        <Label text="Requested Artwork ID:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="requestedArtworkField" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        
+        <Label text="Receiver Username:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <TextField fx:id="receiverField" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        
+        <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <TextArea fx:id="descriptionField" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+    </GridPane>
+    
+    <Label fx:id="statusLabel" visible="false" wrapText="true"/>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="createButton" text="Create Trade" onAction="#handleCreateTrade"/>
+        <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel"/>
+    </HBox>
+</VBox>
