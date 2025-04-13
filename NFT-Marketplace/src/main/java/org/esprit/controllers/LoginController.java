@@ -27,6 +27,13 @@ public class LoginController {
     @FXML
     private Label errorLabel;
     
+    // Field-specific error labels
+    @FXML
+    private Label emailErrorLabel;
+    
+    @FXML
+    private Label passwordErrorLabel;
+    
     private UserService userService;
     
     public LoginController() {
@@ -35,12 +42,31 @@ public class LoginController {
     
     @FXML
     private void handleLogin(ActionEvent event) {
+        // Clear all error messages first
+        clearAllErrors();
+        
         String email = emailField.getText().trim();
         String password = passwordField.getText();
         
-        // Validate input
-        if (email.isEmpty() || password.isEmpty()) {
-            showError("Email and password are required.");
+        boolean hasErrors = false;
+        
+        // Validate email field
+        if (email.isEmpty()) {
+            showFieldError(emailErrorLabel, "Email cannot be empty");
+            hasErrors = true;
+        } else if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            showFieldError(emailErrorLabel, "Invalid email format");
+            hasErrors = true;
+        }
+        
+        // Validate password field
+        if (password.isEmpty()) {
+            showFieldError(passwordErrorLabel, "Password cannot be empty");
+            hasErrors = true;
+        }
+        
+        // If basic validations failed, stop here
+        if (hasErrors) {
             return;
         }
         
@@ -60,7 +86,12 @@ public class LoginController {
                     navigateToProfile(event, user);
                 }
             } else {
-                showError("Invalid email or password.");
+                // Authentication failed
+                if (user == null) {
+                    showFieldError(emailErrorLabel, "No account found with this email");
+                } else {
+                    showFieldError(passwordErrorLabel, "Incorrect password");
+                }
             }
         } catch (Exception e) {
             showError("An error occurred: " + e.getMessage());
@@ -128,8 +159,22 @@ public class LoginController {
         }
     }
     
+    // Show error in the specific field error label
+    private void showFieldError(Label errorLabel, String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+    }
+    
+    // Show general error in the main error label
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
+    }
+    
+    // Clear all error messages
+    private void clearAllErrors() {
+        emailErrorLabel.setVisible(false);
+        passwordErrorLabel.setVisible(false);
+        errorLabel.setVisible(false);
     }
 }
