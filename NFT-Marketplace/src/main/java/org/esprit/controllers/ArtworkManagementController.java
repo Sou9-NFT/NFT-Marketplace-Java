@@ -106,6 +106,9 @@ public class ArtworkManagementController {
             // Setup table columns
             setupTableColumns();
             
+            // Initialize actions column with fixed width to ensure buttons are visible
+            actionsColumn.setPrefWidth(200);
+            actionsColumn.setMinWidth(180);
         } catch (Exception e) {
             showAlert(AlertType.ERROR, "Initialization Error", "Failed to initialize: " + e.getMessage());
             e.printStackTrace();
@@ -181,45 +184,49 @@ public class ArtworkManagementController {
             }
         });
         
-        // Actions column with buttons
+        // Actions column with buttons - EXACTLY matching CategoryManagementController implementation
         actionsColumn.setCellFactory(column -> new TableCell<Artwork, Artwork>() {
             private final Button viewBtn = new Button("View");
             private final Button updateBtn = new Button("Update");
             private final Button deleteBtn = new Button("Delete");
-            
+            private final HBox buttonsBox = new HBox(5, viewBtn, updateBtn, deleteBtn);
+
             {
-                // Configure action buttons with more compact style to fit in column
-                String baseButtonStyle = "-fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 3 8 3 8;";
-                
-                viewBtn.setStyle("-fx-background-color: #4CAF50; " + baseButtonStyle);
-                viewBtn.setOnAction(event -> {
-                    Artwork artwork = getTableView().getItems().get(getIndex());
-                    viewArtwork(artwork);
+                // View button action
+                viewBtn.setOnAction((ActionEvent event) -> {
+                    int index = getIndex();
+                    if (index >= 0 && index < getTableView().getItems().size()) {
+                        Artwork artwork = getTableView().getItems().get(index);
+                        viewArtwork(artwork);
+                    }
                 });
                 
-                updateBtn.setStyle("-fx-background-color: #2196F3; " + baseButtonStyle);
-                updateBtn.setOnAction(event -> {
-                    Artwork artwork = getTableView().getItems().get(getIndex());
-                    updateArtwork(artwork);
+                // Update button action
+                updateBtn.setOnAction((ActionEvent event) -> {
+                    int index = getIndex();
+                    if (index >= 0 && index < getTableView().getItems().size()) {
+                        Artwork artwork = getTableView().getItems().get(index);
+                        updateArtwork(artwork);
+                    }
                 });
                 
-                deleteBtn.setStyle("-fx-background-color: #f44336; " + baseButtonStyle);
-                deleteBtn.setOnAction(event -> {
-                    Artwork artwork = getTableView().getItems().get(getIndex());
-                    deleteArtwork(artwork);
+                // Delete button action
+                deleteBtn.setOnAction((ActionEvent event) -> {
+                    int index = getIndex();
+                    if (index >= 0 && index < getTableView().getItems().size()) {
+                        Artwork artwork = getTableView().getItems().get(index);
+                        deleteArtwork(artwork);
+                    }
                 });
             }
-            
+
             @Override
-            protected void updateItem(Artwork item, boolean empty) {
+            public void updateItem(Artwork item, boolean empty) {
                 super.updateItem(item, empty);
-                
-                if (item == null || empty) {
+                if (empty) {
                     setGraphic(null);
                 } else {
-                    HBox buttons = new HBox(3, viewBtn, updateBtn, deleteBtn);
-                    buttons.setAlignment(Pos.CENTER);
-                    setGraphic(buttons);
+                    setGraphic(buttonsBox);
                 }
             }
         });
