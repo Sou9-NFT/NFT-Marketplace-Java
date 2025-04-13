@@ -58,6 +58,9 @@ public class CreateRaffleController {
         
         // Initialize time selection combos
         setupTimeComboBoxes();
+        
+        // Set default end date to tomorrow
+        endDatePicker.setValue(LocalDate.now().plusDays(1));
     }
     
     private void setupTimeComboBoxes() {
@@ -121,43 +124,35 @@ public class CreateRaffleController {
             return;
         }
         
-        // Create LocalDateTime with the selected date and time
-        LocalDateTime endDateTime = LocalDateTime.of(
-            endDate,
-            LocalTime.of(Integer.parseInt(hour), Integer.parseInt(minute))
-        );
-        
-        // Check if the end date/time is in the future
-        if (endDateTime.isBefore(LocalDateTime.now())) {
-            showStatus("End date and time must be in the future", true);
-            return;
-        }
-        
         try {
-            // Parse and validate artwork ID
+            // Parse artwork ID
             int artworkId = Integer.parseInt(artworkIdStr);
             
-            // Catch the Exception thrown by getOne()
-            Artwork artwork;
-            try {
-                artwork = artworkService.getOne(artworkId);
-            } catch (Exception e) {
-                showStatus("Error retrieving artwork: " + e.getMessage(), true);
+            // Create LocalDateTime with the selected date and time
+            LocalDateTime endDateTime = LocalDateTime.of(
+                endDate,
+                LocalTime.of(Integer.parseInt(hour), Integer.parseInt(minute))
+            );
+            
+            // Check if the end date/time is in the future
+            if (endDateTime.isBefore(LocalDateTime.now())) {
+                showStatus("End date and time must be in the future", true);
                 return;
             }
             
+            // Verify artwork exists and ownership
+            Artwork artwork = artworkService.getOne(artworkId);
             if (artwork == null) {
                 showStatus("Artwork with ID " + artworkId + " not found", true);
                 return;
             }
             
-            // Verify artwork ownership
             if (artwork.getOwnerId() != currentUser.getId()) {
                 showStatus("You can only create raffles for artworks you own", true);
                 return;
             }
             
-            // Create new raffle with precise end time
+            // Create and save the raffle
             Raffle raffle = new Raffle(
                 title,
                 description,
@@ -166,10 +161,8 @@ public class CreateRaffleController {
                 artworkId
             );
             
-            // Save raffle to database
             raffleService.add(raffle);
             
-            // Show success and close dialog
             showStatus("Raffle created successfully!", false);
             
             // Refresh parent view
@@ -177,13 +170,25 @@ public class CreateRaffleController {
                 parentController.refreshRaffles();
             }
             
-            // Close the dialog
-            ((Stage) titleField.getScene().getWindow()).close();
+            // Close the dialog after a short delay
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1500);
+                    javafx.application.Platform.runLater(() -> {
+                        ((Stage) titleField.getScene().getWindow()).close();
+                    });
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
             
         } catch (NumberFormatException e) {
             showStatus("Please enter a valid artwork ID number", true);
         } catch (SQLException e) {
             showStatus("Error creating raffle: " + e.getMessage(), true);
+            e.printStackTrace();
+        } catch (Exception e) {
+            showStatus("Error: " + e.getMessage(), true);
             e.printStackTrace();
         }
     }

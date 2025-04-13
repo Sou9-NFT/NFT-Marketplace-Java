@@ -40,6 +40,13 @@
         
         <Label text="Artwork ID:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="detail-label"/>
         <Label fx:id="artworkIdLabel" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+        <Label fx:id="winnerLabel" 
+               styleClass="winner-label"
+               visible="false"
+               GridPane.rowIndex="7" 
+               GridPane.columnSpan="2"
+               GridPane.halignment="CENTER"/>
     </GridPane>
     
     <VBox spacing="10" alignment="CENTER_LEFT">
@@ -52,6 +59,16 @@
                 text="Participate" 
                 onAction="#handleParticipate"
                 styleClass="primary-button"/>
+        <Button fx:id="manageButton"
+                text="Manage Raffle"
+                onAction="#handleManage"
+                styleClass="secondary-button"
+                visible="false"/>
+        <Button fx:id="deleteButton"
+                text="Delete Raffle"
+                onAction="#handleDelete"
+                styleClass="delete-button"
+                visible="false"/>
         <Button text="Close" 
                 onAction="#handleClose"
                 styleClass="secondary-button"/>

@@ -131,23 +131,23 @@ public class AdminDashboardController {
     
     @FXML
     private void handleManageRaffles(ActionEvent event) {
-        if (getClass().getResource("/fxml/RaffleManagement.fxml") != null) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleManagement.fxml"));
-                Parent raffleView = loader.load();
-                
-                if (loader.getController() instanceof RaffleManagementController) {
-                    RaffleManagementController controller = loader.getController();
-                    controller.setCurrentUser(currentAdminUser);
-                }
-                
-                navigateToView(event, raffleView, "NFT Marketplace - Raffle Management");
-            } catch (IOException e) {
-                showAlert("Error", "Could not load raffle management: " + e.getMessage());
-                e.printStackTrace();
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleManagement.fxml"));
+            Parent raffleView = loader.load();
+            
+            RaffleManagementController controller = loader.getController();
+            controller.setCurrentUser(currentAdminUser);
+            
+            // Get the content area and set the raffle management view
+            VBox contentArea = (VBox) ((Button) event.getSource()).getScene().lookup("#contentArea");
+            if (contentArea != null) {
+                contentArea.getChildren().clear();
+                contentArea.getChildren().add(raffleView);
             }
-        } else {
-            showComingSoonView(event, "Raffle Management");
+            
+        } catch (IOException e) {
+            showAlert("Error", "Could not load raffle management: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
