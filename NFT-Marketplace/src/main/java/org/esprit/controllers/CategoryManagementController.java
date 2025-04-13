@@ -40,9 +40,6 @@ public class CategoryManagementController implements Initializable {
     private TextArea descriptionArea;
     
     @FXML
-    private TextField mimeTypeField;
-    
-    @FXML
     private ListView<String> mimeTypesListView;
     
     // Table view
@@ -112,7 +109,10 @@ public class CategoryManagementController implements Initializable {
             "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation"
         ));
         
-        PREDEFINED_MIME_TYPES.put("Other", new ArrayList<>());
+        // For "Other" category, we'll provide some basic common MIME types as examples
+        PREDEFINED_MIME_TYPES.put("Other", Arrays.asList(
+            "application/json", "application/xml", "application/zip", "application/x-tar"
+        ));
     }
 
     @Override
@@ -181,14 +181,7 @@ public class CategoryManagementController implements Initializable {
         mimeTypesList.clear();
         mimeTypesList.addAll(defaultMimeTypes);
         
-        // If it's "Other" type, allow custom MIME types
-        if ("Other".equals(categoryType)) {
-            mimeTypeField.setDisable(false);
-            updateStatusLabel("Custom category type selected. Please add appropriate MIME types.");
-        } else {
-            mimeTypeField.setDisable(true);
-            updateStatusLabel("MIME types automatically set for " + categoryType + " category.");
-        }
+        updateStatusLabel("MIME types automatically set for " + categoryType + " category.");
     }
     
     /**
@@ -298,16 +291,11 @@ public class CategoryManagementController implements Initializable {
         typeComboBox.setValue(category.getType());
         descriptionArea.setText(category.getDescription());
         
+        // When editing an existing category, we'll show its current MIME types
+        // but they will be overwritten if the user changes the category type
         mimeTypesList.clear();
         if (category.getAllowedMimeTypes() != null) {
             mimeTypesList.addAll(category.getAllowedMimeTypes());
-        }
-        
-        // Enable/disable mimeTypeField based on category type
-        if ("Other".equals(category.getType())) {
-            mimeTypeField.setDisable(false);
-        } else {
-            mimeTypeField.setDisable(true);
         }
         
         updateStatusLabel("Editing category: " + category.getName());
@@ -335,27 +323,6 @@ public class CategoryManagementController implements Initializable {
                 }
             }
         });
-    }
-    
-    @FXML
-    private void handleAddMimeType() {
-        // Only allow adding custom MIME types for "Other" category type
-        if (typeComboBox.getValue() == null || !"Other".equals(typeComboBox.getValue())) {
-            showErrorMessage("Invalid Action", "Custom MIME types can only be added for the 'Other' category type.");
-            return;
-        }
-        
-        String mimeType = mimeTypeField.getText().trim();
-        if (!mimeType.isEmpty()) {
-            if (!mimeTypesList.contains(mimeType)) {
-                mimeTypesList.add(mimeType);
-                mimeTypeField.clear();
-            } else {
-                showErrorMessage("Duplicate Entry", "This MIME type is already in the list.");
-            }
-        } else {
-            showErrorMessage("Invalid Input", "Please enter a valid MIME type.");
-        }
     }
     
     @FXML
@@ -463,7 +430,6 @@ public class CategoryManagementController implements Initializable {
         nameField.clear();
         typeComboBox.getSelectionModel().clearSelection();
         descriptionArea.clear();
-        mimeTypeField.clear();
         mimeTypesList.clear();
     }
     

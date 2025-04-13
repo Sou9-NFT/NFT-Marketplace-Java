@@ -33,14 +33,10 @@
             <TextArea fx:id="descriptionArea" promptText="Category description" prefHeight="80" wrapText="true" />
             
             <Label text="Allowed MIME Types:" />
-            <HBox spacing="10">
-                <TextField fx:id="mimeTypeField" promptText="e.g. image/jpeg (only for 'Other' type)" HBox.hgrow="ALWAYS" />
-                <Button text="Add" onAction="#handleAddMimeType" />
+            <HBox spacing="10" alignment="CENTER">
+                <Label text="MIME types are automatically set based on category type" styleClass="info-text" HBox.hgrow="ALWAYS" />
             </HBox>
-            <HBox spacing="10" alignment="CENTER_RIGHT">
-                <Label text="* MIME types are automatically set based on category type" styleClass="small-text" />
-            </HBox>
-            <ListView fx:id="mimeTypesListView" prefHeight="100" />
+            <ListView fx:id="mimeTypesListView" prefHeight="120" />
             
             <HBox spacing="10" alignment="CENTER">
                 <Button text="Save" onAction="#handleSaveCategory" styleClass="button" prefWidth="100" />
