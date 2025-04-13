@@ -5,7 +5,7 @@
 <?import javafx.scene.text.Text?>
 <VBox 
 	xmlns="http://javafx.com/javafx" 
-	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.UserFormController" spacing="15" alignment="CENTER" prefWidth="500" prefHeight="500" styleClass="root" stylesheets="@../styles/main.css">
+	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.UserFormController" spacing="15" alignment="CENTER" prefWidth="500" prefHeight="550" styleClass="root" stylesheets="@../styles/main.css">
 	<padding>
 		<Insets top="20" right="20" bottom="20" left="20"/>
 	</padding>
@@ -14,28 +14,49 @@
 			<Insets top="20" right="20" bottom="20" left="20"/>
 		</padding>
 		<Label fx:id="formTitleLabel" text="Add New User" styleClass="header-text"/>
-		<GridPane hgap="10" vgap="15" alignment="CENTER">
+		<GridPane hgap="10" vgap="5" alignment="CENTER">
 			<columnConstraints>
 				<ColumnConstraints minWidth="100" prefWidth="100" />
 				<ColumnConstraints minWidth="250" prefWidth="250" />
 			</columnConstraints>
 			<Label text="Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-			<TextField fx:id="nameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+			<VBox spacing="2" GridPane.rowIndex="0" GridPane.columnIndex="1">
+				<TextField fx:id="nameField"/>
+				<Label fx:id="nameErrorLabel" styleClass="validation-error" visible="false" text="Name is required"/>
+			</VBox>
 			<Label text="Email:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-			<TextField fx:id="emailField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+			<VBox spacing="2" GridPane.rowIndex="1" GridPane.columnIndex="1">
+				<TextField fx:id="emailField"/>
+				<Label fx:id="emailErrorLabel" styleClass="validation-error" visible="false" text="Valid email is required"/>
+			</VBox>
 			<Label text="Password:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-			<PasswordField fx:id="passwordField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+			<VBox spacing="2" GridPane.rowIndex="2" GridPane.columnIndex="1">
+				<PasswordField fx:id="passwordField"/>
+				<Label fx:id="passwordErrorLabel" styleClass="validation-error" visible="false" text="Password is required"/>
+			</VBox>
 			<Label text="Balance:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-			<TextField fx:id="balanceField" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+			<VBox spacing="2" GridPane.rowIndex="3" GridPane.columnIndex="1">
+				<TextField fx:id="balanceField"/>
+				<Label fx:id="balanceErrorLabel" styleClass="validation-error" visible="false" text="Balance must be a valid number"/>
+			</VBox>
 			<Label text="Roles:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-			<VBox GridPane.rowIndex="4" GridPane.columnIndex="1">
-				<CheckBox fx:id="roleUserCheckbox" text="ROLE_USER" selected="true"/>
-				<CheckBox fx:id="roleAdminCheckbox" text="ROLE_ADMIN"/>
+			<VBox spacing="2" GridPane.rowIndex="4" GridPane.columnIndex="1">
+				<VBox>
+					<CheckBox fx:id="roleUserCheckbox" text="ROLE_USER" selected="true"/>
+					<CheckBox fx:id="roleAdminCheckbox" text="ROLE_ADMIN"/>
+				</VBox>
+				<Label fx:id="rolesErrorLabel" styleClass="validation-error" visible="false" text="At least one role must be selected"/>
 			</VBox>
 			<Label text="Wallet Address:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-			<TextField fx:id="walletField" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+			<VBox spacing="2" GridPane.rowIndex="5" GridPane.columnIndex="1">
+				<TextField fx:id="walletField"/>
+				<Label fx:id="walletErrorLabel" styleClass="validation-error" visible="false" text="Invalid wallet address format"/>
+			</VBox>
 			<Label text="GitHub Username:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-			<TextField fx:id="githubField" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+			<VBox spacing="2" GridPane.rowIndex="6" GridPane.columnIndex="1">
+				<TextField fx:id="githubField"/>
+				<Label fx:id="githubErrorLabel" styleClass="validation-error" visible="false" text="Invalid GitHub username"/>
+			</VBox>
 		</GridPane>
 		<HBox alignment="CENTER" spacing="20">
 			<Button fx:id="saveButton" text="Save" onAction="#handleSave"/>

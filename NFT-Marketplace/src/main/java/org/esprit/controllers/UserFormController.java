@@ -27,27 +27,48 @@ public class UserFormController {
 
     @FXML
     private TextField nameField;
+    
+    @FXML
+    private Label nameErrorLabel;
 
     @FXML
     private TextField emailField;
+    
+    @FXML
+    private Label emailErrorLabel;
 
     @FXML
     private PasswordField passwordField;
+    
+    @FXML
+    private Label passwordErrorLabel;
 
     @FXML
     private TextField balanceField;
+    
+    @FXML
+    private Label balanceErrorLabel;
 
     @FXML
     private CheckBox roleUserCheckbox;
 
     @FXML
     private CheckBox roleAdminCheckbox;
+    
+    @FXML
+    private Label rolesErrorLabel;
 
     @FXML
     private TextField walletField;
+    
+    @FXML
+    private Label walletErrorLabel;
 
     @FXML
     private TextField githubField;
+    
+    @FXML
+    private Label githubErrorLabel;
 
     @FXML
     private Button saveButton;
@@ -66,6 +87,19 @@ public class UserFormController {
     public void initialize() {
         userService = new UserService();
         balanceField.setText("0.00");
+        // Hide all error labels initially
+        hideAllErrorLabels();
+    }
+    
+    private void hideAllErrorLabels() {
+        nameErrorLabel.setVisible(false);
+        emailErrorLabel.setVisible(false);
+        passwordErrorLabel.setVisible(false);
+        balanceErrorLabel.setVisible(false);
+        rolesErrorLabel.setVisible(false);
+        walletErrorLabel.setVisible(false);
+        githubErrorLabel.setVisible(false);
+        errorLabel.setVisible(false);
     }
 
     public void setMode(FormMode mode) {
@@ -131,6 +165,9 @@ public class UserFormController {
 
     @FXML
     private void handleSave() {
+        // Reset error labels before validation
+        hideAllErrorLabels();
+        
         if (validateInput()) {
             try {
                 if (mode == FormMode.ADD) {
@@ -156,51 +193,103 @@ public class UserFormController {
     }
 
     private boolean validateInput() {
+        boolean isValid = true;
         String name = nameField.getText().trim();
         String email = emailField.getText().trim();
         String password = passwordField.getText();
         String balanceText = balanceField.getText().trim();
 
+        // Validate name
         if (name.isEmpty()) {
-            showError("Name is required.");
-            return false;
+            showFieldError(nameErrorLabel, "Name is required");
+            nameField.getStyleClass().add("error");
+            isValid = false;
+        } else {
+            nameField.getStyleClass().removeAll("error");
+            nameErrorLabel.setVisible(false);
         }
 
+        // Validate email
         if (email.isEmpty()) {
-            showError("Email is required.");
-            return false;
+            showFieldError(emailErrorLabel, "Email is required");
+            emailField.getStyleClass().add("error");
+            isValid = false;
+        } else if (!email.contains("@") || !email.contains(".")) {
+            showFieldError(emailErrorLabel, "Please enter a valid email address");
+            emailField.getStyleClass().add("error");
+            isValid = false;
+        } else {
+            emailField.getStyleClass().removeAll("error");
+            emailErrorLabel.setVisible(false);
         }
 
-        if (!email.contains("@") || !email.contains(".")) {
-            showError("Please enter a valid email address.");
-            return false;
-        }
-
+        // Validate password based on mode
         if (mode == FormMode.ADD && password.isEmpty()) {
-            showError("Password is required for new users.");
-            return false;
+            showFieldError(passwordErrorLabel, "Password is required for new users");
+            passwordField.getStyleClass().add("error");
+            isValid = false;
+        } else if (mode == FormMode.ADD && password.length() < 6) {
+            showFieldError(passwordErrorLabel, "Password must be at least 6 characters");
+            passwordField.getStyleClass().add("error");
+            isValid = false;
+        } else if (mode == FormMode.EDIT && !password.isEmpty() && password.length() < 6) {
+            showFieldError(passwordErrorLabel, "Password must be at least 6 characters");
+            passwordField.getStyleClass().add("error");
+            isValid = false;
+        } else {
+            passwordField.getStyleClass().removeAll("error");
+            passwordErrorLabel.setVisible(false);
         }
 
-        if (mode == FormMode.EDIT && !password.isEmpty() && password.length() < 6) {
-            showError("Password must be at least 6 characters.");
-            return false;
-        }
-
+        // Validate balance
         if (!balanceText.isEmpty()) {
             try {
                 new BigDecimal(balanceText);
+                balanceField.getStyleClass().removeAll("error");
+                balanceErrorLabel.setVisible(false);
             } catch (NumberFormatException e) {
-                showError("Balance must be a valid number.");
-                return false;
+                showFieldError(balanceErrorLabel, "Balance must be a valid number");
+                balanceField.getStyleClass().add("error");
+                isValid = false;
             }
         }
 
+        // Validate roles
         if (!roleUserCheckbox.isSelected() && !roleAdminCheckbox.isSelected()) {
-            showError("At least one role must be selected.");
-            return false;
+            showFieldError(rolesErrorLabel, "At least one role must be selected");
+            isValid = false;
+        } else {
+            rolesErrorLabel.setVisible(false);
         }
 
-        return true;
+        // Validate wallet address (optional)
+        String walletAddress = walletField.getText().trim();
+        if (!walletAddress.isEmpty() && (!walletAddress.startsWith("0x") || walletAddress.length() != 42)) {
+            showFieldError(walletErrorLabel, "Wallet address should be in format 0x... (42 chars)");
+            walletField.getStyleClass().add("error");
+            isValid = false;
+        } else {
+            walletField.getStyleClass().removeAll("error");
+            walletErrorLabel.setVisible(false);
+        }
+
+        // GitHub username validation (optional)
+        String githubUsername = githubField.getText().trim();
+        if (!githubUsername.isEmpty() && githubUsername.contains(" ")) {
+            showFieldError(githubErrorLabel, "GitHub username cannot contain spaces");
+            githubField.getStyleClass().add("error");
+            isValid = false;
+        } else {
+            githubField.getStyleClass().removeAll("error");
+            githubErrorLabel.setVisible(false);
+        }
+
+        return isValid;
+    }
+
+    private void showFieldError(Label errorLabel, String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
     }
 
     private void createNewUser() throws Exception {
@@ -211,7 +300,8 @@ public class UserFormController {
         // Check if user with this email already exists
         User existingUser = userService.getByEmail(email);
         if (existingUser != null) {
-            showError("A user with this email already exists.");
+            showFieldError(emailErrorLabel, "A user with this email already exists");
+            emailField.getStyleClass().add("error");
             return;
         }
 
@@ -262,7 +352,8 @@ public class UserFormController {
         if (!email.equals(userToEdit.getEmail())) {
             User existingUser = userService.getByEmail(email);
             if (existingUser != null && existingUser.getId() != userToEdit.getId()) {
-                showError("This email is already in use by another account.");
+                showFieldError(emailErrorLabel, "This email is already in use by another account");
+                emailField.getStyleClass().add("error");
                 return;
             }
         }
