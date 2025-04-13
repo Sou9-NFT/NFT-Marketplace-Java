@@ -3,8 +3,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
 
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" 
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
       fx:controller="org.esprit.controllers.RaffleManagementController"
       spacing="10" styleClass="content-container">
     
@@ -14,7 +15,11 @@
 
     <!-- Header -->
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Raffle Management" styleClass="section-title"/>
+        <Label text="Raffle Management" styleClass="section-title">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Label>
         <Region HBox.hgrow="ALWAYS"/>
         <ToggleButton fx:id="rafflesToggle" text="Raffles" selected="true" />
         <ToggleButton fx:id="participantsToggle" text="Participants" />

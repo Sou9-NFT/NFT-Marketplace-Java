@@ -171,6 +171,9 @@ public class RaffleService implements IService<Raffle> {
 
     private Raffle extractRaffleFromResultSet(ResultSet rs) throws SQLException {
         Raffle raffle = new Raffle();
+        // Set loading flag to prevent validation during loading
+        raffle.setLoadingFromDatabase(true);
+        
         raffle.setId(rs.getInt("id"));
         raffle.setTitle(rs.getString("title"));
         raffle.setRaffleDescription(rs.getString("raffle_description"));
@@ -191,6 +194,9 @@ public class RaffleService implements IService<Raffle> {
         if (!rs.wasNull()) {
             raffle.setWinnerId(winnerId);
         }
+        
+        // Reset loading flag after all properties are set
+        raffle.setLoadingFromDatabase(false);
         
         return raffle;
     }
@@ -378,6 +384,9 @@ public class RaffleService implements IService<Raffle> {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 Raffle raffle = new Raffle();
+                // Set loading flag to prevent validation during loading
+                raffle.setLoadingFromDatabase(true);
+                
                 raffle.setId(rs.getInt("id"));
                 raffle.setTitle(rs.getString("title"));
                 raffle.setRaffleDescription(rs.getString("raffle_description"));
@@ -396,6 +405,9 @@ public class RaffleService implements IService<Raffle> {
                     creator.setName(rs.getString("creator_name"));
                     raffle.setCreator(creator);
                 }
+                
+                // Reset loading flag after all properties are set
+                raffle.setLoadingFromDatabase(false);
                 
                 raffles.add(raffle);
             }
@@ -416,6 +428,9 @@ public class RaffleService implements IService<Raffle> {
             
             if (rs.next()) {
                 Raffle raffle = new Raffle();
+                // Set loading flag to prevent validation during loading
+                raffle.setLoadingFromDatabase(true);
+                
                 raffle.setId(rs.getInt("id"));
                 raffle.setTitle(rs.getString("title"));
                 raffle.setRaffleDescription(rs.getString("raffle_description"));
@@ -425,6 +440,10 @@ public class RaffleService implements IService<Raffle> {
                 raffle.setEndTime(rs.getTimestamp("end_time"));
                 raffle.setStatus(rs.getString("status"));
                 raffle.setCreatedAt(rs.getTimestamp("created_at"));
+                
+                // Reset loading flag after all properties are set
+                raffle.setLoadingFromDatabase(false);
+                
                 return raffle;
             }
         } catch (SQLException e) {

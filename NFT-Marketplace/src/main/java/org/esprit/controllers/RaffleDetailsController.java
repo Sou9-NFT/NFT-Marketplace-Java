@@ -177,7 +177,7 @@ public class RaffleDetailsController {
         endDateLabel.setText(endDate != null ? dateFormat.format(endDate) : "Not set");
         
         statusLabel.setText(raffle.getStatus());
-        
+
         // Clear and populate participants list
         participantsListView.getItems().clear();
         for (User participant : raffle.getParticipants()) {
@@ -345,7 +345,7 @@ public class RaffleDetailsController {
                                 try {
                                     Image image = new Image(fallbackFile.toURI().toString());
                                     if (!image.isError()) {
-                                        artworkImageView.setImage(image);
+                artworkImageView.setImage(image);
                                         artworkImageView.setFitWidth(250);
                                         artworkImageView.setFitHeight(150);
                                         artworkImageView.setPreserveRatio(true);
