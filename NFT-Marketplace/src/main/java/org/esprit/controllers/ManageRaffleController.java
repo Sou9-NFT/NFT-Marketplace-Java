@@ -35,9 +35,6 @@ public class ManageRaffleController {
     private ComboBox<String> statusComboBox;
     
     @FXML
-    private ComboBox<User> winnerComboBox;
-    
-    @FXML
     private ListView<User> participantsListView;
     
     @FXML
@@ -46,6 +43,7 @@ public class ManageRaffleController {
     private Raffle raffle;
     private RaffleService raffleService;
     private RaffleListController parentController;
+    private User currentUser;
     
     public void initialize() {
         raffleService = new RaffleService();
@@ -53,8 +51,7 @@ public class ManageRaffleController {
         // Setup status options
         statusComboBox.setItems(FXCollections.observableArrayList(
             "active",
-            "completed",
-            "cancelled"
+            "ended"
         ));
 
         // Add listeners to enforce numeric input for time fields
@@ -98,6 +95,10 @@ public class ManageRaffleController {
         this.parentController = controller;
     }
     
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+    }
+    
     private void populateFields() {
         titleField.setText(raffle.getTitle());
         descriptionField.setText(raffle.getRaffleDescription());
@@ -127,28 +128,6 @@ public class ManageRaffleController {
                 }
             }
         });
-        
-        // Setup winner selection
-        winnerComboBox.setItems(FXCollections.observableArrayList(raffle.getParticipants()));
-        winnerComboBox.setCellFactory(cb -> new ListCell<User>() {
-            @Override
-            protected void updateItem(User user, boolean empty) {
-                super.updateItem(user, empty);
-                if (empty || user == null) {
-                    setText(null);
-                } else {
-                    setText(user.getName());
-                }
-            }
-        });
-        
-        // Set current winner if exists
-        if (raffle.getWinnerId() != null) {
-            winnerComboBox.getItems().stream()
-                .filter(u -> u.getId() == raffle.getWinnerId())
-                .findFirst()
-                .ifPresent(winner -> winnerComboBox.setValue(winner));
-        }
     }
     
     @FXML
@@ -159,7 +138,6 @@ public class ManageRaffleController {
         String hours = hoursField.getText().trim();
         String minutes = minutesField.getText().trim();
         String status = statusComboBox.getValue();
-        User winner = winnerComboBox.getValue();
         
         // Validate inputs
         if (title.isEmpty()) {
@@ -219,7 +197,6 @@ public class ManageRaffleController {
             raffle.setRaffleDescription(description);
             raffle.setEndTime(Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant()));
             raffle.setStatus(status);
-            raffle.setWinnerId(winner != null ? winner.getId() : null);
             
             // Save to database
             raffleService.update(raffle);
