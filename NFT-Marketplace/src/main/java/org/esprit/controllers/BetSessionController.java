@@ -74,13 +74,20 @@ public class BetSessionController implements Initializable {
     
     @FXML
     private Button deleteButton;
-    
-    private BetSessionService betSessionService;
+      private BetSessionService betSessionService;
     private UserService userService;
+    
+    // Add field for current user
+    private User currentUser;
     
     public BetSessionController() {
         betSessionService = new BetSessionService();
         userService = new UserService();
+    }
+    
+    // Add method to set current user
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
     }
     
     @Override
@@ -116,25 +123,27 @@ public class BetSessionController implements Initializable {
     private void loadBetSessions() {
         tableView.setItems(FXCollections.observableArrayList(betSessionService.getAllBetSessions()));
     }
-    
-    @FXML
+      @FXML
     private void showAddDialog() {
+        // Check if a user is logged in
+        if (currentUser == null) {
+            Alert alert = new Alert(AlertType.WARNING, 
+                    "You must be logged in to create a bet session.");
+            alert.showAndWait();
+            return;
+        }
+        
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Add New Bet Session");
         
         // Create form components
-        TextField authorIdField = new TextField();
+        Label authorInfoLabel = new Label("Author: " + currentUser.getName() + " (ID: " + currentUser.getId() + ")");
         TextField artworkIdField = new TextField();
         DatePicker startDatePicker = new DatePicker();
         DatePicker endDatePicker = new DatePicker();
         TextField initialPriceField = new TextField();
-        TextField currentPriceField = new TextField();
-        ComboBox<String> statusComboBox = new ComboBox<>();
-        
-        // Set up status options
-        statusComboBox.getItems().addAll("pending", "active", "completed", "cancelled");
-        statusComboBox.setValue("pending");
+        Label statusLabel = new Label("Status: pending (automatically set)");
         
         // Layout
         GridPane formLayout = new GridPane();
@@ -142,8 +151,8 @@ public class BetSessionController implements Initializable {
         formLayout.setHgap(10);
         formLayout.setVgap(10);
         
-        formLayout.add(new Label("Author ID:"), 0, 0);
-        formLayout.add(authorIdField, 1, 0);
+        formLayout.add(new Label("Author:"), 0, 0);
+        formLayout.add(authorInfoLabel, 1, 0);
         formLayout.add(new Label("Artwork ID:"), 0, 1);
         formLayout.add(artworkIdField, 1, 1);
         formLayout.add(new Label("Start Date:"), 0, 2);
@@ -152,12 +161,9 @@ public class BetSessionController implements Initializable {
         formLayout.add(endDatePicker, 1, 3);
         formLayout.add(new Label("Initial Price:"), 0, 4);
         formLayout.add(initialPriceField, 1, 4);
-        formLayout.add(new Label("Current Price:"), 0, 5);
-        formLayout.add(currentPriceField, 1, 5);
-        formLayout.add(new Label("Status:"), 0, 6);
-        formLayout.add(statusComboBox, 1, 6);
-        
-        // Buttons
+        formLayout.add(new Label("Status:"), 0, 5);
+        formLayout.add(statusLabel, 1, 5);
+          // Buttons
         Button saveButton = new Button("Save");
         Button cancelButton = new Button("Cancel");
         
@@ -170,20 +176,18 @@ public class BetSessionController implements Initializable {
                 // Create new BetSession from form data
                 BetSession newBetSession = new BetSession();
                 
-                // Set Author and Artwork from ID fields
+                // Set Author from current user automatically
+                newBetSession.setAuthor(currentUser);
+                
+                // Set Artwork from ID field
                 try {
-                    int authorId = Integer.parseInt(authorIdField.getText());
-                    User author = new User();
-                    author.setId(authorId);
-                    newBetSession.setAuthor(author);
-                    
                     int artworkId = Integer.parseInt(artworkIdField.getText());
                     Artwork artwork = new Artwork();
                     artwork.setId(artworkId);
                     newBetSession.setArtwork(artwork);
                 } catch (NumberFormatException ex) {
                     Alert alert = new Alert(AlertType.ERROR, 
-                            "Please enter valid numeric IDs for Author and Artwork.");
+                            "Please enter a valid numeric ID for Artwork.");
                     alert.showAndWait();
                     return;
                 }
@@ -204,19 +208,20 @@ public class BetSessionController implements Initializable {
                     double initialPrice = Double.parseDouble(initialPriceField.getText());
                     newBetSession.setInitialPrice(initialPrice);
                     
-                    // If current price is empty, use initial price
-                    double currentPrice = currentPriceField.getText().isEmpty() ? 
-                                         initialPrice : 
-                                         Double.parseDouble(currentPriceField.getText());
-                    newBetSession.setCurrentPrice(currentPrice);
+                    // Automatically set current price to initial price
+                    newBetSession.setCurrentPrice(initialPrice);
                 } catch (NumberFormatException ex) {
                     Alert alert = new Alert(AlertType.ERROR, 
-                            "Please enter valid prices.");
+                            "Please enter a valid price.");
                     alert.showAndWait();
                     return;
                 }
                 
-                newBetSession.setStatus(statusComboBox.getValue());
+                // Set status to pending automatically
+                newBetSession.setStatus("pending");
+                
+                // Set creation date to current date/time
+                newBetSession.setCreatedAt(LocalDateTime.now());
                 
                 // Save to database
                 betSessionService.addBetSession(newBetSession);

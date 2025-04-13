@@ -164,8 +164,7 @@ public class UserDashboardController {
             showComingSoonView(event, "Wallet");
         }
     }
-    
-    @FXML
+      @FXML
     private void handleNotificationsButton(ActionEvent event) {
         if (getClass().getResource("/fxml/Notifications.fxml") != null) {
             try {
@@ -182,6 +181,22 @@ public class UserDashboardController {
             }
         } else {
             showComingSoonView(event, "Notifications");
+        }
+    }
+    
+    @FXML
+    private void handleBetSessionButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BetSession.fxml"));
+            Parent betSessionView = loader.load();
+            
+            // If there's a controller with setUser method, call it
+            Object controller = loader.getController();
+            tryToSetUser(controller);
+            
+            navigateToView(event, betSessionView, "NFT Marketplace - Bet Sessions");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load bet sessions: " + e.getMessage());
         }
     }
     
