@@ -122,21 +122,22 @@ public class LoginController {
     
     private void navigateToProfile(ActionEvent event, User user) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Profile.fxml"));
-            Parent profileView = loader.load();
+            // Load RaffleList view for regular users
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleList.fxml"));
+            Parent raffleListView = loader.load();
             
-            // Pass the authenticated user to the profile controller
-            ProfileController controller = loader.getController();
+            // Pass the authenticated user to the raffle list controller
+            RaffleListController controller = loader.getController();
             controller.setUser(user);
             
             Scene currentScene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) currentScene.getWindow();
             
-            stage.setScene(new Scene(profileView, 800, 600));
-            stage.setTitle("NFT Marketplace - Profile");
+            stage.setScene(new Scene(raffleListView, 800, 600));
+            stage.setTitle("NFT Marketplace - Raffle List");
             stage.show();
         } catch (IOException e) {
-            showError("Error loading profile page: " + e.getMessage());
+            showError("Error loading raffle list page: " + e.getMessage());
             e.printStackTrace();
         }
     }
