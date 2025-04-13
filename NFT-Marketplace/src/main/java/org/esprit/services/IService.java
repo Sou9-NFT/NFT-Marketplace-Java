@@ -8,4 +8,5 @@ public interface IService<T> {
     void update(T t) throws Exception;
     void delete(T t) throws Exception;
     List<T> getAll() throws Exception;
+    T getOne(int id) throws Exception;
 }
