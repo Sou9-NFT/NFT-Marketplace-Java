@@ -325,6 +325,61 @@ public class CategoryManagementController implements Initializable {
         });
     }
     
+    /**
+     * Validate the form inputs
+     * @return true if valid, false otherwise
+     */
+    private boolean validateForm() {
+        try {
+            // Create a temporary category object for validation
+            Category category = new Category();
+            
+            // Validate name
+            if (nameField.getText() != null && !nameField.getText().trim().isEmpty()) {
+                category.setName(nameField.getText().trim());
+            } else {
+                showErrorMessage("Validation Error", "Category name is required.");
+                return false;
+            }
+            
+            // Validate type
+            String type = typeComboBox.getValue();
+            if (type != null && !type.trim().isEmpty()) {
+                category.setType(type);
+            } else {
+                showErrorMessage("Validation Error", "Category type is required.");
+                return false;
+            }
+            
+            // Validate description
+            if (descriptionArea.getText() != null && !descriptionArea.getText().trim().isEmpty()) {
+                try {
+                    category.setDescription(descriptionArea.getText().trim());
+                } catch (IllegalArgumentException e) {
+                    showErrorMessage("Validation Error", e.getMessage());
+                    return false;
+                }
+            } else {
+                showErrorMessage("Validation Error", "Description is required.");
+                return false;
+            }
+            
+            // Validate MIME types
+            if (mimeTypesList.isEmpty()) {
+                showErrorMessage("Validation Error", "At least one MIME type must be specified.");
+                return false;
+            }
+            
+            // All validations passed
+            return true;
+            
+        } catch (IllegalArgumentException e) {
+            // Catch any validation errors from the Category entity
+            showErrorMessage("Validation Error", e.getMessage());
+            return false;
+        }
+    }
+    
     @FXML
     private void handleSaveCategory() {
         if (!validateForm()) {
@@ -335,15 +390,20 @@ public class CategoryManagementController implements Initializable {
             // Create or update category
             Category category = (currentCategory != null) ? currentCategory : new Category();
             
+            // Use the setters for validation
             category.setName(nameField.getText().trim());
             category.setType(typeComboBox.getValue());
             category.setDescription(descriptionArea.getText().trim());
             
+            // Set allowed MIME types
             List<String> mimeTypes = new ArrayList<>(mimeTypesList);
             category.setAllowedMimeTypes(mimeTypes);
             
             // Set manager ID (current admin user)
             category.setManagerId(currentUser.getId());
+            
+            // Perform final validation
+            category.validate();
             
             if (currentCategory == null || category.getId() == 0) {
                 // New category
@@ -358,6 +418,8 @@ public class CategoryManagementController implements Initializable {
             // Refresh the table
             loadCategories();
             clearForm();
+        } catch (IllegalArgumentException e) {
+            showErrorMessage("Validation Error", e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             showErrorMessage("Save Error", "Failed to save category: " + e.getMessage());
@@ -431,27 +493,6 @@ public class CategoryManagementController implements Initializable {
         typeComboBox.getSelectionModel().clearSelection();
         descriptionArea.clear();
         mimeTypesList.clear();
-    }
-    
-    /**
-     * Validate the form inputs
-     * @return true if valid, false otherwise
-     */
-    private boolean validateForm() {
-        String name = nameField.getText().trim();
-        String type = typeComboBox.getValue();
-        
-        if (name.isEmpty()) {
-            showErrorMessage("Validation Error", "Category name is required.");
-            return false;
-        }
-        
-        if (type == null || type.isEmpty()) {
-            showErrorMessage("Validation Error", "Category type is required.");
-            return false;
-        }
-        
-        return true;
     }
     
     /**

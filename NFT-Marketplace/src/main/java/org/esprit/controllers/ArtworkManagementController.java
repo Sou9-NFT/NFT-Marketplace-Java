@@ -79,6 +79,7 @@ public class ArtworkManagementController {
     private CategoryService categoryService;
     private ObservableList<Artwork> userArtworks;
     private final String UPLOAD_DIRECTORY = "src/main/resources/uploads/";
+    private boolean isFromAdminDashboard = false; // Track if accessed from admin dashboard
     
     public void initialize() {
         artworkService = new ArtworkService();
@@ -105,6 +106,9 @@ public class ArtworkManagementController {
             // Setup table columns
             setupTableColumns();
             
+            // Initialize actions column with fixed width to ensure buttons are visible
+            actionsColumn.setPrefWidth(200);
+            actionsColumn.setMinWidth(180);
         } catch (Exception e) {
             showAlert(AlertType.ERROR, "Initialization Error", "Failed to initialize: " + e.getMessage());
             e.printStackTrace();
@@ -180,45 +184,49 @@ public class ArtworkManagementController {
             }
         });
         
-        // Actions column with buttons
+        // Actions column with buttons - EXACTLY matching CategoryManagementController implementation
         actionsColumn.setCellFactory(column -> new TableCell<Artwork, Artwork>() {
             private final Button viewBtn = new Button("View");
             private final Button updateBtn = new Button("Update");
             private final Button deleteBtn = new Button("Delete");
-            
+            private final HBox buttonsBox = new HBox(5, viewBtn, updateBtn, deleteBtn);
+
             {
-                // Configure action buttons with more compact style to fit in column
-                String baseButtonStyle = "-fx-text-fill: white; -fx-font-size: 11px; -fx-padding: 3 8 3 8;";
-                
-                viewBtn.setStyle("-fx-background-color: #4CAF50; " + baseButtonStyle);
-                viewBtn.setOnAction(event -> {
-                    Artwork artwork = getTableView().getItems().get(getIndex());
-                    viewArtwork(artwork);
+                // View button action
+                viewBtn.setOnAction((ActionEvent event) -> {
+                    int index = getIndex();
+                    if (index >= 0 && index < getTableView().getItems().size()) {
+                        Artwork artwork = getTableView().getItems().get(index);
+                        viewArtwork(artwork);
+                    }
                 });
                 
-                updateBtn.setStyle("-fx-background-color: #2196F3; " + baseButtonStyle);
-                updateBtn.setOnAction(event -> {
-                    Artwork artwork = getTableView().getItems().get(getIndex());
-                    updateArtwork(artwork);
+                // Update button action
+                updateBtn.setOnAction((ActionEvent event) -> {
+                    int index = getIndex();
+                    if (index >= 0 && index < getTableView().getItems().size()) {
+                        Artwork artwork = getTableView().getItems().get(index);
+                        updateArtwork(artwork);
+                    }
                 });
                 
-                deleteBtn.setStyle("-fx-background-color: #f44336; " + baseButtonStyle);
-                deleteBtn.setOnAction(event -> {
-                    Artwork artwork = getTableView().getItems().get(getIndex());
-                    deleteArtwork(artwork);
+                // Delete button action
+                deleteBtn.setOnAction((ActionEvent event) -> {
+                    int index = getIndex();
+                    if (index >= 0 && index < getTableView().getItems().size()) {
+                        Artwork artwork = getTableView().getItems().get(index);
+                        deleteArtwork(artwork);
+                    }
                 });
             }
-            
+
             @Override
-            protected void updateItem(Artwork item, boolean empty) {
+            public void updateItem(Artwork item, boolean empty) {
                 super.updateItem(item, empty);
-                
-                if (item == null || empty) {
+                if (empty) {
                     setGraphic(null);
                 } else {
-                    HBox buttons = new HBox(3, viewBtn, updateBtn, deleteBtn);
-                    buttons.setAlignment(Pos.CENTER);
-                    setGraphic(buttons);
+                    setGraphic(buttonsBox);
                 }
             }
         });
@@ -231,6 +239,21 @@ public class ArtworkManagementController {
     
     public void setCurrentUser(User user) {
         this.currentUser = user;
+        
+        // Load user's artworks when the user is set
+        if (user != null) {
+            loadUserArtworks();
+        }
+    }
+    
+    /**
+     * Sets the current user and marks if coming from admin dashboard
+     * @param user The current user
+     * @param isAdmin Whether the user is coming from the admin dashboard
+     */
+    public void setCurrentUser(User user, boolean isAdmin) {
+        this.currentUser = user;
+        this.isFromAdminDashboard = isAdmin;
         
         // Load user's artworks when the user is set
         if (user != null) {
@@ -346,6 +369,62 @@ public class ArtworkManagementController {
         return filename.substring(lastDotIndex + 1);
     }
     
+    private boolean validateForm() {
+        try {
+            // Create a temporary artwork object for validation
+            Artwork artwork = new Artwork();
+            
+            // Validate title
+            if (titleField.getText() != null && !titleField.getText().trim().isEmpty()) {
+                artwork.setTitle(titleField.getText().trim());
+            } else {
+                errorMessageLabel.setText("Title is required.");
+                return false;
+            }
+            
+            // Validate price
+            try {
+                double price = Double.parseDouble(priceField.getText().trim());
+                artwork.setPrice(price);
+            } catch (NumberFormatException e) {
+                errorMessageLabel.setText("Price must be a valid number.");
+                return false;
+            } catch (IllegalArgumentException e) {
+                errorMessageLabel.setText(e.getMessage());
+                return false;
+            }
+            
+            // Validate description
+            if (descriptionArea.getText() != null && !descriptionArea.getText().trim().isEmpty()) {
+                artwork.setDescription(descriptionArea.getText().trim());
+            } else {
+                errorMessageLabel.setText("Description is required.");
+                return false;
+            }
+            
+            // Check category
+            if (categoryComboBox.getValue() == null) {
+                errorMessageLabel.setText("Category must be selected.");
+                return false;
+            }
+            
+            // Check file
+            if (selectedFile == null) {
+                errorMessageLabel.setText("You must upload a file.");
+                return false;
+            }
+            
+            // All validations passed
+            errorMessageLabel.setText("");
+            return true;
+            
+        } catch (IllegalArgumentException e) {
+            // Catch any validation errors from the Artwork entity
+            errorMessageLabel.setText(e.getMessage());
+            return false;
+        }
+    }
+    
     @FXML
     private void handleSubmitArtwork() {
         // Validate form
@@ -379,6 +458,9 @@ public class ArtworkManagementController {
             artwork.setCreatedAt(LocalDateTime.now());
             artwork.setUpdatedAt(LocalDateTime.now());
             
+            // Perform final validation
+            artwork.validate();
+            
             // Save to the database
             artworkService.add(artwork);
             
@@ -392,52 +474,11 @@ public class ArtworkManagementController {
             // Refresh the table
             loadUserArtworks();
             
+        } catch (IllegalArgumentException e) {
+            showAlert(AlertType.ERROR, "Validation Error", e.getMessage());
         } catch (Exception e) {
             showAlert(AlertType.ERROR, "Error", "Failed to create artwork: " + e.getMessage());
             e.printStackTrace();
-        }
-    }
-    
-    private boolean validateForm() {
-        StringBuilder errorMessage = new StringBuilder();
-        
-        // Check title
-        if (titleField.getText() == null || titleField.getText().trim().isEmpty()) {
-            errorMessage.append("Title is required.\n");
-        }
-        
-        // Check price
-        try {
-            double price = Double.parseDouble(priceField.getText().trim());
-            if (price <= 0) {
-                errorMessage.append("Price must be greater than 0.\n");
-            }
-        } catch (NumberFormatException e) {
-            errorMessage.append("Price must be a valid number.\n");
-        }
-        
-        // Check description
-        if (descriptionArea.getText() == null || descriptionArea.getText().trim().isEmpty()) {
-            errorMessage.append("Description is required.\n");
-        }
-        
-        // Check category
-        if (categoryComboBox.getValue() == null) {
-            errorMessage.append("Category must be selected.\n");
-        }
-        
-        // Check file
-        if (selectedFile == null) {
-            errorMessage.append("You must upload a file.\n");
-        }
-        
-        // Display error message if any
-        if (errorMessage.length() > 0) {
-            errorMessageLabel.setText(errorMessage.toString());
-            return false;
-        } else {
-            errorMessageLabel.setText("");
-            return true;
         }
     }
     
@@ -584,49 +625,30 @@ public class ArtworkManagementController {
             // Handle OK button action
             Optional<ButtonType> result = dialog.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
-                // Validate the input
-                if (titleField.getText().trim().isEmpty()) {
-                    showAlert(AlertType.ERROR, "Validation Error", "Title cannot be empty.");
-                    return;
-                }
-                
-                double price;
                 try {
-                    price = Double.parseDouble(priceField.getText().trim());
-                    if (price <= 0) {
-                        showAlert(AlertType.ERROR, "Validation Error", "Price must be greater than 0.");
-                        return;
-                    }
+                    // Update artwork details using the entity's validation
+                    artwork.setTitle(titleField.getText().trim());
+                    artwork.setPrice(Double.parseDouble(priceField.getText().trim()));
+                    artwork.setDescription(descriptionArea.getText().trim());
+                    artwork.setCategoryId(categoryComboBox.getValue().getId());
+                    artwork.setUpdatedAt(LocalDateTime.now());
+                    
+                    // Final validation
+                    artwork.validate();
+                    
+                    // Save changes to the database
+                    artworkService.update(artwork);
+                    
+                    // Refresh the table
+                    loadUserArtworks();
+                    
+                    showAlert(AlertType.INFORMATION, "Success", 
+                             "Artwork '" + artwork.getTitle() + "' updated successfully.");
                 } catch (NumberFormatException e) {
                     showAlert(AlertType.ERROR, "Validation Error", "Price must be a valid number.");
-                    return;
+                } catch (IllegalArgumentException e) {
+                    showAlert(AlertType.ERROR, "Validation Error", e.getMessage());
                 }
-                
-                if (descriptionArea.getText().trim().isEmpty()) {
-                    showAlert(AlertType.ERROR, "Validation Error", "Description cannot be empty.");
-                    return;
-                }
-                
-                if (categoryComboBox.getValue() == null) {
-                    showAlert(AlertType.ERROR, "Validation Error", "Category must be selected.");
-                    return;
-                }
-                
-                // Update artwork details
-                artwork.setTitle(titleField.getText().trim());
-                artwork.setPrice(price);
-                artwork.setDescription(descriptionArea.getText().trim());
-                artwork.setCategoryId(categoryComboBox.getValue().getId());
-                artwork.setUpdatedAt(LocalDateTime.now());
-                
-                // Save changes to the database
-                artworkService.update(artwork);
-                
-                // Refresh the table
-                loadUserArtworks();
-                
-                showAlert(AlertType.INFORMATION, "Success", 
-                         "Artwork '" + artwork.getTitle() + "' updated successfully.");
             }
         } catch (Exception e) {
             showAlert(AlertType.ERROR, "Error", "Failed to update artwork: " + e.getMessage());
@@ -669,18 +691,36 @@ public class ArtworkManagementController {
     @FXML
     private void handleBackButton(ActionEvent event) {
         try {
-            // Return to the dashboard
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserDashboard.fxml"));
+            String fxmlPath;
+            String title;
+            
+            // Determine which dashboard to return to
+            if (isFromAdminDashboard) {
+                fxmlPath = "/fxml/AdminDashboard.fxml";
+                title = "NFT Marketplace - Admin Dashboard";
+            } else {
+                fxmlPath = "/fxml/UserDashboard.fxml";
+                title = "NFT Marketplace - User Dashboard";
+            }
+            
+            // Load the appropriate dashboard
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent dashboardView = loader.load();
             
-            UserDashboardController controller = loader.getController();
-            controller.setCurrentUser(currentUser);
+            // Set the current user on the controller
+            if (isFromAdminDashboard) {
+                AdminDashboardController controller = loader.getController();
+                controller.setCurrentUser(currentUser);
+            } else {
+                UserDashboardController controller = loader.getController();
+                controller.setCurrentUser(currentUser);
+            }
             
             Scene scene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) scene.getWindow();
             
             scene.setRoot(dashboardView);
-            stage.setTitle("NFT Marketplace - User Dashboard");
+            stage.setTitle(title);
         } catch (IOException e) {
             showAlert(AlertType.ERROR, "Navigation Error", 
                      "Failed to return to dashboard: " + e.getMessage());
