@@ -93,7 +93,12 @@ public class RaffleDetailsController {
         this.currentUser = user;
         // Update the UI if needed based on the current user
         if (currentUser != null && raffle != null) {
+            System.out.println("Setting current user: " + currentUser.getName());
+            // Explicitly call updateButtons to ensure they're visible
+            updateButtons();
             refreshRaffle();
+        } else {
+            System.out.println("Current user is null or raffle is null");
         }
     }
 
@@ -232,7 +237,20 @@ public class RaffleDetailsController {
             participantsListView.getItems().add(participant.getName());
         }
 
+        // Explicitly call updateButtons and force visibility
         updateButtons();
+        
+        // Force buttons to be visible regardless of other checks
+        if (currentUser != null) {
+            participateButton.setVisible(true);
+            manageButton.setVisible(true);
+            deleteButton.setVisible(true);
+            
+            System.out.println("Buttons visibility status after loadRaffleDetails:");
+            System.out.println("- Participate button: " + participateButton.isVisible());
+            System.out.println("- Manage button: " + manageButton.isVisible());
+            System.out.println("- Delete button: " + deleteButton.isVisible());
+        }
     }
 
     private void loadArtworkImage(Artwork artwork) {
@@ -435,31 +453,51 @@ public class RaffleDetailsController {
             if (raffle.getCreator() == null) {
                 // Create a temporary creator for this raffle
                 User tempCreator = new User();
-                tempCreator.setId(currentUser.getId()); // Assuming current user might be the creator
+                tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
                 tempCreator.setName("Unknown Creator");
                 raffle.setCreator(tempCreator);
             }
+            
+            // Check if current user is the creator
+            boolean isCreator = currentUser.getId() == raffle.getCreator().getId();
             
             // Check if the raffle is active for participate button
             boolean isActive = raffle.getStatus().equals("active");
             boolean isParticipant = raffle.getParticipants().stream()
                 .anyMatch(p -> p.getId() == currentUser.getId());
             
-            // Update participate button
-            participateButton.setDisable(isParticipant || !isActive);
-            String buttonText = isParticipant ? "Already Participating" : 
-                              !isActive ? "Raffle " + raffle.getStatus() :
-                              "Participate";
+            // Update participate button - creators can't participate in their own raffles
+            participateButton.setDisable(isCreator || isParticipant || !isActive);
+            
+            // Update text to explain why button is disabled
+            String buttonText;
+            if (isCreator) {
+                buttonText = "Can't Join Your Own Raffle";
+            } else if (isParticipant) {
+                buttonText = "Already Participating";
+            } else if (!isActive) {
+                buttonText = "Raffle " + raffle.getStatus();
+            } else {
+                buttonText = "Participate";
+            }
             participateButton.setText(buttonText);
             
-            // Always show all buttons - permission checks are done in handler methods
+            // Always show participate button
             participateButton.setVisible(true);
-            manageButton.setVisible(true);
-            deleteButton.setVisible(true);
-            
             participateButton.setManaged(true);
-            manageButton.setManaged(true);
-            deleteButton.setManaged(true);
+            
+            // Only show manage and delete buttons to the creator
+            manageButton.setVisible(isCreator);
+            deleteButton.setVisible(isCreator);
+            manageButton.setManaged(isCreator);
+            deleteButton.setManaged(isCreator);
+            
+            // Debug info
+            System.out.println("Buttons visibility updated:");
+            System.out.println("Is creator: " + isCreator);
+            System.out.println("Participate button visible: " + participateButton.isVisible());
+            System.out.println("Manage button visible: " + manageButton.isVisible());
+            System.out.println("Delete button visible: " + deleteButton.isVisible());
         } else {
             // If not logged in, hide all action buttons
             participateButton.setVisible(false);

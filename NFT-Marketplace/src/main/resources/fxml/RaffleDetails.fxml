@@ -69,13 +69,11 @@
         <Button fx:id="manageButton"
                 text="Manage Raffle"
                 onAction="#handleManage"
-                styleClass="secondary-button"
-                visible="false"/>
+                styleClass="secondary-button"/>
         <Button fx:id="deleteButton"
                 text="Delete Raffle"
                 onAction="#handleDelete"
-                styleClass="delete-button"
-                visible="false"/>
+                styleClass="delete-button"/>
         <Button text="Close" 
                 onAction="#handleClose"
                 styleClass="secondary-button"/>
