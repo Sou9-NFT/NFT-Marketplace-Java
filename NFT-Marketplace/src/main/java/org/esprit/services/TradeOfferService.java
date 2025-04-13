@@ -1,6 +1,7 @@
 package org.esprit.services;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.esprit.models.TradeOffer;
@@ -11,12 +12,10 @@ import org.esprit.utils.DatabaseConnection;
 public class TradeOfferService implements IService<TradeOffer> {
     private final Connection connection;
     private final UserService userService;
-    private final ArtworkService artworkService;
 
     public TradeOfferService() {
         connection = DatabaseConnection.getInstance().getConnection();
         userService = new UserService();
-        artworkService = new ArtworkService();
     }
 
     @Override
@@ -117,47 +116,48 @@ public class TradeOfferService implements IService<TradeOffer> {
                       "JOIN user r ON t.receiver_name = r.id " +
                       "JOIN artwork o ON t.offered_item = o.id " +
                       "JOIN artwork rc ON t.received_item = rc.id";
-                      
+
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
-            
+
             while (rs.next()) {
                 TradeOffer trade = new TradeOffer();
                 trade.setId(rs.getInt("id"));
-                
+
                 // Set sender
                 User sender = new User();
                 sender.setId(rs.getInt("sender_id"));
                 sender.setName(rs.getString("sender_name"));
                 trade.setSender(sender);
-                
+
                 // Set receiver
                 User receiver = new User();
                 receiver.setId(rs.getInt("receiver_id"));
                 receiver.setName(rs.getString("receiver_name"));
                 trade.setReceiverName(receiver);
-                
+
                 // Set offered artwork
-                Artwork offeredArtwork = new Artwork();
-                offeredArtwork.setId(rs.getInt("offered_id"));
-                offeredArtwork.setTitle(rs.getString("offered_title"));
+                Artwork offeredArtwork = getArtworkById(rs.getInt("offered_item"));
                 trade.setOfferedItem(offeredArtwork);
-                
+
                 // Set received artwork
-                Artwork receivedArtwork = new Artwork();
-                receivedArtwork.setId(rs.getInt("received_id"));
-                receivedArtwork.setTitle(rs.getString("received_title"));
+                Artwork receivedArtwork = getArtworkById(rs.getInt("received_item"));
                 trade.setReceivedItem(receivedArtwork);
-                
+
                 trade.setDescription(rs.getString("description"));
                 trade.setCreationDate(rs.getTimestamp("creation_date").toLocalDateTime());
                 trade.setStatus(rs.getString("status"));
-                
+
                 tradeOffers.add(trade);
             }
+            System.out.println("Trade offers fetched successfully: " + tradeOffers.size() + " offers.");
+        } catch (SQLException e) {
+            System.err.println("Error fetching trade offers: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-        
+
         return tradeOffers;
     }
 
@@ -191,10 +191,10 @@ public class TradeOfferService implements IService<TradeOffer> {
         User receiver = userService.getOne(rs.getInt("receiver_name"));
         tradeOffer.setReceiverName(receiver);
         
-        Artwork offeredItem = artworkService.getOne(rs.getInt("offered_item"));
+        Artwork offeredItem = getArtworkById(rs.getInt("offered_item"));
         tradeOffer.setOfferedItem(offeredItem);
         
-        Artwork receivedItem = artworkService.getOne(rs.getInt("received_item"));
+        Artwork receivedItem = getArtworkById(rs.getInt("received_item"));
         tradeOffer.setReceivedItem(receivedItem);
         
         tradeOffer.setDescription(rs.getString("description"));
@@ -202,5 +202,10 @@ public class TradeOfferService implements IService<TradeOffer> {
         tradeOffer.setStatus(rs.getString("status"));
         
         return tradeOffer;
+    }
+    
+    // Mock method to retrieve an artwork by ID
+    private Artwork getArtworkById(int id) {
+        return new Artwork(id, 0, 1, 0, "Mock Artwork Title", "Mock Description", 0.0, "MockImage.jpg", LocalDateTime.now(), LocalDateTime.now());
     }
 }
