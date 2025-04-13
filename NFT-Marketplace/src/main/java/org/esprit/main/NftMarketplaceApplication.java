@@ -1,15 +1,15 @@
 package org.esprit.main;
 
+import java.io.IOException;
+
+import org.esprit.controllers.RaffleListController;
+import org.esprit.models.User;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import org.esprit.controllers.LoginController;
-import org.esprit.controllers.RaffleListController;
-import org.esprit.models.User;
-
-import java.io.IOException;
 
 public class NftMarketplaceApplication extends Application {
     private static Stage primaryStage;
