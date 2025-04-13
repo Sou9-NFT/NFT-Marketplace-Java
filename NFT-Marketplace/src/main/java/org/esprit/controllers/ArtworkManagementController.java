@@ -79,6 +79,7 @@ public class ArtworkManagementController {
     private CategoryService categoryService;
     private ObservableList<Artwork> userArtworks;
     private final String UPLOAD_DIRECTORY = "src/main/resources/uploads/";
+    private boolean isFromAdminDashboard = false; // Track if accessed from admin dashboard
     
     public void initialize() {
         artworkService = new ArtworkService();
@@ -231,6 +232,21 @@ public class ArtworkManagementController {
     
     public void setCurrentUser(User user) {
         this.currentUser = user;
+        
+        // Load user's artworks when the user is set
+        if (user != null) {
+            loadUserArtworks();
+        }
+    }
+    
+    /**
+     * Sets the current user and marks if coming from admin dashboard
+     * @param user The current user
+     * @param isAdmin Whether the user is coming from the admin dashboard
+     */
+    public void setCurrentUser(User user, boolean isAdmin) {
+        this.currentUser = user;
+        this.isFromAdminDashboard = isAdmin;
         
         // Load user's artworks when the user is set
         if (user != null) {
@@ -669,18 +685,36 @@ public class ArtworkManagementController {
     @FXML
     private void handleBackButton(ActionEvent event) {
         try {
-            // Return to the dashboard
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserDashboard.fxml"));
+            String fxmlPath;
+            String title;
+            
+            // Determine which dashboard to return to
+            if (isFromAdminDashboard) {
+                fxmlPath = "/fxml/AdminDashboard.fxml";
+                title = "NFT Marketplace - Admin Dashboard";
+            } else {
+                fxmlPath = "/fxml/UserDashboard.fxml";
+                title = "NFT Marketplace - User Dashboard";
+            }
+            
+            // Load the appropriate dashboard
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent dashboardView = loader.load();
             
-            UserDashboardController controller = loader.getController();
-            controller.setCurrentUser(currentUser);
+            // Set the current user on the controller
+            if (isFromAdminDashboard) {
+                AdminDashboardController controller = loader.getController();
+                controller.setCurrentUser(currentUser);
+            } else {
+                UserDashboardController controller = loader.getController();
+                controller.setCurrentUser(currentUser);
+            }
             
             Scene scene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) scene.getWindow();
             
             scene.setRoot(dashboardView);
-            stage.setTitle("NFT Marketplace - User Dashboard");
+            stage.setTitle(title);
         } catch (IOException e) {
             showAlert(AlertType.ERROR, "Navigation Error", 
                      "Failed to return to dashboard: " + e.getMessage());

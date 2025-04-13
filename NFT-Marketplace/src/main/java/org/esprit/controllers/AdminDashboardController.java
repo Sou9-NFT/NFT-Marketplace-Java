@@ -222,7 +222,8 @@ public class AdminDashboardController implements Initializable {
                 
                 if (loader.getController() instanceof ArtworkManagementController) {
                     ArtworkManagementController controller = loader.getController();
-                    controller.setCurrentUser(currentAdminUser);
+                    // Set the current user and indicate that we're coming from admin dashboard
+                    controller.setCurrentUser(currentAdminUser, true);
                 }
                 
                 navigateToView(event, artworkView, "NFT Marketplace - Artwork Management");
