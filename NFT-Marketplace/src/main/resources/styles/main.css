@@ -115,8 +115,72 @@
   -fx-background-color: -white-color;
   -fx-border-color: -primary-color;
   -fx-border-radius: 100px;
-  -fx-text-fill: -primary-color;
+}
+
+/* BetSession Styles */
+/* TableView Styling */
+.table-view {
+  -fx-background-color: transparent;
+  -fx-border-color: -primary-border-color;
+  -fx-border-radius: 8px;
   -fx-border-width: 1px;
+  -fx-padding: 0;
+}
+
+.table-view .column-header-background {
+  -fx-background-color: linear-gradient(135deg, #4528dc 10%, #57048a);
+  -fx-background-radius: 8px 8px 0 0;
+  -fx-padding: 5px;
+}
+
+.table-view .column-header {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+}
+
+.table-view .column-header .label {
+  -fx-text-fill: white;
+  -fx-font-weight: bold;
+  -fx-alignment: CENTER;
+  -fx-padding: 8px;
+}
+
+.table-view .table-row-cell {
+  -fx-border-color: -secondary-line-color;
+  -fx-border-width: 0 0 1 0;
+  -fx-padding: 4px 0;
+}
+
+.table-view .table-row-cell:odd {
+  -fx-background-color: -primary-background-color-3;
+}
+
+.table-view .table-row-cell:even {
+  -fx-background-color: -primary-background-color;
+}
+
+.table-view .table-row-cell:selected {
+  -fx-background-color: derive(-primary-color, 70%);
+}
+
+.table-view .table-row-cell:hover {
+  -fx-background-color: derive(-primary-color, 85%);
+}
+
+/* BetSession Bottom Buttons Styling */
+#addButton {
+  -fx-background-color: #2e7d32; /* Green */
+  -fx-text-fill: white;
+}
+
+#updateButton {
+  -fx-background-color: #1976d2; /* Blue */
+  -fx-text-fill: white;
+}
+
+#deleteButton {
+  -fx-background-color: #d32f2f; /* Red */
+  -fx-text-fill: white;
 }
 
 /* HyperLinks */

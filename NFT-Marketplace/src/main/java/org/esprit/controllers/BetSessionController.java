@@ -1,6 +1,9 @@
-package org.esprit.views;
+package org.esprit.controllers;
 
+import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ResourceBundle;
 
 import org.esprit.models.Artwork;
 import org.esprit.models.BetSession;
@@ -8,154 +11,159 @@ import org.esprit.models.User;
 import org.esprit.services.BetSessionService;
 import org.esprit.services.UserService;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
-public class BetSessionView {
-    private final BorderPane view;
-    private final TableView<BetSession> tableView;
-    private final BetSessionService betSessionService;
-    private final UserService userService;
+public class BetSessionController implements Initializable {
 
-    public BetSessionView() {
-        this.view = new BorderPane();
-        this.tableView = new TableView<>();
-        this.betSessionService = new BetSessionService();
-        this.userService = new UserService();
-
-        initializeUI();
+    @FXML
+    private TableView<BetSession> tableView;
+    
+    @FXML
+    private TableColumn<BetSession, Integer> idColumn;
+    
+    @FXML
+    private TableColumn<BetSession, String> authorColumn;
+    
+    @FXML
+    private TableColumn<BetSession, String> artworkColumn;
+    
+    @FXML
+    private TableColumn<BetSession, LocalDateTime> createdAtColumn;
+    
+    @FXML
+    private TableColumn<BetSession, LocalDateTime> startTimeColumn;
+    
+    @FXML
+    private TableColumn<BetSession, LocalDateTime> endTimeColumn;
+    
+    @FXML
+    private TableColumn<BetSession, Number> initialPriceColumn;
+    
+    @FXML
+    private TableColumn<BetSession, Number> currentPriceColumn;
+    
+    @FXML
+    private TableColumn<BetSession, String> statusColumn;
+    
+    @FXML
+    private Button addButton;
+    
+    @FXML
+    private Button updateButton;
+    
+    @FXML
+    private Button deleteButton;
+    
+    private BetSessionService betSessionService;
+    private UserService userService;
+    
+    public BetSessionController() {
+        betSessionService = new BetSessionService();
+        userService = new UserService();
     }
     
-    private void initializeUI() {
-        // TableView setup
-        TableColumn<BetSession, Integer> idColumn = new TableColumn<>("ID");
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // Setup table columns
         idColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
         
-        // Author column - Display author username
-        TableColumn<BetSession, String> authorColumn = new TableColumn<>("Author");
         authorColumn.setCellValueFactory(cellData -> {
             User author = cellData.getValue().getAuthor();
             return author != null ? 
-                   new javafx.beans.property.SimpleStringProperty(author.getName()) : 
-                   new javafx.beans.property.SimpleStringProperty("N/A");
+                   new SimpleStringProperty(author.getName()) : 
+                   new SimpleStringProperty("N/A");
         });
         
-        // Artwork column - Display artwork title
-        TableColumn<BetSession, String> artworkColumn = new TableColumn<>("Artwork");
         artworkColumn.setCellValueFactory(cellData -> {
             Artwork artwork = cellData.getValue().getArtwork();
             return artwork != null ? 
-                   new javafx.beans.property.SimpleStringProperty(artwork.getTitle()) : 
-                   new javafx.beans.property.SimpleStringProperty("N/A");
+                   new SimpleStringProperty(artwork.getTitle()) : 
+                   new SimpleStringProperty("N/A");
         });
         
-        // Created At column
-        TableColumn<BetSession, LocalDateTime> createdAtColumn = new TableColumn<>("Created At");
         createdAtColumn.setCellValueFactory(cellData -> cellData.getValue().createdAtProperty());
-        
-        // Start Time column
-        TableColumn<BetSession, LocalDateTime> startTimeColumn = new TableColumn<>("Start Time");
         startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
-        
-        // End Time column
-        TableColumn<BetSession, LocalDateTime> endTimeColumn = new TableColumn<>("End Time");
         endTimeColumn.setCellValueFactory(cellData -> cellData.getValue().endTimeProperty());
-        
-        // Initial Price column
-        TableColumn<BetSession, Number> initialPriceColumn = new TableColumn<>("Initial Price");
         initialPriceColumn.setCellValueFactory(cellData -> cellData.getValue().initialPriceProperty());
-        
-        // Current Price column
-        TableColumn<BetSession, Number> currentPriceColumn = new TableColumn<>("Current Price");
         currentPriceColumn.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
-        
-        // Status column
-        TableColumn<BetSession, String> statusColumn = new TableColumn<>("Status");
         statusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
-
-        tableView.getColumns().addAll(
-            idColumn, 
-            authorColumn, 
-            artworkColumn, 
-            createdAtColumn, 
-            startTimeColumn, 
-            endTimeColumn, 
-            initialPriceColumn, 
-            currentPriceColumn, 
-            statusColumn
-        );
-
-        // Buttons
-        Button addButton = new Button("Add");
-        Button updateButton = new Button("Update");
-        Button deleteButton = new Button("Delete");
-
-        addButton.setOnAction(e -> showAddDialog());
-        updateButton.setOnAction(e -> showUpdateDialog());
-        deleteButton.setOnAction(e -> deleteSelectedBetSession());
-
-        HBox buttonBox = new HBox(10, addButton, updateButton, deleteButton);
-        buttonBox.setPadding(new Insets(10));
-
-        // Layout
-        view.setCenter(tableView);
-        view.setBottom(buttonBox);
-
+        
+        // Load data
         loadBetSessions();
     }
-
+    
     private void loadBetSessions() {
-        tableView.getItems().setAll(betSessionService.getAllBetSessions());
-    }    private void showAddDialog() {
-        javafx.stage.Stage dialog = new javafx.stage.Stage();
-        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        tableView.setItems(FXCollections.observableArrayList(betSessionService.getAllBetSessions()));
+    }
+    
+    @FXML
+    private void showAddDialog() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Add New Bet Session");
         
-        // Create form components - using text fields for IDs instead of ComboBoxes
-        javafx.scene.control.TextField authorIdField = new javafx.scene.control.TextField();
-        javafx.scene.control.TextField artworkIdField = new javafx.scene.control.TextField();
-        javafx.scene.control.DatePicker startDatePicker = new javafx.scene.control.DatePicker();
-        javafx.scene.control.DatePicker endDatePicker = new javafx.scene.control.DatePicker();
-        javafx.scene.control.TextField initialPriceField = new javafx.scene.control.TextField();
-        javafx.scene.control.TextField currentPriceField = new javafx.scene.control.TextField();
-        javafx.scene.control.ComboBox<String> statusComboBox = new javafx.scene.control.ComboBox<>();
+        // Create form components
+        TextField authorIdField = new TextField();
+        TextField artworkIdField = new TextField();
+        DatePicker startDatePicker = new DatePicker();
+        DatePicker endDatePicker = new DatePicker();
+        TextField initialPriceField = new TextField();
+        TextField currentPriceField = new TextField();
+        ComboBox<String> statusComboBox = new ComboBox<>();
         
         // Set up status options
         statusComboBox.getItems().addAll("pending", "active", "completed", "cancelled");
         statusComboBox.setValue("pending");
         
         // Layout
-        javafx.scene.layout.GridPane formLayout = new javafx.scene.layout.GridPane();
-        formLayout.setPadding(new javafx.geometry.Insets(10));
+        GridPane formLayout = new GridPane();
+        formLayout.setPadding(new Insets(10));
         formLayout.setHgap(10);
         formLayout.setVgap(10);
         
-        formLayout.add(new javafx.scene.control.Label("Author ID:"), 0, 0);
+        formLayout.add(new Label("Author ID:"), 0, 0);
         formLayout.add(authorIdField, 1, 0);
-        formLayout.add(new javafx.scene.control.Label("Artwork ID:"), 0, 1);
+        formLayout.add(new Label("Artwork ID:"), 0, 1);
         formLayout.add(artworkIdField, 1, 1);
-        formLayout.add(new javafx.scene.control.Label("Start Date:"), 0, 2);
+        formLayout.add(new Label("Start Date:"), 0, 2);
         formLayout.add(startDatePicker, 1, 2);
-        formLayout.add(new javafx.scene.control.Label("End Date:"), 0, 3);
+        formLayout.add(new Label("End Date:"), 0, 3);
         formLayout.add(endDatePicker, 1, 3);
-        formLayout.add(new javafx.scene.control.Label("Initial Price:"), 0, 4);
+        formLayout.add(new Label("Initial Price:"), 0, 4);
         formLayout.add(initialPriceField, 1, 4);
-        formLayout.add(new javafx.scene.control.Label("Current Price:"), 0, 5);
+        formLayout.add(new Label("Current Price:"), 0, 5);
         formLayout.add(currentPriceField, 1, 5);
-        formLayout.add(new javafx.scene.control.Label("Status:"), 0, 6);
+        formLayout.add(new Label("Status:"), 0, 6);
         formLayout.add(statusComboBox, 1, 6);
         
         // Buttons
-        javafx.scene.control.Button saveButton = new javafx.scene.control.Button("Save");
-        javafx.scene.control.Button cancelButton = new javafx.scene.control.Button("Cancel");
+        Button saveButton = new Button("Save");
+        Button cancelButton = new Button("Cancel");
         
-        javafx.scene.layout.HBox buttonLayout = new javafx.scene.layout.HBox(10, saveButton, cancelButton);
-        buttonLayout.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
-        buttonLayout.setPadding(new javafx.geometry.Insets(10));
+        HBox buttonLayout = new HBox(10, saveButton, cancelButton);
+        buttonLayout.setAlignment(Pos.CENTER_RIGHT);
+        buttonLayout.setPadding(new Insets(10));
         
         saveButton.setOnAction(e -> {
             try {
@@ -174,15 +182,14 @@ public class BetSessionView {
                     artwork.setId(artworkId);
                     newBetSession.setArtwork(artwork);
                 } catch (NumberFormatException ex) {
-                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                            javafx.scene.control.Alert.AlertType.ERROR, 
+                    Alert alert = new Alert(AlertType.ERROR, 
                             "Please enter valid numeric IDs for Author and Artwork.");
                     alert.showAndWait();
                     return;
                 }
                 
                 // Get time values - set to noon by default
-                java.time.LocalTime defaultTime = java.time.LocalTime.of(12, 0);
+                LocalTime defaultTime = LocalTime.of(12, 0);
                 
                 if (startDatePicker.getValue() != null) {
                     newBetSession.setStartTime(startDatePicker.getValue().atTime(defaultTime));
@@ -203,8 +210,7 @@ public class BetSessionView {
                                          Double.parseDouble(currentPriceField.getText());
                     newBetSession.setCurrentPrice(currentPrice);
                 } catch (NumberFormatException ex) {
-                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                            javafx.scene.control.Alert.AlertType.ERROR, 
+                    Alert alert = new Alert(AlertType.ERROR, 
                             "Please enter valid prices.");
                     alert.showAndWait();
                     return;
@@ -222,8 +228,7 @@ public class BetSessionView {
                 dialog.close();
                 
             } catch (Exception ex) {
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                        javafx.scene.control.Alert.AlertType.ERROR, 
+                Alert alert = new Alert(AlertType.ERROR, 
                         "Error saving bet session: " + ex.getMessage());
                 alert.showAndWait();
             }
@@ -232,15 +237,17 @@ public class BetSessionView {
         cancelButton.setOnAction(e -> dialog.close());
         
         // Create scene
-        javafx.scene.layout.VBox root = new javafx.scene.layout.VBox(10, formLayout, buttonLayout);
-        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        VBox root = new VBox(10, formLayout, buttonLayout);
+        Scene scene = new Scene(root);
         dialog.setScene(scene);
         dialog.showAndWait();
-    }    private void showUpdateDialog() {
+    }
+    
+    @FXML
+    private void showUpdateDialog() {
         BetSession selectedBetSession = tableView.getSelectionModel().getSelectedItem();
         if (selectedBetSession == null) {
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.WARNING, 
+            Alert alert = new Alert(AlertType.WARNING, 
                     "Please select a bet session to update.");
             alert.showAndWait();
             return;
@@ -248,8 +255,7 @@ public class BetSessionView {
         
         // Check if bet session is in 'pending' status
         if (!"pending".equals(selectedBetSession.getStatus())) {
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.WARNING,
+            Alert alert = new Alert(AlertType.WARNING,
                     "Only pending bet sessions can be updated.");
             alert.setTitle("Cannot Update");
             alert.setHeaderText("Bet Session Not Pending");
@@ -257,16 +263,16 @@ public class BetSessionView {
             return;
         }
         
-        javafx.stage.Stage dialog = new javafx.stage.Stage();
-        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Update Bet Session");
         
         // Create form components - only for editable fields
-        javafx.scene.control.DatePicker startDatePicker = new javafx.scene.control.DatePicker();
-        javafx.scene.control.DatePicker endDatePicker = new javafx.scene.control.DatePicker();
-        javafx.scene.control.TextField initialPriceField = new javafx.scene.control.TextField();
-        javafx.scene.control.TextField currentPriceField = new javafx.scene.control.TextField();
-        javafx.scene.control.ComboBox<String> statusComboBox = new javafx.scene.control.ComboBox<>();
+        DatePicker startDatePicker = new DatePicker();
+        DatePicker endDatePicker = new DatePicker();
+        TextField initialPriceField = new TextField();
+        TextField currentPriceField = new TextField();
+        ComboBox<String> statusComboBox = new ComboBox<>();
         
         // Display author and artwork information (read-only)
         String authorInfo = selectedBetSession.getAuthor() != null ? 
@@ -281,8 +287,8 @@ public class BetSessionView {
                             ", Title: " + selectedBetSession.getArtwork().getTitle() : "") : 
                             "N/A";
         
-        javafx.scene.control.Label authorLabel = new javafx.scene.control.Label(authorInfo);
-        javafx.scene.control.Label artworkLabel = new javafx.scene.control.Label(artworkInfo);
+        Label authorLabel = new Label(authorInfo);
+        Label artworkLabel = new Label(artworkInfo);
         
         // Status options - restrict to relevant statuses
         statusComboBox.getItems().addAll("pending", "active");
@@ -301,33 +307,33 @@ public class BetSessionView {
         statusComboBox.setValue(selectedBetSession.getStatus());
         
         // Layout
-        javafx.scene.layout.GridPane formLayout = new javafx.scene.layout.GridPane();
-        formLayout.setPadding(new javafx.geometry.Insets(10));
+        GridPane formLayout = new GridPane();
+        formLayout.setPadding(new Insets(10));
         formLayout.setHgap(10);
         formLayout.setVgap(10);
         
-        formLayout.add(new javafx.scene.control.Label("Author (read-only):"), 0, 0);
+        formLayout.add(new Label("Author (read-only):"), 0, 0);
         formLayout.add(authorLabel, 1, 0);
-        formLayout.add(new javafx.scene.control.Label("Artwork (read-only):"), 0, 1);
+        formLayout.add(new Label("Artwork (read-only):"), 0, 1);
         formLayout.add(artworkLabel, 1, 1);
-        formLayout.add(new javafx.scene.control.Label("Start Date:"), 0, 2);
+        formLayout.add(new Label("Start Date:"), 0, 2);
         formLayout.add(startDatePicker, 1, 2);
-        formLayout.add(new javafx.scene.control.Label("End Date:"), 0, 3);
+        formLayout.add(new Label("End Date:"), 0, 3);
         formLayout.add(endDatePicker, 1, 3);
-        formLayout.add(new javafx.scene.control.Label("Initial Price:"), 0, 4);
+        formLayout.add(new Label("Initial Price:"), 0, 4);
         formLayout.add(initialPriceField, 1, 4);
-        formLayout.add(new javafx.scene.control.Label("Current Price:"), 0, 5);
+        formLayout.add(new Label("Current Price:"), 0, 5);
         formLayout.add(currentPriceField, 1, 5);
-        formLayout.add(new javafx.scene.control.Label("Status:"), 0, 6);
+        formLayout.add(new Label("Status:"), 0, 6);
         formLayout.add(statusComboBox, 1, 6);
         
         // Buttons
-        javafx.scene.control.Button updateButton = new javafx.scene.control.Button("Update");
-        javafx.scene.control.Button cancelButton = new javafx.scene.control.Button("Cancel");
+        Button updateButton = new Button("Update");
+        Button cancelButton = new Button("Cancel");
         
-        javafx.scene.layout.HBox buttonLayout = new javafx.scene.layout.HBox(10, updateButton, cancelButton);
-        buttonLayout.setAlignment(javafx.geometry.Pos.CENTER_RIGHT);
-        buttonLayout.setPadding(new javafx.geometry.Insets(10));
+        HBox buttonLayout = new HBox(10, updateButton, cancelButton);
+        buttonLayout.setAlignment(Pos.CENTER_RIGHT);
+        buttonLayout.setPadding(new Insets(10));
         
         updateButton.setOnAction(e -> {
             try {
@@ -335,11 +341,11 @@ public class BetSessionView {
                 // Only update time, price and status
                 
                 // Get time values - preserve existing time if available, otherwise use noon
-                java.time.LocalTime defaultTime = java.time.LocalTime.of(12, 0);
-                java.time.LocalTime existingStartTime = selectedBetSession.getStartTime() != null ? 
+                LocalTime defaultTime = LocalTime.of(12, 0);
+                LocalTime existingStartTime = selectedBetSession.getStartTime() != null ? 
                                                       selectedBetSession.getStartTime().toLocalTime() : 
                                                       defaultTime;
-                java.time.LocalTime existingEndTime = selectedBetSession.getEndTime() != null ? 
+                LocalTime existingEndTime = selectedBetSession.getEndTime() != null ? 
                                                     selectedBetSession.getEndTime().toLocalTime() : 
                                                     defaultTime;
                 
@@ -359,8 +365,7 @@ public class BetSessionView {
                     double currentPrice = Double.parseDouble(currentPriceField.getText());
                     selectedBetSession.setCurrentPrice(currentPrice);
                 } catch (NumberFormatException ex) {
-                    javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                            javafx.scene.control.Alert.AlertType.ERROR, 
+                    Alert alert = new Alert(AlertType.ERROR, 
                             "Please enter valid prices.");
                     alert.showAndWait();
                     return;
@@ -378,8 +383,7 @@ public class BetSessionView {
                 dialog.close();
                 
             } catch (Exception ex) {
-                javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                        javafx.scene.control.Alert.AlertType.ERROR, 
+                Alert alert = new Alert(AlertType.ERROR, 
                         "Error updating bet session: " + ex.getMessage());
                 alert.showAndWait();
             }
@@ -388,43 +392,41 @@ public class BetSessionView {
         cancelButton.setOnAction(e -> dialog.close());
         
         // Create scene
-        javafx.scene.layout.VBox root = new javafx.scene.layout.VBox(10, formLayout, buttonLayout);
-        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        VBox root = new VBox(10, formLayout, buttonLayout);
+        Scene scene = new Scene(root);
         dialog.setScene(scene);
         dialog.showAndWait();
-    }private void deleteSelectedBetSession() {
+    }
+    
+    @FXML
+    private void deleteSelectedBetSession() {
         BetSession selected = tableView.getSelectionModel().getSelectedItem();
         if (selected != null) {
             // Create confirmation dialog
-            javafx.scene.control.Alert confirmDialog = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.CONFIRMATION,
+            Alert confirmDialog = new Alert(AlertType.CONFIRMATION,
                     "Are you sure you want to delete this bet session?",
-                    javafx.scene.control.ButtonType.YES,
-                    javafx.scene.control.ButtonType.NO
+                    ButtonType.YES,
+                    ButtonType.NO
             );
             confirmDialog.setTitle("Confirm Deletion");
             confirmDialog.setHeaderText("Delete Bet Session #" + selected.getId());
             
             // Show dialog and wait for response
-            javafx.scene.control.ButtonType result = confirmDialog.showAndWait().orElse(javafx.scene.control.ButtonType.NO);
+            ButtonType result = confirmDialog.showAndWait().orElse(ButtonType.NO);
             
             // If user confirms, delete the bet session
-            if (result == javafx.scene.control.ButtonType.YES) {
+            if (result == ButtonType.YES) {
                 betSessionService.deleteBetSession(selected.getId());
                 loadBetSessions();
             }
         } else {
             // No bet session selected, show warning
-            javafx.scene.control.Alert warning = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.WARNING,
+            Alert warning = new Alert(AlertType.WARNING,
                     "Please select a bet session to delete."
             );
             warning.setTitle("No Selection");
             warning.setHeaderText("No Bet Session Selected");
             warning.showAndWait();
         }
-    }    public BorderPane getView() {
-        return view;
     }
-    
 }
