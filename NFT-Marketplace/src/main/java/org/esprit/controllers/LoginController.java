@@ -103,10 +103,9 @@ public class LoginController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminDashboard.fxml"));
             Parent adminView = loader.load();
-            
-            // Pass the authenticated admin user to the admin dashboard controller
+              // Pass the authenticated admin user to the admin dashboard controller
             AdminDashboardController controller = loader.getController();
-            controller.setCurrentUser(user);
+            controller.setCurrentUser(user);  // This sets the admin user for both user management and blog creation
             
             Scene currentScene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) currentScene.getWindow();
@@ -119,9 +118,11 @@ public class LoginController {
             e.printStackTrace();
         }
     }    private void navigateToProfile(ActionEvent event, User user) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Dashboard.fxml"));
+        try {            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Dashboard.fxml"));
             Parent dashboardView = loader.load();
+            
+            DashboardController dashboardController = loader.getController();
+            dashboardController.setCurrentUser(user);
             
             Stage window = (Stage) ((Node) event.getSource()).getScene().getWindow();
             window.setScene(new Scene(dashboardView));

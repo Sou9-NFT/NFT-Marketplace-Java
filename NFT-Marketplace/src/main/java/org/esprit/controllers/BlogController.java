@@ -18,6 +18,9 @@ import java.nio.file.StandardCopyOption;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.layout.VBox;
+import javafx.geometry.Insets;
+import javafx.scene.control.Label;
 
 public class BlogController implements Initializable {
     @FXML private ListView<Blog> blogListView;
@@ -39,15 +42,33 @@ public class BlogController implements Initializable {
         blogService = new BlogService();
         languageComboBox.setItems(languages);
         
-        // Set up the ListView cell factory for custom display
+        // Set up custom cell factory for blog list items
         blogListView.setCellFactory(lv -> new ListCell<Blog>() {
             @Override
             protected void updateItem(Blog blog, boolean empty) {
                 super.updateItem(blog, empty);
                 if (empty || blog == null) {
                     setText(null);
+                    setGraphic(null);
                 } else {
-                    setText(blog.getTitle() + " (" + blog.getDate() + ")");
+                    VBox container = new VBox(5);
+                    container.setPadding(new Insets(10));
+                    
+                    Label titleLabel = new Label(blog.getTitle());
+                    titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+                    
+                    Label contentPreview = new Label(blog.getContent().length() > 100 
+                        ? blog.getContent().substring(0, 100) + "..." 
+                        : blog.getContent());
+                    contentPreview.setStyle("-fx-text-fill: #666666; -fx-font-size: 12px;");
+                    contentPreview.setWrapText(true);
+                    
+                    Label dateLabel = new Label(blog.getDate().toString());
+                    dateLabel.setStyle("-fx-text-fill: #999999; -fx-font-size: 11px;");
+                    
+                    container.getChildren().addAll(titleLabel, contentPreview, dateLabel);
+                    setGraphic(container);
+                    setText(null);
                 }
             }
         });
@@ -70,16 +91,20 @@ public class BlogController implements Initializable {
         clearFields();
         currentBlog = new Blog();
         enableFields(true);
-    }
-
-    @FXML
+    }    @FXML
     private void handleSave() {
+        if (currentUser == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "You must be logged in to create or edit a blog.");
+            return;
+        }
+
         if (currentBlog == null) {
             currentBlog = new Blog();
         }
 
         currentBlog.setTitle(titleField.getText());
         currentBlog.setContent(contentArea.getText());
+        currentBlog.setUser(currentUser);
         
         Blog.ValidationResult validationResult = currentBlog.validate();
         if (!validationResult.isValid()) {
@@ -209,5 +234,10 @@ public class BlogController implements Initializable {
         alert.setTitle(title);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+    private User currentUser;
+    
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
     }
 }

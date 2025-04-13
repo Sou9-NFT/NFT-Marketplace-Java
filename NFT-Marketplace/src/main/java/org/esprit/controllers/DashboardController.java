@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 import org.esprit.main.NftMarketplaceApplication;
+import org.esprit.models.User;
 
 public class DashboardController {
     @FXML
@@ -16,13 +17,21 @@ public class DashboardController {
     private Button profilesButton;
     
     @FXML
-    private Button logoutButton;
+    private Button logoutButton;    private User currentUser;
+    
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+    }
 
     @FXML
     private void handleBlogsButton() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Blog.fxml"));
             Parent root = loader.load();
+            
+            BlogController blogController = loader.getController();
+            blogController.setCurrentUser(currentUser);
+            
             Stage stage = (Stage) blogsButton.getScene().getWindow();
             Scene scene = new Scene(root);
             stage.setScene(scene);

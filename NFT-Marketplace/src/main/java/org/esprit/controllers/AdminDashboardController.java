@@ -363,16 +363,20 @@ public class AdminDashboardController implements Initializable {
         clearBlogFields();
         currentBlog = new Blog();
         enableBlogFields(true);
-    }
-
-    @FXML
+    }    @FXML
     private void handleSaveBlog() {
+        if (currentAdminUser == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Admin user information is required to create or edit a blog.");
+            return;
+        }
+
         if (currentBlog == null) {
             currentBlog = new Blog();
         }
 
         currentBlog.setTitle(blogTitleField.getText());
         currentBlog.setContent(blogContentArea.getText());
+        currentBlog.setUser(currentAdminUser);
         
         Blog.ValidationResult validationResult = currentBlog.validate();
         if (!validationResult.isValid()) {
