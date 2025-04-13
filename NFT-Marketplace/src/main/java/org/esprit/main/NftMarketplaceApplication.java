@@ -6,15 +6,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-public class NftMarketplaceApplication extends Application {
-
-    @Override
+public class NftMarketplaceApplication extends Application {    @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BetSession.fxml"));
         Parent root = loader.load();
         
-        primaryStage.setTitle("NFT Marketplace");
-        primaryStage.setScene(new Scene(root, 600, 400));
+        primaryStage.setTitle("NFT Marketplace - Bet Session Management");
+        primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.show();
     }
 
