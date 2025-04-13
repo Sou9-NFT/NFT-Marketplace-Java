@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -55,6 +56,12 @@ public class AdminDashboardController {
 
     @FXML
     private Label statusLabel;
+    
+    @FXML
+    private Label adminNameLabel;
+    
+    @FXML
+    private VBox userManagementSection;
 
     private UserService userService;
     private ObservableList<User> userList = FXCollections.observableArrayList();
@@ -63,37 +70,237 @@ public class AdminDashboardController {
     public void initialize() {
         userService = new UserService();
         setupTableColumns();
-        loadAllUsers();
     }
 
     public void setCurrentUser(User user) {
         this.currentAdminUser = user;
+        if (adminNameLabel != null) {
+            adminNameLabel.setText("Welcome, " + user.getName());
+        }
     }
-
-    private void setupTableColumns() {
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-        emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
-        
-        rolesColumn.setCellValueFactory(cellData -> {
-            List<String> roles = cellData.getValue().getRoles();
-            String rolesString = roles.stream().collect(Collectors.joining(", "));
-            return new SimpleStringProperty(rolesString);
-        });
-        
-        balanceColumn.setCellValueFactory(new PropertyValueFactory<>("balance"));
-        
-        createdAtColumn.setCellValueFactory(cellData -> {
-            if (cellData.getValue().getCreatedAt() != null) {
-                String formattedDate = cellData.getValue().getCreatedAt()
-                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                return new SimpleStringProperty(formattedDate);
+    
+    @FXML
+    private void handleManageUsers(ActionEvent event) {
+        // Show the user management section instead of reloading the whole view
+        if (userManagementSection != null) {
+            userManagementSection.setVisible(true);
+            userManagementSection.setManaged(true);
+            loadAllUsers();
+        } else {
+            showAlert("Error", "User management section not found in the interface");
+        }
+    }
+    
+    @FXML
+    private void handleManageCategories(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CategoryManagement.fxml"));
+            Parent categoriesView = loader.load();
+            
+            CategoryManagementController controller = loader.getController();
+            controller.setCurrentUser(currentAdminUser);
+            
+            navigateToView(event, categoriesView, "NFT Marketplace - Category Management");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load category management: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleManageArtworks(ActionEvent event) {
+        if (getClass().getResource("/fxml/ArtworkManagement.fxml") != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ArtworkManagement.fxml"));
+                Parent artworkView = loader.load();
+                
+                if (loader.getController() instanceof ArtworkManagementController) {
+                    ArtworkManagementController controller = loader.getController();
+                    controller.setCurrentUser(currentAdminUser);
+                }
+                
+                navigateToView(event, artworkView, "NFT Marketplace - Artwork Management");
+            } catch (IOException e) {
+                showAlert("Error", "Could not load artwork management: " + e.getMessage());
+                e.printStackTrace();
             }
-            return new SimpleStringProperty("N/A");
-        });
+        } else {
+            showComingSoonView(event, "Artwork Management");
+        }
+    }
+    
+    @FXML
+    private void handleManageRaffles(ActionEvent event) {
+        if (getClass().getResource("/fxml/RaffleManagement.fxml") != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleManagement.fxml"));
+                Parent raffleView = loader.load();
+                
+                if (loader.getController() instanceof RaffleManagementController) {
+                    RaffleManagementController controller = loader.getController();
+                    controller.setCurrentUser(currentAdminUser);
+                }
+                
+                navigateToView(event, raffleView, "NFT Marketplace - Raffle Management");
+            } catch (IOException e) {
+                showAlert("Error", "Could not load raffle management: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            showComingSoonView(event, "Raffle Management");
+        }
+    }
+    
+    @FXML
+    private void handleManageTransactions(ActionEvent event) {
+        if (getClass().getResource("/fxml/TransactionManagement.fxml") != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TransactionManagement.fxml"));
+                Parent transactionView = loader.load();
+                
+                if (loader.getController() instanceof TransactionManagementController) {
+                    TransactionManagementController controller = loader.getController();
+                    controller.setCurrentUser(currentAdminUser);
+                }
+                
+                navigateToView(event, transactionView, "NFT Marketplace - Transaction Management");
+            } catch (IOException e) {
+                showAlert("Error", "Could not load transaction management: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            showComingSoonView(event, "Transaction Management");
+        }
+    }
+    
+    @FXML
+    private void handleAnalytics(ActionEvent event) {
+        if (getClass().getResource("/fxml/Analytics.fxml") != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Analytics.fxml"));
+                Parent analyticsView = loader.load();
+                
+                if (loader.getController() instanceof AnalyticsController) {
+                    AnalyticsController controller = loader.getController();
+                    controller.setCurrentUser(currentAdminUser);
+                }
+                
+                navigateToView(event, analyticsView, "NFT Marketplace - Analytics");
+            } catch (IOException e) {
+                showAlert("Error", "Could not load analytics: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            showComingSoonView(event, "Analytics");
+        }
+    }
+    
+    @FXML
+    private void handleSettings(ActionEvent event) {
+        if (getClass().getResource("/fxml/Settings.fxml") != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Settings.fxml"));
+                Parent settingsView = loader.load();
+                
+                if (loader.getController() instanceof SettingsController) {
+                    SettingsController controller = loader.getController();
+                    controller.setCurrentUser(currentAdminUser);
+                }
+                
+                navigateToView(event, settingsView, "NFT Marketplace - Settings");
+            } catch (IOException e) {
+                showAlert("Error", "Could not load settings: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            showComingSoonView(event, "Settings");
+        }
+    }
+    
+    @FXML
+    private void handleReports(ActionEvent event) {
+        if (getClass().getResource("/fxml/Reports.fxml") != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Reports.fxml"));
+                Parent reportsView = loader.load();
+                
+                if (loader.getController() instanceof ReportsController) {
+                    ReportsController controller = loader.getController();
+                    controller.setCurrentUser(currentAdminUser);
+                }
+                
+                navigateToView(event, reportsView, "NFT Marketplace - Reports");
+            } catch (IOException e) {
+                showAlert("Error", "Could not load reports: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            showComingSoonView(event, "Reports");
+        }
+    }
+    
+    @FXML
+    private void handleSystemLogs(ActionEvent event) {
+        if (getClass().getResource("/fxml/SystemLogs.fxml") != null) {
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SystemLogs.fxml"));
+                Parent logsView = loader.load();
+                
+                if (loader.getController() instanceof SystemLogsController) {
+                    SystemLogsController controller = loader.getController();
+                    controller.setCurrentUser(currentAdminUser);
+                }
+                
+                navigateToView(event, logsView, "NFT Marketplace - System Logs");
+            } catch (IOException e) {
+                showAlert("Error", "Could not load system logs: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            showComingSoonView(event, "System Logs");
+        }
+    }
+    
+    private void setupTableColumns() {
+        // Only set up if columns are properly injected
+        if (idColumn != null) {
+            idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
+        }
+        
+        if (nameColumn != null) {
+            nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        }
+        
+        if (emailColumn != null) {
+            emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
+        }
+        
+        if (rolesColumn != null) {
+            rolesColumn.setCellValueFactory(cellData -> {
+                List<String> roles = cellData.getValue().getRoles();
+                String rolesString = roles.stream().collect(Collectors.joining(", "));
+                return new SimpleStringProperty(rolesString);
+            });
+        }
+        
+        if (balanceColumn != null) {
+            balanceColumn.setCellValueFactory(new PropertyValueFactory<>("balance"));
+        }
+        
+        if (createdAtColumn != null) {
+            createdAtColumn.setCellValueFactory(cellData -> {
+                if (cellData.getValue().getCreatedAt() != null) {
+                    String formattedDate = cellData.getValue().getCreatedAt()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                    return new SimpleStringProperty(formattedDate);
+                }
+                return new SimpleStringProperty("N/A");
+            });
+        }
 
-        // Setup actions column with edit and delete buttons
-        setupActionsColumn();
+        if (actionsColumn != null) {
+            setupActionsColumn();
+        }
     }
 
     private void setupActionsColumn() {
@@ -158,7 +365,6 @@ public class AdminDashboardController {
         }
         
         try {
-            // Search by email
             User user = userService.getByEmail(searchText);
             userList.clear();
             
@@ -230,7 +436,6 @@ public class AdminDashboardController {
     }
 
     private void confirmAndDeleteUser(User user) {
-        // Don't allow admins to delete themselves
         if (currentAdminUser != null && user.getId() == currentAdminUser.getId()) {
             showStatus("You cannot delete your own account.", true);
             return;
@@ -281,37 +486,54 @@ public class AdminDashboardController {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             Parent loginView = loader.load();
             
-            Scene currentScene = ((Button) event.getSource()).getScene();
-            Stage stage = (Stage) currentScene.getWindow();
-            
-            stage.setScene(new Scene(loginView, 600, 400));
-            stage.setTitle("NFT Marketplace - Login");
-            stage.show();
+            navigateToView(event, loginView, "NFT Marketplace - Login");
         } catch (IOException e) {
             showStatus("Error logging out: " + e.getMessage(), true);
             e.printStackTrace();
         }
     }
     
-    @FXML
-    private void handleManageCategories(ActionEvent event) {
+    private void navigateToView(ActionEvent event, Parent view, String title) {
+        Scene currentScene = ((Button) event.getSource()).getScene();
+        Stage stage = (Stage) currentScene.getWindow();
+        
+        stage.setScene(new Scene(view));
+        stage.setTitle(title);
+        stage.show();
+    }
+    
+    private void showComingSoonView(ActionEvent event, String featureName) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CategoryManagement.fxml"));
-            Parent categoriesView = loader.load();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ComingSoon.fxml"));
             
-            CategoryManagementController controller = loader.getController();
-            controller.setCurrentUser(currentAdminUser);
-            
-            Scene currentScene = ((Button) event.getSource()).getScene();
-            Stage stage = (Stage) currentScene.getWindow();
-            
-            stage.setScene(new Scene(categoriesView));
-            stage.setTitle("NFT Marketplace - Category Management");
-            stage.show();
+            Parent comingSoonView;
+            if (loader.getLocation() == null) {
+                showAlert("Coming Soon", featureName + " feature is coming soon!");
+                return;
+            } else {
+                comingSoonView = loader.load();
+                
+                if (loader.getController() != null) {
+                    try {
+                        loader.getController().getClass().getMethod("setFeatureName", String.class)
+                            .invoke(loader.getController(), featureName);
+                    } catch (Exception e) {
+                    }
+                }
+                
+                navigateToView(event, comingSoonView, "NFT Marketplace - Coming Soon");
+            }
         } catch (IOException e) {
-            showStatus("Error loading category management: " + e.getMessage(), true);
-            e.printStackTrace();
+            showAlert("Coming Soon", featureName + " feature is coming soon!");
         }
+    }
+    
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
     
     public void refreshUserList() {
@@ -320,15 +542,17 @@ public class AdminDashboardController {
     }
 
     private void showStatus(String message, boolean isError) {
-        statusLabel.setText(message);
-        statusLabel.setVisible(!message.isEmpty());
-        
-        if (isError) {
-            statusLabel.getStyleClass().removeAll("status-success");
-            statusLabel.getStyleClass().add("status-error");
-        } else {
-            statusLabel.getStyleClass().removeAll("status-error");
-            statusLabel.getStyleClass().add("status-success");
+        if (statusLabel != null) {
+            statusLabel.setText(message);
+            statusLabel.setVisible(!message.isEmpty());
+            
+            if (isError) {
+                statusLabel.getStyleClass().removeAll("status-success");
+                statusLabel.getStyleClass().add("status-error");
+            } else {
+                statusLabel.getStyleClass().removeAll("status-error");
+                statusLabel.getStyleClass().add("status-success");
+            }
         }
     }
 }

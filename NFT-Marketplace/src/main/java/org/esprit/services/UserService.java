@@ -128,6 +128,11 @@ public class UserService implements IService<User> {
         
         return users;
     }
+
+    @Override
+    public User getOne(int id) throws Exception {
+        return getById(id);
+    }
     
     public User getById(int id) throws Exception {
         String sql = "SELECT * FROM user WHERE id = ?";

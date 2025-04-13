@@ -1,12 +1,15 @@
 package org.esprit.services;
 
-import org.esprit.models.Category;
-import org.esprit.utils.DatabaseConnection;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
+
+import org.esprit.models.Category;
+import org.esprit.utils.DatabaseConnection;
 
 public class CategoryService implements IService<Category> {
     
@@ -105,6 +108,11 @@ public class CategoryService implements IService<Category> {
         }
         
         return categories;
+    }
+    
+    @Override
+    public Category getOne(int id) throws Exception {
+        return getById(id);
     }
     
     public Category getById(int id) throws Exception {

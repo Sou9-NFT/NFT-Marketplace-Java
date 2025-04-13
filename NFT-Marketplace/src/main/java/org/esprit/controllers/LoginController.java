@@ -122,21 +122,22 @@ public class LoginController {
     
     private void navigateToProfile(ActionEvent event, User user) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Profile.fxml"));
-            Parent profileView = loader.load();
+            // Load UserDashboard view for regular users
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserDashboard.fxml"));
+            Parent userDashboardView = loader.load();
             
-            // Pass the authenticated user to the profile controller
-            ProfileController controller = loader.getController();
-            controller.setUser(user);
+            // Pass the authenticated user to the user dashboard controller
+            UserDashboardController controller = loader.getController();
+            controller.setCurrentUser(user);
             
             Scene currentScene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) currentScene.getWindow();
             
-            stage.setScene(new Scene(profileView, 800, 600));
-            stage.setTitle("NFT Marketplace - Profile");
+            stage.setScene(new Scene(userDashboardView, 800, 600));
+            stage.setTitle("NFT Marketplace - User Dashboard");
             stage.show();
         } catch (IOException e) {
-            showError("Error loading profile page: " + e.getMessage());
+            showError("Error loading user dashboard: " + e.getMessage());
             e.printStackTrace();
         }
     }

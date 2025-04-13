@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="15" alignment="CENTER" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.CreateRaffleController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Create New Raffle" styleClass="title-label"/>
+    
+    <TextField fx:id="titleField" promptText="Raffle Title" styleClass="form-field"/>
+    
+    <TextArea fx:id="descriptionField" 
+              promptText="Raffle Description" 
+              prefRowCount="3" 
+              wrapText="true"
+              styleClass="form-field"/>
+    
+    <TextField fx:id="artworkIdField" 
+              promptText="Artwork ID"
+              styleClass="form-field"/>
+    
+    <VBox spacing="5">
+        <Label text="End Date and Time"/>
+        <HBox spacing="10">
+            <DatePicker fx:id="endDatePicker" 
+                    promptText="End Date"
+                    maxWidth="Infinity"
+                    HBox.hgrow="ALWAYS"
+                    styleClass="form-field"/>
+            
+            <ComboBox fx:id="endTimeHourCombo" 
+                    prefWidth="80"
+                    promptText="Hour"
+                    styleClass="form-field"/>
+                    
+            <ComboBox fx:id="endTimeMinuteCombo"
+                    prefWidth="80"
+                    promptText="Minute"
+                    styleClass="form-field"/>
+        </HBox>
+    </VBox>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Create Raffle" 
+                onAction="#handleCreateRaffle"
+                styleClass="primary-button"/>
+        <Button text="Cancel" 
+                onAction="#handleCancel"
+                styleClass="secondary-button"/>
+    </HBox>
+    
+    <Label fx:id="statusLabel" visible="false" wrapText="true"/>
+</VBox>
