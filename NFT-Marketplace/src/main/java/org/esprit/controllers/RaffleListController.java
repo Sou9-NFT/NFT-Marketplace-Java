@@ -14,6 +14,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -41,6 +42,7 @@ public class RaffleListController {
     private User currentUser;
     private RaffleService raffleService;
     
+    @FXML
     public void initialize() {
         raffleService = new RaffleService();
         
@@ -51,10 +53,14 @@ public class RaffleListController {
         // Add listener for search field and status filter
         searchField.textProperty().addListener((observable, oldValue, newValue) -> refreshRaffles());
         statusFilter.valueProperty().addListener((observable, oldValue, newValue) -> refreshRaffles());
+
+        // Initial load of raffles
+        refreshRaffles();
     }
-    
+
     public void setUser(User user) {
         this.currentUser = user;
+        // Refresh raffles again after user is set
         refreshRaffles();
     }
     
@@ -212,6 +218,27 @@ public class RaffleListController {
         }
         if (statusFilter != null) {
             statusFilter.getItems().clear();
+        }
+    }
+
+    @FXML
+    private void handleBack(ActionEvent event) {
+        try {
+            // Return to the user dashboard
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserDashboard.fxml"));
+            Parent dashboardView = loader.load();
+            
+            UserDashboardController controller = loader.getController();
+            controller.setCurrentUser(currentUser);
+            
+            Scene scene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) scene.getWindow();
+            
+            scene.setRoot(dashboardView);
+            stage.setTitle("NFT Marketplace - User Dashboard");
+        } catch (IOException e) {
+            showError("Failed to return to dashboard: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
