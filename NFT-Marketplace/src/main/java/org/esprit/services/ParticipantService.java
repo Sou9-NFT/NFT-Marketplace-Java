@@ -16,12 +16,10 @@ import org.esprit.utils.DatabaseConnection;
 public class ParticipantService implements IService<Participant> {
     private Connection connection;
     private UserService userService;
-    private RaffleService raffleService;
 
     public ParticipantService() {
         connection = DatabaseConnection.getInstance().getConnection();
         userService = new UserService();
-        raffleService = new RaffleService();
     }
 
     @Override
@@ -67,12 +65,13 @@ public class ParticipantService implements IService<Participant> {
     @Override
     public List<Participant> getAll() throws Exception {
         List<Participant> participants = new ArrayList<>();
-        String query = "SELECT * FROM participant";
+        String query = "SELECT p.*, u.name as user_name, u.email as user_email FROM participant p " +
+                      "JOIN user u ON p.user_id = u.id";
         Statement st = connection.createStatement();
         ResultSet rs = st.executeQuery(query);
         
         while (rs.next()) {
-            participants.add(extractParticipantFromResultSet(rs));
+            participants.add(extractParticipantFromResultSet(rs, false));
         }
         
         return participants;
@@ -80,26 +79,30 @@ public class ParticipantService implements IService<Participant> {
 
     @Override
     public Participant getOne(int id) throws Exception {
-        String query = "SELECT * FROM participant WHERE id=?";
+        String query = "SELECT p.*, u.name as user_name, u.email as user_email FROM participant p " +
+                      "JOIN user u ON p.user_id = u.id " +
+                      "WHERE p.id=?";
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setInt(1, id);
         ResultSet rs = ps.executeQuery();
         
         if (rs.next()) {
-            return extractParticipantFromResultSet(rs);
+            return extractParticipantFromResultSet(rs, false);
         }
         return null;
     }
 
     public List<Participant> getByRaffle(Raffle raffle) throws Exception {
         List<Participant> participants = new ArrayList<>();
-        String query = "SELECT * FROM participant WHERE raffle_id=?";
+        String query = "SELECT p.*, u.name as user_name, u.email as user_email FROM participant p " +
+                      "JOIN user u ON p.user_id = u.id " +
+                      "WHERE p.raffle_id=?";
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setInt(1, raffle.getId());
         ResultSet rs = ps.executeQuery();
         
         while (rs.next()) {
-            participants.add(extractParticipantFromResultSet(rs));
+            participants.add(extractParticipantFromResultSet(rs, false));
         }
         
         return participants;
@@ -107,24 +110,40 @@ public class ParticipantService implements IService<Participant> {
 
     public List<Participant> getByUser(User user) throws Exception {
         List<Participant> participants = new ArrayList<>();
-        String query = "SELECT * FROM participant WHERE user_id=?";
+        String query = "SELECT p.*, r.title as raffle_title, u.name as user_name, u.email as user_email FROM participant p " +
+                      "JOIN raffle r ON p.raffle_id = r.id " +
+                      "JOIN user u ON p.user_id = u.id " +
+                      "WHERE p.user_id=?";
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setInt(1, user.getId());
         ResultSet rs = ps.executeQuery();
         
         while (rs.next()) {
-            participants.add(extractParticipantFromResultSet(rs));
+            participants.add(extractParticipantFromResultSet(rs, true));
         }
         
         return participants;
     }
 
-    private Participant extractParticipantFromResultSet(ResultSet rs) throws Exception {
+    private Participant extractParticipantFromResultSet(ResultSet rs, boolean includeRaffleDetails) throws Exception {
         Participant participant = new Participant();
-        
         participant.setId(rs.getInt("id"));
-        participant.setRaffle(raffleService.getOne(rs.getInt("raffle_id")));
-        participant.setUser(userService.getOne(rs.getInt("user_id")));
+        
+        // Create minimal Raffle object
+        Raffle raffle = new Raffle();
+        raffle.setId(rs.getInt("raffle_id"));
+        if (includeRaffleDetails) {
+            raffle.setTitle(rs.getString("raffle_title"));
+        }
+        participant.setRaffle(raffle);
+        
+        // Create User object with available details
+        User user = new User();
+        user.setId(rs.getInt("user_id"));
+        user.setName(rs.getString("user_name"));
+        user.setEmail(rs.getString("user_email"));
+        participant.setUser(user);
+        
         participant.setName(rs.getString("name"));
         
         Timestamp joinedAt = rs.getTimestamp("joined_at");

@@ -103,10 +103,9 @@ public class LoginController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminDashboard.fxml"));
             Parent adminView = loader.load();
-            
-            // Pass the authenticated admin user to the admin dashboard controller
+              // Pass the authenticated admin user to the admin dashboard controller
             AdminDashboardController controller = loader.getController();
-            controller.setCurrentUser(user);
+            controller.setCurrentUser(user);  // This sets the admin user for both user management and blog creation
             
             Scene currentScene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) currentScene.getWindow();

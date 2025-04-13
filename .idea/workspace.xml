@@ -6,6 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="fcec73b1-e0db-46ed-82d5-5664b449271f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/ArtworkManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/ArtworkManagementController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/UserDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/UserDashboardController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/TradeOfferListController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/TradeOfferListController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/main/TestCrudArtwork.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/main/TestCrudArtwork.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/services/ArtworkService.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/services/ArtworkService.java" afterDir="false" />
@@ -38,6 +41,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Application.BetSessionApp.executor&quot;: &quot;Run&quot;,
+    &quot;Application.NftMarketplaceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Application.TestCrudArtwork.executor&quot;: &quot;Run&quot;,
+    &quot;Application.TestCrudCategory.executor&quot;: &quot;Run&quot;,
+    &quot;Application.TestCrudParticipant.executor&quot;: &quot;Run&quot;,
+    &quot;Application.TestCrudRaffle.executor&quot;: &quot;Run&quot;,
+    &quot;Application.TestCrudUser.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.NFT-Marketplace [javafx:run].executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Artwork&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.language&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
@@ -170,6 +197,8 @@
       <workItem from="1744505882928" duration="1629000" />
       <workItem from="1744542438231" duration="2173000" />
       <workItem from="1744544732269" duration="1713000" />
+      <workItem from="1744561266430" duration="498000" />
+      <workItem from="1744561774312" duration="243000" />
       <workItem from="1744573347267" duration="3797000" />
     </task>
     <servers />
