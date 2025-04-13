@@ -1,14 +1,17 @@
 package org.esprit.services;
 
-import org.esprit.models.User;
-import org.esprit.utils.DatabaseConnection;
-
-import java.sql.*;
-import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
+
+import org.esprit.models.User;
+import org.esprit.utils.DatabaseConnection;
 
 public class UserService implements IService<User> {
     
@@ -124,6 +127,11 @@ public class UserService implements IService<User> {
         }
         
         return users;
+    }
+
+    @Override
+    public User getOne(int id) throws Exception {
+        return getById(id);
     }
     
     public User getById(int id) throws Exception {

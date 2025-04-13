@@ -1,13 +1,15 @@
 package org.esprit.services;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.esprit.models.Blog;
 import org.esprit.models.User;
 import org.esprit.utils.DatabaseConnection;
-
-import java.sql.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BlogService implements IService<Blog> {
     
@@ -91,6 +93,11 @@ public class BlogService implements IService<Blog> {
         }
         
         return blogs;
+    }
+    
+    @Override
+    public Blog getOne(int id) throws Exception {
+        return getById(id);
     }
     
     public Blog getById(int id) throws Exception {
