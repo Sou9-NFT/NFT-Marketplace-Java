@@ -3,6 +3,7 @@ package org.esprit.controllers;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.esprit.models.User;
 import org.esprit.services.UserService;
@@ -193,98 +194,117 @@ public class UserFormController {
     }
 
     private boolean validateInput() {
-        boolean isValid = true;
-        String name = nameField.getText().trim();
-        String email = emailField.getText().trim();
-        String password = passwordField.getText();
-        String balanceText = balanceField.getText().trim();
-
-        // Validate name
-        if (name.isEmpty()) {
-            showFieldError(nameErrorLabel, "Name is required");
-            nameField.getStyleClass().add("error");
-            isValid = false;
+        // Create a new User with the form data to use entity validation
+        User userToValidate;
+        
+        if (mode == FormMode.ADD) {
+            userToValidate = new User(
+                emailField.getText().trim(),
+                passwordField.getText(),
+                nameField.getText().trim()
+            );
         } else {
-            nameField.getStyleClass().removeAll("error");
-            nameErrorLabel.setVisible(false);
-        }
-
-        // Validate email
-        if (email.isEmpty()) {
-            showFieldError(emailErrorLabel, "Email is required");
-            emailField.getStyleClass().add("error");
-            isValid = false;
-        } else if (!email.contains("@") || !email.contains(".")) {
-            showFieldError(emailErrorLabel, "Please enter a valid email address");
-            emailField.getStyleClass().add("error");
-            isValid = false;
-        } else {
-            emailField.getStyleClass().removeAll("error");
-            emailErrorLabel.setVisible(false);
-        }
-
-        // Validate password based on mode
-        if (mode == FormMode.ADD && password.isEmpty()) {
-            showFieldError(passwordErrorLabel, "Password is required for new users");
-            passwordField.getStyleClass().add("error");
-            isValid = false;
-        } else if (mode == FormMode.ADD && password.length() < 6) {
-            showFieldError(passwordErrorLabel, "Password must be at least 6 characters");
-            passwordField.getStyleClass().add("error");
-            isValid = false;
-        } else if (mode == FormMode.EDIT && !password.isEmpty() && password.length() < 6) {
-            showFieldError(passwordErrorLabel, "Password must be at least 6 characters");
-            passwordField.getStyleClass().add("error");
-            isValid = false;
-        } else {
-            passwordField.getStyleClass().removeAll("error");
-            passwordErrorLabel.setVisible(false);
-        }
-
-        // Validate balance
-        if (!balanceText.isEmpty()) {
-            try {
-                new BigDecimal(balanceText);
-                balanceField.getStyleClass().removeAll("error");
-                balanceErrorLabel.setVisible(false);
-            } catch (NumberFormatException e) {
-                showFieldError(balanceErrorLabel, "Balance must be a valid number");
-                balanceField.getStyleClass().add("error");
-                isValid = false;
+            userToValidate = new User();
+            userToValidate.setId(userToEdit != null ? userToEdit.getId() : 0);
+            userToValidate.setEmail(emailField.getText().trim());
+            userToValidate.setName(nameField.getText().trim());
+            
+            // Only set password if it's not empty (for edit mode)
+            String password = passwordField.getText();
+            if (!password.isEmpty()) {
+                userToValidate.setPassword(password);
             }
         }
-
-        // Validate roles
-        if (!roleUserCheckbox.isSelected() && !roleAdminCheckbox.isSelected()) {
-            showFieldError(rolesErrorLabel, "At least one role must be selected");
-            isValid = false;
-        } else {
-            rolesErrorLabel.setVisible(false);
+        
+        // Set other fields
+        String balanceText = balanceField.getText().trim();
+        if (!balanceText.isEmpty()) {
+            try {
+                userToValidate.setBalance(new BigDecimal(balanceText));
+            } catch (NumberFormatException e) {
+                // Will be caught by validation
+            }
         }
-
-        // Validate wallet address (optional)
+        
         String walletAddress = walletField.getText().trim();
-        if (!walletAddress.isEmpty() && (!walletAddress.startsWith("0x") || walletAddress.length() != 42)) {
-            showFieldError(walletErrorLabel, "Wallet address should be in format 0x... (42 chars)");
-            walletField.getStyleClass().add("error");
-            isValid = false;
-        } else {
-            walletField.getStyleClass().removeAll("error");
-            walletErrorLabel.setVisible(false);
+        if (!walletAddress.isEmpty()) {
+            userToValidate.setWalletAddress(walletAddress);
         }
-
-        // GitHub username validation (optional)
+        
         String githubUsername = githubField.getText().trim();
-        if (!githubUsername.isEmpty() && githubUsername.contains(" ")) {
-            showFieldError(githubErrorLabel, "GitHub username cannot contain spaces");
-            githubField.getStyleClass().add("error");
-            isValid = false;
-        } else {
-            githubField.getStyleClass().removeAll("error");
-            githubErrorLabel.setVisible(false);
+        if (!githubUsername.isEmpty()) {
+            userToValidate.setGithubUsername(githubUsername);
         }
-
-        return isValid;
+        
+        // Set roles
+        List<String> roles = new ArrayList<>();
+        if (roleUserCheckbox.isSelected()) {
+            roles.add("ROLE_USER");
+        }
+        if (roleAdminCheckbox.isSelected()) {
+            roles.add("ROLE_ADMIN");
+        }
+        userToValidate.setRoles(roles);
+        
+        // Use the User entity validation
+        User.ValidationResult result = userToValidate.validate();
+        
+        // Reset all field styling
+        nameField.getStyleClass().removeAll("error");
+        emailField.getStyleClass().removeAll("error");
+        passwordField.getStyleClass().removeAll("error");
+        balanceField.getStyleClass().removeAll("error");
+        walletField.getStyleClass().removeAll("error");
+        githubField.getStyleClass().removeAll("error");
+        
+        // Hide all error labels first
+        hideAllErrorLabels();
+        
+        // If valid, return true immediately
+        if (result.isValid()) {
+            return true;
+        }
+        
+        // Handle validation errors
+        Map<String, String> errors = result.getErrors();
+        
+        // Show field-specific errors
+        if (errors.containsKey("name")) {
+            showFieldError(nameErrorLabel, errors.get("name"));
+            nameField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("email")) {
+            showFieldError(emailErrorLabel, errors.get("email"));
+            emailField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("password")) {
+            showFieldError(passwordErrorLabel, errors.get("password"));
+            passwordField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("balance")) {
+            showFieldError(balanceErrorLabel, errors.get("balance"));
+            balanceField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("walletAddress")) {
+            showFieldError(walletErrorLabel, errors.get("walletAddress"));
+            walletField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("githubUsername")) {
+            showFieldError(githubErrorLabel, errors.get("githubUsername"));
+            githubField.getStyleClass().add("error");
+        }
+        
+        // Check if roles are selected (this is not in User entity validation)
+        if (roles.isEmpty()) {
+            showFieldError(rolesErrorLabel, "At least one role must be selected");
+        }
+        
+        return false;
     }
 
     private void showFieldError(Label errorLabel, String message) {
