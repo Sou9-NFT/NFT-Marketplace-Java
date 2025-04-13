@@ -13,6 +13,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -68,6 +69,12 @@ public class AdminDashboardController implements Initializable {
 
     @FXML
     private Label statusLabel;
+    
+    @FXML
+    private Label adminNameLabel;
+    
+    @FXML
+    private Pane userManagementSection;
 
     // Blog Management
     @FXML private ListView<Blog> blogListView;
