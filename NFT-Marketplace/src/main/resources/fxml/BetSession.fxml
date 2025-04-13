@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.esprit.controllers.BetSessionController"
+            prefWidth="800" prefHeight="600"
+            stylesheets="@../styles/main.css">
+    <center>
+        <TableView fx:id="tableView">
+            <columns>
+                <TableColumn fx:id="idColumn" text="ID"/>
+                <TableColumn fx:id="authorColumn" text="Author"/>
+                <TableColumn fx:id="artworkColumn" text="Artwork"/>
+                <TableColumn fx:id="createdAtColumn" text="Created At"/>
+                <TableColumn fx:id="startTimeColumn" text="Start Time"/>
+                <TableColumn fx:id="endTimeColumn" text="End Time"/>
+                <TableColumn fx:id="initialPriceColumn" text="Initial Price"/>
+                <TableColumn fx:id="currentPriceColumn" text="Current Price"/>
+                <TableColumn fx:id="statusColumn" text="Status"/>
+            </columns>
+        </TableView>    </center>
+    <bottom>
+        <HBox spacing="10" alignment="CENTER">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Button fx:id="addButton" text="Add" onAction="#showAddDialog"/>
+            <Button fx:id="updateButton" text="Update" onAction="#showUpdateDialog"/>
+            <Button fx:id="deleteButton" text="Delete" onAction="#deleteSelectedBetSession"/>
+        </HBox>
+    </bottom>
+</BorderPane>
