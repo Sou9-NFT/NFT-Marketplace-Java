@@ -80,6 +80,22 @@
   -fx-border-color: -primary-color;
 }
 
+/* Field validation styling */
+.field-error {
+  -fx-text-fill: -invalid-color;
+  -fx-font-size: 12px;
+  -fx-padding: 0 0 0 2px;
+  -fx-graphic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%23e34f4f" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0-1.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>');
+  -fx-graphic-text-gap: 4px;
+  -fx-opacity: 0.9;
+}
+
+.text-field:error,
+.password-field:error {
+  -fx-border-color: -invalid-color;
+  -fx-effect: dropshadow(gaussian, rgba(227, 79, 79, 0.15), 4, 0, 0, 0);
+}
+
 /* Buttons */
 .button {
   -fx-background-color: #4CAF50;
