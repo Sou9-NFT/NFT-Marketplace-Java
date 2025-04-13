@@ -61,15 +61,20 @@ public class RaffleService implements IService<Raffle> {
     public void update(Raffle raffle) throws SQLException {
         // First check if this raffle needs to be ended
         if (raffle.getStatus().equals("active") && raffle.getEndTime().before(new Date())) {
-            raffle.setStatus("ended");
+            System.out.println("Raffle has expired during update: " + raffle.getId() + " - " + raffle.getTitle());
             try {
+                // Set status to ended before calling selectWinner
+                raffle.setStatus("ended");
                 selectWinner(raffle);
-                return; // Winner has been selected and raffle updated
+                return; // Winner has been selected and raffle updated, no need to continue
             } catch (Exception e) {
+                System.err.println("Error selecting winner during update: " + e.getMessage());
                 e.printStackTrace();
+                // Continue with normal update if selectWinner fails
             }
         }
 
+        // Normal update for raffle that doesn't need to be ended or if selectWinner failed
         String query = "UPDATE raffle SET title=?, raffle_description=?, end_time=?, status=?, winner_id=?, artwork_id=? WHERE id=?";
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setString(1, raffle.getTitle());
@@ -84,7 +89,8 @@ public class RaffleService implements IService<Raffle> {
         ps.setInt(6, raffle.getArtworkId());
         ps.setInt(7, raffle.getId());
         
-        ps.executeUpdate();    }
+        ps.executeUpdate();
+    }
 
     public void delete(Raffle raffle) throws SQLException {
         connection.setAutoCommit(false);
@@ -198,24 +204,15 @@ public class RaffleService implements IService<Raffle> {
         while (rs.next()) {
             Raffle raffle = extractRaffleFromResultSet(rs);
             try {
-                // Get participants for the raffle
-                List<Participant> participants = getParticipantService().getByRaffle(raffle);
+                System.out.println("Found expired raffle: " + raffle.getTitle() + " (ID: " + raffle.getId() + ")");
                 
-                // Set status to ended
+                // Instead of handling winner selection here, use the selectWinner method
+                // which properly handles the artwork transfer
                 raffle.setStatus("ended");
-                
-                // Select winner if there are participants
-                if (!participants.isEmpty()) {
-                    // Random selection of winner
-                    Random random = new Random();
-                    Participant winner = participants.get(random.nextInt(participants.size()));
-                    raffle.setWinnerId(winner.getUser().getId());
-                }
-                
-                // Update raffle in database
-                update(raffle);
+                selectWinner(raffle);
                 
             } catch (Exception e) {
+                System.err.println("Error processing expired raffle " + raffle.getId() + ": " + e.getMessage());
                 e.printStackTrace();
                 // Continue with next raffle even if one fails
             }
@@ -224,6 +221,7 @@ public class RaffleService implements IService<Raffle> {
 
     private boolean transferArtworkOwnership(Artwork artwork, User winner) throws Exception {
         if (winner == null || artwork == null) {
+            System.err.println("Cannot transfer ownership: winner or artwork is null");
             return false;
         }
         
@@ -231,6 +229,13 @@ public class RaffleService implements IService<Raffle> {
         connection.setAutoCommit(false);
         
         try {
+            // Store original owner ID for logging
+            int originalOwnerId = artwork.getOwnerId();
+            
+            System.out.println("Transferring artwork ownership - Artwork ID: " + artwork.getId() + 
+                ", Current owner ID: " + originalOwnerId + 
+                ", New owner (winner) ID: " + winner.getId());
+            
             // Update artwork ownership in database
             String updateArtworkSql = "UPDATE artwork SET owner_id = ?, updated_at = ? WHERE id = ?";
             try (PreparedStatement stmt = connection.prepareStatement(updateArtworkSql)) {
@@ -242,17 +247,48 @@ public class RaffleService implements IService<Raffle> {
                 if (rowsAffected == 0) {
                     throw new SQLException("Failed to update artwork ownership");
                 }
+                
+                System.out.println("Database update successful. " + rowsAffected + " row(s) affected.");
+            }
+            
+            // Verify the update by querying the database
+            String verifySql = "SELECT owner_id FROM artwork WHERE id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(verifySql)) {
+                stmt.setInt(1, artwork.getId());
+                ResultSet rs = stmt.executeQuery();
+                
+                if (rs.next()) {
+                    int updatedOwnerId = rs.getInt("owner_id");
+                    if (updatedOwnerId != winner.getId()) {
+                        System.err.println("ERROR: Database verification failed. Expected owner_id: " + 
+                            winner.getId() + ", Actual owner_id: " + updatedOwnerId);
+                    } else {
+                        System.out.println("Database verification successful. owner_id is now: " + updatedOwnerId);
+                    }
+                }
             }
             
             // Update the artwork object
             artwork.setOwnerId(winner.getId());
             artwork.setUpdatedAt(LocalDateTime.now());
             
+            // Log the ownership transfer
+            System.out.println(String.format(
+                "Artwork ownership transferred - Artwork ID: %d, Title: %s, From User ID: %d, To Winner ID: %d, Winner Name: %s",
+                artwork.getId(), 
+                artwork.getTitle(),
+                originalOwnerId,
+                winner.getId(),
+                winner.getName()
+            ));
+            
             // Commit the transaction
             connection.commit();
             return true;
             
         } catch (Exception e) {
+            System.err.println("Error transferring artwork ownership: " + e.getMessage());
+            e.printStackTrace();
             connection.rollback();
             throw e;
         } finally {
@@ -263,29 +299,45 @@ public class RaffleService implements IService<Raffle> {
     private void selectWinner(Raffle raffle) throws Exception {
         // Begin transaction
         connection.setAutoCommit(false);
+        System.out.println("Selecting winner for raffle: " + raffle.getTitle() + " (ID: " + raffle.getId() + ")");
+        
         try {
             // Load participants first
             List<Participant> participants = getParticipantService().getByRaffle(raffle);
             if (participants.isEmpty()) {
                 // If no participants, just mark as ended without a winner
-                raffle.setStatus("ended");
-                update(raffle);
+                System.out.println("No participants in raffle, ending without a winner");
+                
+                // Make sure the raffle is updated as ended
+                String updateRaffleSql = "UPDATE raffle SET status = 'ended' WHERE id = ?";
+                try (PreparedStatement stmt = connection.prepareStatement(updateRaffleSql)) {
+                    stmt.setInt(1, raffle.getId());
+                    stmt.executeUpdate();
+                }
+                
                 connection.commit();
                 return;
             }
 
+            System.out.println("Number of participants: " + participants.size());
+            
             // Select random winner
             Random random = new Random();
             Participant winnerParticipant = participants.get(random.nextInt(participants.size()));
             User winner = winnerParticipant.getUser();
+            
+            System.out.println("Selected winner: " + winner.getName() + " (ID: " + winner.getId() + ")");
 
             // Get the artwork
             Artwork artwork = artworkService.getOne(raffle.getArtworkId());
             if (artwork == null) {
                 throw new Exception("Artwork not found");
             }
+            
+            System.out.println("Artwork being transferred: " + artwork.getTitle() + " (ID: " + artwork.getId() + ")");
+            System.out.println("Current owner ID: " + artwork.getOwnerId());
 
-            // Transfer ownership to winner using our new method
+            // Transfer ownership to winner using our method
             boolean transferred = transferArtworkOwnership(artwork, winner);
             if (!transferred) {
                 throw new Exception("Failed to transfer artwork ownership to winner");
@@ -293,11 +345,21 @@ public class RaffleService implements IService<Raffle> {
 
             // Update raffle with winner
             raffle.setWinnerId(winner.getId());
-            raffle.setStatus("ended");
-            update(raffle);
+            
+            // Make sure the database is updated with winner and status
+            String updateRaffleSql = "UPDATE raffle SET status = 'ended', winner_id = ? WHERE id = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(updateRaffleSql)) {
+                stmt.setInt(1, winner.getId());
+                stmt.setInt(2, raffle.getId());
+                stmt.executeUpdate();
+            }
+            
+            System.out.println("Raffle ended successfully. Artwork ownership transferred to: " + winner.getName());
 
             connection.commit();
         } catch (Exception e) {
+            System.err.println("Error selecting winner: " + e.getMessage());
+            e.printStackTrace();
             connection.rollback();
             throw e;
         } finally {
@@ -307,8 +369,9 @@ public class RaffleService implements IService<Raffle> {
 
     public List<Raffle> getAllRaffles() {
         List<Raffle> raffles = new ArrayList<>();
-        String query = "SELECT r.*, a.title as artwork_title FROM raffle r " +
+        String query = "SELECT r.*, a.title as artwork_title, u.id as user_id, u.name as user_name FROM raffle r " +
                       "LEFT JOIN artwork a ON r.artwork_id = a.id " +
+                      "LEFT JOIN user u ON r.creator_id = u.id " +
                       "ORDER BY r.created_at DESC";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -324,6 +387,16 @@ public class RaffleService implements IService<Raffle> {
                 raffle.setEndTime(rs.getTimestamp("end_time"));
                 raffle.setStatus(rs.getString("status"));
                 raffle.setCreatedAt(rs.getTimestamp("created_at"));
+                
+                // Set creator information
+                int creatorId = rs.getInt("creator_id");
+                if (!rs.wasNull()) {
+                    User creator = new User();
+                    creator.setId(creatorId);
+                    creator.setName(rs.getString("creator_name"));
+                    raffle.setCreator(creator);
+                }
+                
                 raffles.add(raffle);
             }
         } catch (SQLException e) {

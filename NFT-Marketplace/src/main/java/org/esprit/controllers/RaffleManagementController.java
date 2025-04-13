@@ -97,6 +97,19 @@ public class RaffleManagementController {
 
     private void loadRaffles() {
         List<Raffle> raffles = raffleService.getAllRaffles();
+        
+        // Ensure each raffle has a creator object
+        for (Raffle raffle : raffles) {
+            // If the raffle has no creator, set the current user as creator
+            // This is a temporary fix to prevent NullPointerException
+            if (raffle.getCreator() == null) {
+                User tempCreator = new User();
+                tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
+                tempCreator.setName("Unknown Creator");
+                raffle.setCreator(tempCreator);
+            }
+        }
+        
         raffleList = FXCollections.observableArrayList(raffles);
         raffleTable.setItems(raffleList);
     }
@@ -148,6 +161,15 @@ public class RaffleManagementController {
     }
 
     private void handleEditRaffle(Raffle raffle) {
+        // Check if raffle has a creator - still create one if needed
+        if (raffle.getCreator() == null) {
+            // Create a temporary creator for this raffle for data consistency
+            User tempCreator = new User();
+            tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
+            tempCreator.setName("Unknown Creator");
+            raffle.setCreator(tempCreator);
+        }
+        
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ManageRaffle.fxml"));
             Parent root = loader.load();
@@ -170,6 +192,15 @@ public class RaffleManagementController {
     }
 
     private void handleDeleteRaffle(Raffle raffle) {
+        // Check if raffle has a creator - still create one if needed
+        if (raffle.getCreator() == null) {
+            // Create a temporary creator for this raffle for data consistency
+            User tempCreator = new User();
+            tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
+            tempCreator.setName("Unknown Creator");
+            raffle.setCreator(tempCreator);
+        }
+        
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete Raffle");
         alert.setHeaderText("Delete Raffle");
