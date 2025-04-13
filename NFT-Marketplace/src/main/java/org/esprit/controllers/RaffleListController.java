@@ -1,37 +1,46 @@
 package org.esprit.controllers;
 
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.event.ActionEvent;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import org.esprit.models.Raffle;
-import org.esprit.models.User;
-import org.esprit.services.RaffleService;
-import org.esprit.services.ArtworkService;
-import org.esprit.models.Artwork;
-import org.esprit.models.Participant;
-import org.esprit.services.ParticipantService;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.util.Duration;
-import javafx.application.Platform;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import org.esprit.models.Artwork;
+import org.esprit.models.Participant;
+import org.esprit.models.Raffle;
+import org.esprit.models.User;
+import org.esprit.services.ArtworkService;
+import org.esprit.services.ParticipantService;
+import org.esprit.services.RaffleService;
+
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class RaffleListController {
     @FXML
@@ -191,7 +200,7 @@ public class RaffleListController {
         // Add artwork image
         try {
             ArtworkService artworkService = new ArtworkService();
-            Artwork artwork = artworkService.getOne(raffle.getArtworkId());
+            Artwork artwork = artworkService.getById(raffle.getArtworkId());
             if (artwork != null && artwork.getImageName() != null) {
                 ImageView imageView = new ImageView();
                 try {
@@ -205,7 +214,7 @@ public class RaffleListController {
                     System.err.println("Error loading image " + artwork.getImageName() + ": " + e.getMessage());
                 }
             }
-        } catch (SQLException e) {
+        } catch (Exception e) {
             System.err.println("Error loading artwork: " + e.getMessage());
         }
         
