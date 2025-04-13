@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.io.IOException;
 import java.io.File;
+import java.util.Date;
 
 import org.esprit.models.Artwork;
 import org.esprit.models.Participant;
@@ -166,65 +167,44 @@ public class RaffleDetailsController {
     private void loadRaffleDetails() {
         titleLabel.setText(raffle.getTitle());
         descriptionArea.setText(raffle.getRaffleDescription());
-        creatorLabel.setText(raffle.getCreatorName());
-        startDateLabel.setText(dateFormat.format(raffle.getStartTime()));
-        endDateLabel.setText(dateFormat.format(raffle.getEndTime()));
+        creatorLabel.setText(raffle.getCreator() != null ? raffle.getCreator().getName() : "Unknown");
+        
+        // Format dates with null checks
+        Date startDate = raffle.getStartTime();
+        startDateLabel.setText(startDate != null ? dateFormat.format(startDate) : "Not set");
+        
+        Date endDate = raffle.getEndTime();
+        endDateLabel.setText(endDate != null ? dateFormat.format(endDate) : "Not set");
+        
         statusLabel.setText(raffle.getStatus());
-
-        // Load artwork details
-        try {
-            Artwork artwork = artworkService.getOne(raffle.getArtworkId());
-            if (artwork != null) {
-                artworkIdLabel.setText("Artwork: " + artwork.getTitle());                
-                loadArtworkImage(artwork);
-                
-                // Show ownership information when raffle is ended
-                if (raffle.getStatus().equals("ended") && raffle.getWinnerId() != null) {
-                    try {
-                        User owner = userService.getOne(artwork.getOwnerId());
-                        if (owner != null) {
-                            String ownerInfo = "Current Owner: " + owner.getName();
-                            
-                            // Check if the current user is the owner
-                            if (currentUser != null && currentUser.getId() == owner.getId()) {
-                                ownerInfo += " (You own this artwork!)";
-                            }
-                            
-                            // Append owner info to the artwork label
-                            artworkIdLabel.setText(artworkIdLabel.getText() + " - " + ownerInfo);
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error loading artwork owner details: " + e.getMessage());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            artworkIdLabel.setText("Failed to load artwork details");
+        
+        // Clear and populate participants list
+        participantsListView.getItems().clear();
+        for (User participant : raffle.getParticipants()) {
+            participantsListView.getItems().add(participant.getName());
         }
 
-        // Load participants and winner
-        participantsListView.getItems().clear();
-        
-        // Show winner prominently if raffle is ended
+        // Handle artwork display
+        try {
+            artworkIdLabel.setText("Artwork ID: " + raffle.getArtworkId());
+            Artwork artwork = artworkService.getOne(raffle.getArtworkId());
+            if (artwork != null) {
+                loadArtworkImage(artwork);
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading artwork details: " + e.getMessage());
+        }
+
+        // Handle winner display
         if (raffle.getStatus().equals("ended")) {
             if (raffle.getWinnerId() != null) {
                 try {
                     User winner = userService.getOne(raffle.getWinnerId());
-                    String winnerText = "Winner: " + winner.getName();
-                    
-                    // Highlight if current user is the winner
-                    if (currentUser != null && currentUser.getId() == winner.getId()) {
-                        winnerText += " (You won this raffle!)";
-                    }
-                    
-                    winnerLabel.setText(winnerText);
-                    winnerLabel.setVisible(true);
+                    winnerLabel.setText("Winner: " + winner.getName());
                 } catch (Exception e) {
-                    e.printStackTrace();
-                    winnerLabel.setText("Winner: Unknown");
+                    winnerLabel.setText("Winner ID: " + raffle.getWinnerId());
                 }
-            } else {
+            } else if (raffle.getParticipants().isEmpty()) {
                 winnerLabel.setText("No winner (no participants)");
             }
             winnerLabel.setVisible(true);
@@ -232,25 +212,7 @@ public class RaffleDetailsController {
             winnerLabel.setVisible(false);
         }
 
-        // Add participants to list
-        for (User participant : raffle.getParticipants()) {
-            participantsListView.getItems().add(participant.getName());
-        }
-
-        // Explicitly call updateButtons and force visibility
         updateButtons();
-        
-        // Force buttons to be visible regardless of other checks
-        if (currentUser != null) {
-            participateButton.setVisible(true);
-            manageButton.setVisible(true);
-            deleteButton.setVisible(true);
-            
-            System.out.println("Buttons visibility status after loadRaffleDetails:");
-            System.out.println("- Participate button: " + participateButton.isVisible());
-            System.out.println("- Manage button: " + manageButton.isVisible());
-            System.out.println("- Delete button: " + deleteButton.isVisible());
-        }
     }
 
     private void loadArtworkImage(Artwork artwork) {
