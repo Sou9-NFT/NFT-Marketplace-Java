@@ -12,18 +12,19 @@
             <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
         </padding>
         <children>
-            <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" 
-                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 3;" 
-                    text="Back">
-                <HBox.margin>
-                    <Insets right="15.0" />
-                </HBox.margin>
-            </Button>
             <Label text="NFT Marketplace - Raffles" textFill="WHITE">
                 <font>
                     <Font name="System Bold" size="18.0" />
                 </font>
             </Label>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" 
+                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 3;" 
+                    text="Back">
+                <HBox.margin>
+                    <Insets left="15.0" />
+                </HBox.margin>
+            </Button>
         </children>
     </HBox>
 
