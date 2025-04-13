@@ -42,8 +42,8 @@
 			<Label text="Roles:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
 			<VBox spacing="2" GridPane.rowIndex="4" GridPane.columnIndex="1">
 				<VBox>
-					<CheckBox fx:id="roleUserCheckbox" text="ROLE_USER" selected="true"/>
-					<CheckBox fx:id="roleAdminCheckbox" text="ROLE_ADMIN"/>
+					<CheckBox fx:id="roleUserCheckbox" text="ROLE_USER" selected="true" mnemonicParsing="false"/>
+					<CheckBox fx:id="roleAdminCheckbox" text="ROLE_ADMIN" mnemonicParsing="false"/>
 				</VBox>
 				<Label fx:id="rolesErrorLabel" styleClass="validation-error" visible="false" text="At least one role must be selected"/>
 			</VBox>
