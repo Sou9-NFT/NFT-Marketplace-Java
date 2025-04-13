@@ -3,6 +3,7 @@ package org.esprit.controllers;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.esprit.models.User;
 import org.esprit.services.UserService;
@@ -27,27 +28,48 @@ public class UserFormController {
 
     @FXML
     private TextField nameField;
+    
+    @FXML
+    private Label nameErrorLabel;
 
     @FXML
     private TextField emailField;
+    
+    @FXML
+    private Label emailErrorLabel;
 
     @FXML
     private PasswordField passwordField;
+    
+    @FXML
+    private Label passwordErrorLabel;
 
     @FXML
     private TextField balanceField;
+    
+    @FXML
+    private Label balanceErrorLabel;
 
     @FXML
     private CheckBox roleUserCheckbox;
 
     @FXML
     private CheckBox roleAdminCheckbox;
+    
+    @FXML
+    private Label rolesErrorLabel;
 
     @FXML
     private TextField walletField;
+    
+    @FXML
+    private Label walletErrorLabel;
 
     @FXML
     private TextField githubField;
+    
+    @FXML
+    private Label githubErrorLabel;
 
     @FXML
     private Button saveButton;
@@ -66,6 +88,19 @@ public class UserFormController {
     public void initialize() {
         userService = new UserService();
         balanceField.setText("0.00");
+        // Hide all error labels initially
+        hideAllErrorLabels();
+    }
+    
+    private void hideAllErrorLabels() {
+        nameErrorLabel.setVisible(false);
+        emailErrorLabel.setVisible(false);
+        passwordErrorLabel.setVisible(false);
+        balanceErrorLabel.setVisible(false);
+        rolesErrorLabel.setVisible(false);
+        walletErrorLabel.setVisible(false);
+        githubErrorLabel.setVisible(false);
+        errorLabel.setVisible(false);
     }
 
     public void setMode(FormMode mode) {
@@ -131,6 +166,9 @@ public class UserFormController {
 
     @FXML
     private void handleSave() {
+        // Reset error labels before validation
+        hideAllErrorLabels();
+        
         if (validateInput()) {
             try {
                 if (mode == FormMode.ADD) {
@@ -156,51 +194,122 @@ public class UserFormController {
     }
 
     private boolean validateInput() {
-        String name = nameField.getText().trim();
-        String email = emailField.getText().trim();
-        String password = passwordField.getText();
-        String balanceText = balanceField.getText().trim();
-
-        if (name.isEmpty()) {
-            showError("Name is required.");
-            return false;
-        }
-
-        if (email.isEmpty()) {
-            showError("Email is required.");
-            return false;
-        }
-
-        if (!email.contains("@") || !email.contains(".")) {
-            showError("Please enter a valid email address.");
-            return false;
-        }
-
-        if (mode == FormMode.ADD && password.isEmpty()) {
-            showError("Password is required for new users.");
-            return false;
-        }
-
-        if (mode == FormMode.EDIT && !password.isEmpty() && password.length() < 6) {
-            showError("Password must be at least 6 characters.");
-            return false;
-        }
-
-        if (!balanceText.isEmpty()) {
-            try {
-                new BigDecimal(balanceText);
-            } catch (NumberFormatException e) {
-                showError("Balance must be a valid number.");
-                return false;
+        // Create a new User with the form data to use entity validation
+        User userToValidate;
+        
+        if (mode == FormMode.ADD) {
+            userToValidate = new User(
+                emailField.getText().trim(),
+                passwordField.getText(),
+                nameField.getText().trim()
+            );
+        } else {
+            userToValidate = new User();
+            userToValidate.setId(userToEdit != null ? userToEdit.getId() : 0);
+            userToValidate.setEmail(emailField.getText().trim());
+            userToValidate.setName(nameField.getText().trim());
+            
+            // Only set password if it's not empty (for edit mode)
+            String password = passwordField.getText();
+            if (!password.isEmpty()) {
+                userToValidate.setPassword(password);
             }
         }
-
-        if (!roleUserCheckbox.isSelected() && !roleAdminCheckbox.isSelected()) {
-            showError("At least one role must be selected.");
-            return false;
+        
+        // Set other fields
+        String balanceText = balanceField.getText().trim();
+        if (!balanceText.isEmpty()) {
+            try {
+                userToValidate.setBalance(new BigDecimal(balanceText));
+            } catch (NumberFormatException e) {
+                // Will be caught by validation
+            }
         }
+        
+        String walletAddress = walletField.getText().trim();
+        if (!walletAddress.isEmpty()) {
+            userToValidate.setWalletAddress(walletAddress);
+        }
+        
+        String githubUsername = githubField.getText().trim();
+        if (!githubUsername.isEmpty()) {
+            userToValidate.setGithubUsername(githubUsername);
+        }
+        
+        // Set roles
+        List<String> roles = new ArrayList<>();
+        if (roleUserCheckbox.isSelected()) {
+            roles.add("ROLE_USER");
+        }
+        if (roleAdminCheckbox.isSelected()) {
+            roles.add("ROLE_ADMIN");
+        }
+        userToValidate.setRoles(roles);
+        
+        // Use the User entity validation
+        User.ValidationResult result = userToValidate.validate();
+        
+        // Reset all field styling
+        nameField.getStyleClass().removeAll("error");
+        emailField.getStyleClass().removeAll("error");
+        passwordField.getStyleClass().removeAll("error");
+        balanceField.getStyleClass().removeAll("error");
+        walletField.getStyleClass().removeAll("error");
+        githubField.getStyleClass().removeAll("error");
+        
+        // Hide all error labels first
+        hideAllErrorLabels();
+        
+        // If valid, return true immediately
+        if (result.isValid()) {
+            return true;
+        }
+        
+        // Handle validation errors
+        Map<String, String> errors = result.getErrors();
+        
+        // Show field-specific errors
+        if (errors.containsKey("name")) {
+            showFieldError(nameErrorLabel, errors.get("name"));
+            nameField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("email")) {
+            showFieldError(emailErrorLabel, errors.get("email"));
+            emailField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("password")) {
+            showFieldError(passwordErrorLabel, errors.get("password"));
+            passwordField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("balance")) {
+            showFieldError(balanceErrorLabel, errors.get("balance"));
+            balanceField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("walletAddress")) {
+            showFieldError(walletErrorLabel, errors.get("walletAddress"));
+            walletField.getStyleClass().add("error");
+        }
+        
+        if (errors.containsKey("githubUsername")) {
+            showFieldError(githubErrorLabel, errors.get("githubUsername"));
+            githubField.getStyleClass().add("error");
+        }
+        
+        // Check if roles are selected (this is not in User entity validation)
+        if (roles.isEmpty()) {
+            showFieldError(rolesErrorLabel, "At least one role must be selected");
+        }
+        
+        return false;
+    }
 
-        return true;
+    private void showFieldError(Label errorLabel, String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
     }
 
     private void createNewUser() throws Exception {
@@ -211,7 +320,8 @@ public class UserFormController {
         // Check if user with this email already exists
         User existingUser = userService.getByEmail(email);
         if (existingUser != null) {
-            showError("A user with this email already exists.");
+            showFieldError(emailErrorLabel, "A user with this email already exists");
+            emailField.getStyleClass().add("error");
             return;
         }
 
@@ -262,7 +372,8 @@ public class UserFormController {
         if (!email.equals(userToEdit.getEmail())) {
             User existingUser = userService.getByEmail(email);
             if (existingUser != null && existingUser.getId() != userToEdit.getId()) {
-                showError("This email is already in use by another account.");
+                showFieldError(emailErrorLabel, "This email is already in use by another account");
+                emailField.getStyleClass().add("error");
                 return;
             }
         }

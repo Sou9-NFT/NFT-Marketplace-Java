@@ -22,8 +22,7 @@
 				<Insets top="20" right="20" bottom="20" left="20"/>
 			</padding>
 			<HBox spacing="10" alignment="CENTER_LEFT">
-				<TextField fx:id="searchField" promptText="Search by email" HBox.hgrow="ALWAYS" />
-				<Button text="Search" onAction="#handleSearch" />
+				<TextField fx:id="searchField" promptText="Search by name or email" HBox.hgrow="ALWAYS" />
 				<Button text="Clear" onAction="#handleClearSearch" />
 				<Region HBox.hgrow="ALWAYS" />
 				<Button text="Add User" onAction="#handleAddUser" styleClass="button-primary" />

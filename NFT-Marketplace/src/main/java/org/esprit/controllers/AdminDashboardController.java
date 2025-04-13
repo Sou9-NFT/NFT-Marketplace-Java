@@ -22,6 +22,7 @@ import org.esprit.services.UserService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -100,6 +101,7 @@ public class AdminDashboardController implements Initializable {
     private UserService userService;
     private BlogService blogService;
     private ObservableList<User> userList = FXCollections.observableArrayList();
+    private FilteredList<User> filteredUserList;
     private User currentAdminUser;
     private Blog currentBlog;
     private final String UPLOAD_DIR = "src/main/resources/uploads/";
@@ -113,6 +115,9 @@ public class AdminDashboardController implements Initializable {
         userService = new UserService();
         setupTableColumns();
         loadAllUsers();
+        
+        // Setup real-time search filtering
+        setupSearchFilter();
 
         // Initialize blog management only if UI components are available
         blogService = new BlogService();
@@ -437,11 +442,25 @@ public class AdminDashboardController implements Initializable {
             List<User> users = userService.getAll();
             userList.clear();
             userList.addAll(users);
-            userTable.setItems(userList);
+            filteredUserList = new FilteredList<>(userList, p -> true);
+            userTable.setItems(filteredUserList);
         } catch (Exception e) {
             showStatus("Error loading users: " + e.getMessage(), true);
             showAlert(Alert.AlertType.ERROR, "Database Error", "Could not load users: " + e.getMessage());
         }
+    }
+
+    private void setupSearchFilter() {
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredUserList.setPredicate(user -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+                String lowerCaseFilter = newValue.toLowerCase();
+                return user.getName().toLowerCase().contains(lowerCaseFilter) ||
+                       user.getEmail().toLowerCase().contains(lowerCaseFilter);
+            });
+        });
     }
 
     @FXML

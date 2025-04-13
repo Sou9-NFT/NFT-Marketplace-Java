@@ -94,8 +94,7 @@
 				<!-- User Management Table Section -->
 				<VBox fx:id="userManagementSection" spacing="10" visible="false" managed="false">
 					<HBox spacing="10" alignment="CENTER_LEFT">
-						<TextField fx:id="searchField" promptText="Search by email" HBox.hgrow="ALWAYS" />
-						<Button text="Search" onAction="#handleSearch" />
+						<TextField fx:id="searchField" promptText="Search by name or email" HBox.hgrow="ALWAYS" />
 						<Button text="Clear" onAction="#handleClearSearch" />
 						<Button text="Add User" onAction="#handleAddUser" styleClass="button-primary" />
 					</HBox>
@@ -112,7 +111,6 @@
 					</TableView>
 				</VBox>
 			</VBox>
-			
 			<!-- Dynamic Content Area -->
 			<VBox fx:id="contentArea" visible="false" managed="false" styleClass="content-area">
 				<padding>
