@@ -98,7 +98,26 @@ public class UserDashboardController {
     @FXML
     private void handleRafflesButton(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleList.fxml"));
+            // Try using ClassLoader directly instead of getResource
+            ClassLoader classLoader = getClass().getClassLoader();
+            java.net.URL resourceUrl = classLoader.getResource("fxml/RaffleList.fxml");
+            
+            if (resourceUrl == null) {
+                System.err.println("Failed to find RaffleList.fxml resource using ClassLoader");
+                
+                // Fall back to getResource with various paths
+                resourceUrl = getClass().getResource("/fxml/RaffleList.fxml");
+                
+                if (resourceUrl == null) {
+                    System.err.println("Failed to find RaffleList.fxml with any method");
+                    showAlert("Error", "Could not load raffles: Resource not found");
+                    return;
+                }
+            }
+            
+            System.out.println("Found RaffleList.fxml at: " + resourceUrl);
+            
+            FXMLLoader loader = new FXMLLoader(resourceUrl);
             Parent raffleView = loader.load();
             
             RaffleListController controller = loader.getController();
@@ -106,6 +125,8 @@ public class UserDashboardController {
             
             navigateToView(event, raffleView, "NFT Marketplace - Raffles");
         } catch (IOException e) {
+            System.err.println("Error loading RaffleList.fxml: " + e.getMessage());
+            e.printStackTrace();
             showAlert("Error", "Could not load raffles: " + e.getMessage());
         }
     }

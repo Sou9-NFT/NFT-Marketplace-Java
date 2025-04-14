@@ -124,7 +124,7 @@
                                         <TableColumn fx:id="priceColumn" text="Price" prefWidth="100"/>
                                         <TableColumn fx:id="categoryColumn" text="Category" prefWidth="100"/>
                                         <TableColumn fx:id="createdAtColumn" text="Created" prefWidth="150"/>
-                                        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="200"/>
+                                        <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="100"/>
                                     </columns>
                                     <columnResizePolicy>
                                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>

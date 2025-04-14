@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
@@ -7,86 +6,67 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.effect.*?>
-
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.esprit.controllers.BlogController"
-            prefHeight="600.0" prefWidth="1000.0"
-            styleClass="root-pane" stylesheets="@../styles/main.css">
-      <VBox spacing="20" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" 
-          AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" styleClass="blog-container">
-        
-        <!-- Header Section -->
-        <HBox spacing="20" alignment="CENTER_LEFT" styleClass="header-section">
-            <padding>
-                <Insets top="20" right="30" bottom="20" left="30"/>
-            </padding>
-            <VBox spacing="5">
-                <Text text="Blog Management" styleClass="header-title"/>
-                <Text text="Create and manage your blog posts" styleClass="header-subtitle"/>
-            </VBox>
-            <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="createBlogButton" text="+ Create New Blog" 
-                    onAction="#handleCreateBlog" 
-                    styleClass="action-button"/>
-        </HBox>
-        
-        <!-- Main Content Section -->
-        <SplitPane VBox.vgrow="ALWAYS" styleClass="content-split-pane">
-            <!-- Blog List Section -->
-            <VBox spacing="10" styleClass="blog-list-section">
-                <padding>
-                    <Insets top="10" right="10" bottom="10" left="10"/>
-                </padding>
-                <HBox alignment="CENTER_LEFT" spacing="10">
-                    <TextField promptText="Search blogs..." styleClass="search-field" HBox.hgrow="ALWAYS"/>
-                </HBox>
-                <ListView fx:id="blogListView" VBox.vgrow="ALWAYS" styleClass="blog-list-view"/>
-            </VBox>
-            
-            <!-- Blog Details Section -->
-            <VBox spacing="20" styleClass="blog-details-section">
-                <padding>
-                    <Insets top="20" right="30" bottom="20" left="30"/>
-                </padding>
-                
-                <VBox styleClass="form-section">
-                    <Label text="Title" styleClass="form-label"/>
-                    <TextField fx:id="titleField" styleClass="form-field"/>
-                    
-                    <Label text="Content" styleClass="form-label"/>
-                    <TextArea fx:id="contentArea" wrapText="true" 
-                             prefRowCount="8" styleClass="form-field content-area"/>
-                    
-                    <Label text="Featured Image" styleClass="form-label"/>
-                    <HBox spacing="20" alignment="CENTER_LEFT" styleClass="image-upload-section">
-                        <VBox styleClass="image-preview-container">
-                            <ImageView fx:id="blogImageView" fitHeight="150" fitWidth="150" 
-                                     preserveRatio="true" styleClass="image-preview"/>
-                        </VBox>
-                        <VBox spacing="10">
-                            <Button text="Choose Image" onAction="#handleChooseImage" 
-                                    styleClass="secondary-button"/>
-                            <Label text="Recommended: 1200x630 pixels" styleClass="helper-text"/>
-                        </VBox>
-                    </HBox>
-                    
-                    <Label text="Translation Language" styleClass="form-label"/>
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="languageComboBox" styleClass="language-combo"/>
-                        <Button fx:id="translateButton" text="Translate" 
-                                onAction="#handleTranslate" styleClass="secondary-button"/>
-                    </HBox>
-                </VBox>
-                
-                <!-- Action Buttons -->
-                <HBox spacing="15" alignment="CENTER_RIGHT" styleClass="action-buttons">
-                    <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete" 
-                            styleClass="delete-button"/>
-                    <Button fx:id="saveButton" text="Save Changes" onAction="#handleSave" 
-                            styleClass="primary-button"/>
-                </HBox>
-            </VBox>
-        </SplitPane>
-    </VBox>
+<AnchorPane 
+	xmlns="http://javafx.com/javafx" 
+	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.BlogController" prefHeight="600.0" prefWidth="1000.0" styleClass="root-pane" stylesheets="@../styles/main.css">
+	<VBox spacing="20" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0" styleClass="blog-container">
+		<!-- Header Section -->
+		<HBox spacing="20" alignment="CENTER_LEFT" styleClass="header-section">
+			<padding>
+				<Insets top="20" right="30" bottom="20" left="30"/>
+			</padding>
+			<VBox spacing="5">
+				<Text text="Blog Management" styleClass="header-title"/>
+				<Text text="Create and manage your blog posts" styleClass="header-subtitle"/>
+			</VBox>
+			<Region HBox.hgrow="ALWAYS" />
+			<Button fx:id="createBlogButton" text="+ Create New Blog" onAction="#handleCreateBlog" styleClass="action-button"/>
+		</HBox>
+		<!-- Main Content Section -->
+		<SplitPane VBox.vgrow="ALWAYS" styleClass="content-split-pane">
+			<!-- Blog List Section -->
+			<VBox spacing="10" styleClass="blog-list-section">
+				<padding>
+					<Insets top="10" right="10" bottom="10" left="10"/>
+				</padding>
+				<HBox alignment="CENTER_LEFT" spacing="10">
+					<TextField promptText="Search blogs..." styleClass="search-field" HBox.hgrow="ALWAYS"/>
+				</HBox>
+				<ListView fx:id="blogListView" VBox.vgrow="ALWAYS" styleClass="blog-list-view"/>
+			</VBox>
+			<!-- Blog Details Section -->
+			<VBox spacing="20" styleClass="blog-details-section">
+				<padding>
+					<Insets top="20" right="30" bottom="20" left="30"/>
+				</padding>
+				<VBox styleClass="form-section">
+					<Label text="Title" styleClass="form-label"/>
+					<TextField fx:id="titleField" styleClass="form-field"/>
+					<Label text="Content" styleClass="form-label"/>
+					<TextArea fx:id="contentArea" wrapText="true" prefRowCount="8" styleClass="form-field content-area"/>
+					<Label text="Featured Image" styleClass="form-label"/>
+					<HBox spacing="20" alignment="CENTER_LEFT" styleClass="image-upload-section">
+						<VBox styleClass="image-preview-container">
+							<ImageView fx:id="blogImageView" fitHeight="150" fitWidth="150" preserveRatio="true" styleClass="image-preview"/>
+						</VBox>
+						<VBox spacing="10">
+							<Button text="Choose Image" onAction="#handleChooseImage" styleClass="secondary-button"/>
+							<Label text="Recommended: 1200x630 pixels" styleClass="helper-text"/>
+						</VBox>
+					</HBox>
+					<Label text="Translation Language" styleClass="form-label"/>
+					<HBox spacing="10" alignment="CENTER_LEFT">
+						<ComboBox fx:id="languageComboBox" styleClass="language-combo"/>
+						<Button fx:id="translateButton" text="Translate" onAction="#handleTranslate" styleClass="secondary-button"/>
+					</HBox>
+				</VBox>
+				<!-- Action Buttons -->
+				<HBox spacing="15" alignment="CENTER_RIGHT" styleClass="action-buttons">
+					<Button fx:id="deleteButton" text="Delete" onAction="#handleDelete" styleClass="delete-button"/>
+					<Button fx:id="addBlogButton" text="Add Blog" onAction="#handleAddBlog" styleClass="primary-button"/>
+					<Button fx:id="saveButton" text="Save Changes" onAction="#handleSave" styleClass="primary-button"/>
+				</HBox>
+			</VBox>
+		</SplitPane>
+	</VBox>
 </AnchorPane>
