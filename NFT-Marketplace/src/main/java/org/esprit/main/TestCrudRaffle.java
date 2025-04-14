@@ -12,7 +12,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Calendar;
 
-public class TestCrudRaffle {
+public class
+TestCrudRaffle {
     public static void main(String[] args) {
         try {
             // Initialize services
@@ -72,7 +73,8 @@ public class TestCrudRaffle {
             // Test Update
             System.out.println("\nTesting Raffle Update...");
             retrievedRaffle.setTitle("Updated Test Raffle");
-            retrievedRaffle.setStatus("completed");
+            retrievedRaffle.setStatus("ended");  // Set status first
+            retrievedRaffle.setEndTime(new Date());  // Then set end time
             raffleService.update(retrievedRaffle);
             
             // Verify update

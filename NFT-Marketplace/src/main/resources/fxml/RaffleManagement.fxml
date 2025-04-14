@@ -3,8 +3,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
 
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" 
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
       fx:controller="org.esprit.controllers.RaffleManagementController"
       spacing="10" styleClass="content-container">
     
@@ -14,31 +15,50 @@
 
     <!-- Header -->
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Raffle Management" styleClass="section-title"/>
+        <Label text="Raffle Management" styleClass="section-title">
+            <font>
+                <Font name="System Bold" size="18.0" />
+            </font>
+        </Label>
         <Region HBox.hgrow="ALWAYS"/>
+        <ToggleButton fx:id="rafflesToggle" text="Raffles" selected="true" />
+        <ToggleButton fx:id="participantsToggle" text="Participants" />
         <Button text="Create New Raffle" onAction="#handleCreateRaffle" styleClass="button-primary"/>
     </HBox>
 
     <!-- Search and Filter Section -->
     <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Search raffles..." HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Search..." HBox.hgrow="ALWAYS"/>
         <ComboBox fx:id="statusFilter" promptText="Filter by Status"/>
         <Button text="Search" onAction="#handleSearch"/>
         <Button text="Clear" onAction="#handleClearSearch"/>
     </HBox>
 
-    <!-- Raffles Table -->
-    <TableView fx:id="raffleTable" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
-            <TableColumn fx:id="titleColumn" text="Title" prefWidth="200"/>
-            <TableColumn fx:id="artworkColumn" text="Artwork" prefWidth="150"/>
-            <TableColumn fx:id="startDateColumn" text="Start Date" prefWidth="120"/>
-            <TableColumn fx:id="endDateColumn" text="End Date" prefWidth="120"/>
-            <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
-            <TableColumn fx:id="ticketPriceColumn" text="Ticket Price" prefWidth="100"/>
-            <TableColumn fx:id="totalTicketsColumn" text="Total Tickets" prefWidth="100"/>
-            <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150"/>
-        </columns>
-    </TableView>
+    <!-- Content Area -->
+    <StackPane VBox.vgrow="ALWAYS">
+        <!-- Raffles Table -->
+        <TableView fx:id="raffleTable" visible="true" managed="true">
+            <columns>
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="60"/>
+                <TableColumn fx:id="titleColumn" text="Title" prefWidth="200"/>
+                <TableColumn fx:id="artworkColumn" text="Artwork" prefWidth="150"/>
+                <TableColumn fx:id="startDateColumn" text="Start Date" prefWidth="120"/>
+                <TableColumn fx:id="endDateColumn" text="End Date" prefWidth="120"/>
+                <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+                <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150"/>
+            </columns>
+        </TableView>
+
+        <!-- Participants Table -->
+        <TableView fx:id="participantTable" visible="false" managed="false">
+            <columns>
+                <TableColumn fx:id="participantIdColumn" text="ID" prefWidth="60"/>
+                <TableColumn fx:id="participantNameColumn" text="Name" prefWidth="150"/>
+                <TableColumn fx:id="raffleNameColumn" text="Raffle" prefWidth="200"/>
+                <TableColumn fx:id="participationDateColumn" text="Join Date" prefWidth="150"/>
+                <TableColumn fx:id="winnerStatusColumn" text="Winner Status" prefWidth="100"/>
+                <TableColumn fx:id="participantActionsColumn" text="Actions" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </StackPane>
 </VBox>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" alignment="CENTER" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.esprit.controllers.EditTradeController">
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Edit Trade Offer" style="-fx-font-size: 18px; -fx-font-weight: bold"/>
+    
+    <GridPane vgap="10" hgap="10">
+        <Label text="Offered Item:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="offeredItemComboBox" prefWidth="200" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+        
+        <Label text="Requested Item:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="requestedItemComboBox" prefWidth="200" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+        
+        <Label text="Status:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="statusComboBox" prefWidth="200" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        
+        <Label text="Description:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextArea fx:id="descriptionArea" prefRowCount="3" prefWidth="200" 
+                  wrapText="true" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+    </GridPane>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="saveButton" text="Save Changes" onAction="#handleSave"/>
+        <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel"/>
+    </HBox>
+    
+</VBox>

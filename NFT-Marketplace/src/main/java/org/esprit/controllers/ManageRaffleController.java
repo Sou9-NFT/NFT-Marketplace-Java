@@ -132,6 +132,12 @@ public class ManageRaffleController {
     
     @FXML
     private void handleSave(ActionEvent event) {
+        // Show warning if user is not the creator, but still allow editing
+        if (currentUser == null || raffle.getCreator().getId() != currentUser.getId()) {
+            showStatus("Warning: You are not the creator of this raffle", true);
+            // Continue with save operation - don't return
+        }
+        
         String title = titleField.getText().trim();
         String description = descriptionField.getText().trim();
         LocalDate endDate = endDatePicker.getValue();
@@ -181,9 +187,9 @@ public class ManageRaffleController {
                 LocalTime.of(hoursVal, minutesVal)
             );
 
-            // Validate that end date/time is in the future
-            if (endDateTime.isBefore(LocalDateTime.now())) {
-                showStatus("End date/time must be in the future", true);
+            // Validate that end date/time is in the future for active raffles
+            if (status.equals("active") && endDateTime.isBefore(LocalDateTime.now())) {
+                showStatus("End date/time must be in the future for active raffles", true);
                 return;
             }
             
@@ -198,10 +204,10 @@ public class ManageRaffleController {
             raffle.setEndTime(Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant()));
             raffle.setStatus(status);
             
-            // Save to database
+            // Save changes
             raffleService.update(raffle);
             
-            // Show success and close dialog
+            // Show success message
             showStatus("Raffle updated successfully!", false);
             
             // Refresh parent view
@@ -209,7 +215,7 @@ public class ManageRaffleController {
                 parentController.refreshRaffles();
             }
             
-            // Close the dialog after a short delay
+            // Close window after short delay
             new Thread(() -> {
                 try {
                     Thread.sleep(1500);
@@ -217,42 +223,52 @@ public class ManageRaffleController {
                         ((Stage) titleField.getScene().getWindow()).close();
                     });
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
             }).start();
             
         } catch (NumberFormatException e) {
             showStatus("Invalid time format", true);
-            return;
         } catch (SQLException e) {
-            showStatus("Error updating raffle: " + e.getMessage(), true);
-            e.printStackTrace();
+            showStatus("Error saving raffle: " + e.getMessage(), true);
         }
     }
     
     @FXML
     private void handleDelete(ActionEvent event) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Delete Raffle");
-        alert.setHeaderText("Delete Raffle");
-        alert.setContentText("Are you sure you want to delete this raffle? This action cannot be undone.");
+        // Show warning if user is not the creator, but still allow deletion
+        if (currentUser == null || raffle.getCreator().getId() != currentUser.getId()) {
+            showStatus("Warning: You are not the creator of this raffle", true);
+            // Continue with delete operation - don't return
+        }
         
-        Optional<ButtonType> result = alert.showAndWait();
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Confirm Delete");
+        confirmDialog.setHeaderText("Are you sure?");
+        confirmDialog.setContentText("Are you sure you want to delete this raffle? This action cannot be undone.");
+        
+        Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 raffleService.delete(raffle);
                 
-                // Refresh parent view
+                // Show success message
+                Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                successAlert.setTitle("Success");
+                successAlert.setHeaderText(null);
+                successAlert.setContentText("Raffle has been successfully deleted.");
+                successAlert.showAndWait();
+                
+                // Refresh parent controller
                 if (parentController != null) {
                     parentController.refreshRaffles();
                 }
                 
-                // Close the dialog
+                // Close window
                 ((Stage) titleField.getScene().getWindow()).close();
                 
             } catch (SQLException e) {
                 showStatus("Error deleting raffle: " + e.getMessage(), true);
-                e.printStackTrace();
             }
         }
     }
@@ -265,7 +281,18 @@ public class ManageRaffleController {
     private void showStatus(String message, boolean isError) {
         statusLabel.setText(message);
         statusLabel.setVisible(true);
+        
+        // Remove existing style classes
         statusLabel.getStyleClass().removeAll("status-error", "status-success");
+        
+        // Apply style class
         statusLabel.getStyleClass().add(isError ? "status-error" : "status-success");
+        
+        // Apply direct styling for red warning
+        if (isError) {
+            statusLabel.setStyle("-fx-text-fill: #FF0000; -fx-font-weight: bold;");
+        } else {
+            statusLabel.setStyle("-fx-text-fill: #009900; -fx-font-weight: normal;");
+        }
     }
 }
