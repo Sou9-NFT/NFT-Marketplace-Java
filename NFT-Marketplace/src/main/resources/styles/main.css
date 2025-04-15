@@ -381,6 +381,15 @@
   -fx-background-color: #1976d2;
 }
 
+.button-info {
+  -fx-background-color: #17a2b8;
+  -fx-text-fill: white;
+}
+
+.button-info:hover {
+  -fx-background-color: #138496;
+}
+
 .secondary-button {
   -fx-background-color: #f8f9fa;
   -fx-border-color: #e0e0e0;
@@ -552,58 +561,166 @@
 
 /* Blog Management Styles */
 .blog-edit-form {
-    -fx-background-color: -fx-background;
-    -fx-padding: 20px;
+  -fx-background-color: -fx-background;
+  -fx-padding: 20px;
 }
 
 .blog-edit-form .section-header {
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-padding: 0 0 10 0;
+  -fx-font-size: 18px;
+  -fx-font-weight: bold;
+  -fx-padding: 0 0 10 0;
 }
 
 .blog-table-view {
-    -fx-padding: 10px;
+  -fx-padding: 10px;
 }
 
 .button-danger {
-    -fx-background-color: #dc3545;
-    -fx-text-fill: white;
+  -fx-background-color: #dc3545;
+  -fx-text-fill: white;
 }
 
 .button-danger:hover {
-    -fx-background-color: #c82333;
+  -fx-background-color: #c82333;
 }
 
 .button-primary {
-    -fx-background-color: #007bff;
-    -fx-text-fill: white;
+  -fx-background-color: #007bff;
+  -fx-text-fill: white;
 }
 
 .button-primary:hover {
-    -fx-background-color: #0056b3;
+  -fx-background-color: #0056b3;
+}
+
+.button-info {
+  -fx-background-color: #17a2b8;
+  -fx-text-fill: white;
+}
+
+.button-info:hover {
+  -fx-background-color: #138496;
 }
 
 /* Blog List Styles */
 .blog-list-view {
-    -fx-background-insets: 0;
-    -fx-padding: 10px;
+  -fx-background-insets: 0;
+  -fx-padding: 10px;
 }
 
 .blog-list-view .list-cell {
-    -fx-padding: 15px;
-    -fx-background-color: white;
-    -fx-border-color: #e9ecef;
-    -fx-border-width: 0 0 1 0;
+  -fx-padding: 15px;
+  -fx-background-color: white;
+  -fx-border-color: #e9ecef;
+  -fx-border-width: 0 0 1 0;
 }
 
 .blog-list-view .list-cell:hover {
-    -fx-background-color: #f8f9fa;
+  -fx-background-color: #f8f9fa;
 }
 
 /* Blog Search Field */
 .search-field {
-    -fx-pref-height: 35px;
-    -fx-background-radius: 20px;
-    -fx-padding: 0 15px;
+  -fx-pref-height: 35px;
+  -fx-background-radius: 20px;
+  -fx-padding: 0 15px;
+}
+
+/* Comments Section Styles */
+.comments-section {
+  -fx-padding: 15px;
+  -fx-background-color: #ffffff;
+  -fx-border-color: #e0e0e0;
+  -fx-border-radius: 4px;
+  -fx-background-radius: 4px;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 8, 0, 0, 2);
+}
+
+.comments-section .section-header {
+  -fx-font-size: 18px;
+  -fx-font-weight: bold;
+  -fx-padding: 0 0 15px 0;
+  -fx-text-fill: #333333;
+}
+
+.comments-section #commentTextArea {
+  -fx-background-color: #f8f9fa;
+  -fx-border-color: #dee2e6;
+  -fx-border-radius: 4px;
+  -fx-background-radius: 4px;
+  -fx-font-size: 14px;
+  -fx-padding: 8px;
+}
+
+.comments-section #commentTextArea:focused {
+  -fx-border-color: #007bff;
+  -fx-background-color: white;
+}
+
+.comments-section #addCommentButton {
+  -fx-background-color: #007bff;
+  -fx-text-fill: white;
+  -fx-font-size: 14px;
+  -fx-padding: 8px 16px;
+  -fx-background-radius: 4px;
+  -fx-cursor: hand;
+}
+
+.comments-section #addCommentButton:hover {
+  -fx-background-color: #0056b3;
+}
+
+.comments-list {
+  -fx-background-color: white;
+  -fx-background-insets: 0;
+  -fx-padding: 0;
+  -fx-border-width: 1px;
+  -fx-border-color: #dee2e6;
+  -fx-border-radius: 4px;
+}
+
+.comments-list .list-cell {
+  -fx-padding: 12px;
+  -fx-background-color: white;
+  -fx-border-color: transparent transparent #dee2e6 transparent;
+  -fx-border-width: 0 0 1 0;
+}
+
+.comments-list .list-cell:last-visible {
+  -fx-border-width: 0;
+}
+
+.comments-list .list-cell:hover {
+  -fx-background-color: #f8f9fa;
+}
+
+/* Scrollbar Styles */
+.scroll-pane {
+  -fx-background-color: transparent;
+  -fx-background: transparent;
+  -fx-border-color: transparent;
+}
+
+.scroll-pane > .viewport {
+  -fx-background-color: transparent;
+}
+
+.scroll-pane > .scroll-bar:vertical {
+  -fx-background-color: transparent;
+}
+
+.scroll-pane > .scroll-bar:vertical > .thumb {
+  -fx-background-color: #888888;
+  -fx-background-radius: 5px;
+}
+
+.scroll-pane > .scroll-bar:vertical > .track {
+  -fx-background-color: #f0f0f0;
+  -fx-background-radius: 5px;
+}
+
+.blog-details-scroll-pane {
+  -fx-fit-to-width: true;
+  -fx-padding: 0;
+  -fx-background-color: transparent;
 }

@@ -7,13 +7,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import org.esprit.models.Blog;
+import org.esprit.models.Comment;
 import org.esprit.models.User;
 import org.esprit.services.BlogService;
+import org.esprit.services.CommentService;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -27,6 +30,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -57,8 +61,12 @@ public class BlogController implements Initializable {
     @FXML private TableColumn<Blog, String> authorColumn;
     @FXML private TableColumn<Blog, LocalDate> dateColumn;
     @FXML private TableColumn<Blog, Void> actionsColumn;
-
+    @FXML private TextArea commentTextArea;
+    @FXML private Button addCommentButton;
+    @FXML private ListView<Comment> commentsListView;
+    
     private BlogService blogService;
+    private CommentService commentService;
     private Blog currentBlog;
     private User currentUser;
     private boolean isAdminMode = false;
@@ -82,7 +90,38 @@ public class BlogController implements Initializable {
     }    @Override
     public void initialize(URL url, ResourceBundle rb) {
         blogService = new BlogService();
+        commentService = new CommentService();
         languageComboBox.setItems(languages);
+        
+        // Setup comments list view
+        if (commentsListView != null) {
+            commentsListView.setCellFactory(lv -> new ListCell<Comment>() {
+                @Override
+                protected void updateItem(Comment comment, boolean empty) {
+                    super.updateItem(comment, empty);
+                    if (empty || comment == null) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        VBox container = new VBox(5);
+                        container.setPadding(new Insets(10));
+                        
+                        Label userLabel = new Label(comment.getUser().getName());
+                        userLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+                        
+                        Label contentLabel = new Label(comment.getContent());
+                        contentLabel.setWrapText(true);
+                        contentLabel.setStyle("-fx-font-size: 12px;");
+                        
+                        Label dateLabel = new Label(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                        dateLabel.setStyle("-fx-text-fill: #999999; -fx-font-size: 11px;");
+                        
+                        container.getChildren().addAll(userLabel, contentLabel, dateLabel);
+                        setGraphic(container);
+                    }
+                }
+            });
+        }
         
         // Initialize table columns for admin mode
         if (titleColumn != null) {
@@ -170,7 +209,8 @@ public class BlogController implements Initializable {
             actionsColumn.setCellFactory(col -> new TableCell<Blog, Void>() {
                 private final Button editBtn = new Button("Edit");
                 private final Button deleteBtn = new Button("Delete");
-                private final HBox buttons = new HBox(5, editBtn, deleteBtn);
+                private final Button commentsBtn = new Button("Comments");
+                private final HBox buttons = new HBox(5, editBtn, deleteBtn, commentsBtn);
                 
                 {
                     editBtn.setOnAction(e -> {
@@ -187,9 +227,17 @@ public class BlogController implements Initializable {
                         }
                     });
                     
+                    commentsBtn.setOnAction(e -> {
+                        Blog blog = getTableRow().getItem();
+                        if (blog != null) {
+                            handleShowComments(blog);
+                        }
+                    });
+                    
                     buttons.setAlignment(Pos.CENTER);
                     editBtn.getStyleClass().add("button-primary");
                     deleteBtn.getStyleClass().add("button-danger");
+                    commentsBtn.getStyleClass().add("button-info"); // Add CSS class for styling
                 }
                 
                 @Override
@@ -386,6 +434,54 @@ public class BlogController implements Initializable {
         }
     }
 
+    @FXML
+    private void handleAddComment() {
+        if (currentUser == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "You must be logged in to add a comment.");
+            return;
+        }
+        
+        if (currentBlog == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "No blog selected.");
+            return;
+        }
+        
+        String content = commentTextArea.getText().trim();
+        if (content.isEmpty()) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Comment cannot be empty.");
+            return;
+        }
+        
+        Comment newComment = new Comment(content, currentUser, currentBlog);
+        
+        Comment.ValidationResult validationResult = newComment.validate();
+        if (!validationResult.isValid()) {
+            showAlert(Alert.AlertType.ERROR, "Validation Error", 
+                String.join("\n", validationResult.getErrors().values()));
+            return;
+        }
+        
+        try {
+            commentService.add(newComment);
+            commentTextArea.clear();
+            // Immediately refresh comments to show the new comment
+            refreshComments();
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to add comment: " + e.getMessage());
+        }
+    }
+    
+    private void refreshComments() {
+        if (currentBlog != null && commentsListView != null) {
+            try {
+                List<Comment> comments = commentService.getByBlog(currentBlog);
+                commentsListView.setItems(FXCollections.observableArrayList(comments));
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Error", "Failed to load comments: " + e.getMessage());
+            }
+        }
+    }
+
     private void loadBlogDetails(Blog blog) {
         currentBlog = blog;
         titleField.setText(blog.getTitle());
@@ -404,8 +500,14 @@ public class BlogController implements Initializable {
         
         languageComboBox.setValue(blog.getTranslationLanguage());
         enableFields(true);
+        
+        // Clear and load comments for the selected blog
+        if (commentTextArea != null) {
+            commentTextArea.clear();
+        }
+        refreshComments();
     }
-
+    
     private void clearFields() {
         titleField.clear();
         contentArea.clear();
@@ -438,5 +540,78 @@ public class BlogController implements Initializable {
             deleteButton.setVisible(isAdmin);
         }
         refreshBlogList();
+    }
+
+    @FXML
+    private void handleShowComments(Blog blog) {
+        if (blog == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "No blog selected.");
+            return;
+        }
+        
+        try {
+            // Create a dialog
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Blog Comments");
+            dialog.setHeaderText("Comments for: " + blog.getTitle());
+            
+            // Set the button types
+            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+            
+            // Create content
+            VBox content = new VBox(10);
+            content.setPadding(new Insets(20));
+            
+            // Get comments for the blog
+            List<Comment> comments = commentService.getByBlog(blog);
+            
+            if (comments.isEmpty()) {
+                Label noCommentsLabel = new Label("No comments yet.");
+                noCommentsLabel.setStyle("-fx-font-style: italic;");
+                content.getChildren().add(noCommentsLabel);
+            } else {
+                // Create a ListView for comments
+                ListView<Comment> commentsList = new ListView<>();
+                commentsList.setPrefHeight(300);
+                commentsList.setPrefWidth(400);
+                
+                // Set up cell factory for comments
+                commentsList.setCellFactory(lv -> new ListCell<Comment>() {
+                    @Override
+                    protected void updateItem(Comment comment, boolean empty) {
+                        super.updateItem(comment, empty);
+                        if (empty || comment == null) {
+                            setText(null);
+                            setGraphic(null);
+                        } else {
+                            VBox container = new VBox(5);
+                            container.setPadding(new Insets(10));
+                            
+                            Label userLabel = new Label(comment.getUser().getName());
+                            userLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+                            
+                            Label contentLabel = new Label(comment.getContent());
+                            contentLabel.setWrapText(true);
+                            contentLabel.setStyle("-fx-font-size: 12px;");
+                            
+                            Label dateLabel = new Label(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+                            dateLabel.setStyle("-fx-text-fill: #999999; -fx-font-size: 11px;");
+                            
+                            container.getChildren().addAll(userLabel, contentLabel, dateLabel);
+                            setGraphic(container);
+                        }
+                    }
+                });
+                
+                commentsList.setItems(FXCollections.observableArrayList(comments));
+                content.getChildren().add(commentsList);
+            }
+            
+            dialog.getDialogPane().setContent(content);
+            dialog.showAndWait();
+            
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to load comments: " + e.getMessage());
+        }
     }
 }
