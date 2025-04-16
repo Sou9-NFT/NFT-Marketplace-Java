@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.esprit.models.User;
 import org.esprit.services.UserService;
+import org.esprit.utils.PasswordHasher;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -74,7 +75,7 @@ public class LoginController {
             // Check if user exists with the provided email
             User user = userService.getByEmail(email);
             
-            if (user != null && user.getPassword().equals(password)) {
+            if (user != null && PasswordHasher.verifyPassword(password, user.getPassword())) {
                 // Authentication successful
                 
                 // Check if user has admin role
