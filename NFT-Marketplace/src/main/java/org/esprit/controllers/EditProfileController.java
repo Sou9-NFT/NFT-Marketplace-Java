@@ -101,8 +101,19 @@ public class EditProfileController {
                 profilePicPath = "/assets/default/default_profile.jpg";
             }
 
-            // Load the image
-            Image profileImage = new Image(getClass().getResourceAsStream(profilePicPath));
+            Image profileImage;
+            
+            // Check if the profile picture is a URL (GitHub avatar) or a local resource
+            if (profilePicPath.startsWith("http://") || profilePicPath.startsWith("https://")) {
+                // For remote URLs (like GitHub avatars)
+                profileImage = new Image(profilePicPath);
+                System.out.println("Loading remote profile image from: " + profilePicPath);
+            } else {
+                // For local resource paths
+                profileImage = new Image(getClass().getResourceAsStream(profilePicPath));
+                System.out.println("Loading local profile image from: " + profilePicPath);
+            }
+            
             profileImageView.setImage(profileImage);
 
             // Apply styling to make the image circular
