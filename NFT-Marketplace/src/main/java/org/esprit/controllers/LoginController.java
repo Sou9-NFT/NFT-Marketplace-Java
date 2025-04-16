@@ -186,6 +186,24 @@ public class LoginController {
         }
     }
     
+    @FXML
+    private void switchToForgotPassword(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ForgotPassword.fxml"));
+            Parent forgotPasswordView = loader.load();
+            
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            
+            stage.setScene(new Scene(forgotPasswordView, 600, 400));
+            stage.setTitle("NFT Marketplace - Forgot Password");
+            stage.show();
+        } catch (IOException e) {
+            showError("Error loading forgot password page: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
     // Show error in the specific field error label
     private void showFieldError(Label errorLabel, String message) {
         errorLabel.setText(message);

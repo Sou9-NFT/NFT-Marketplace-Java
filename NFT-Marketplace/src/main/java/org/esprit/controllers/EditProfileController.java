@@ -189,6 +189,7 @@ public class EditProfileController {
             updatedUser.setProfilePicture(currentUser.getProfilePicture());
             
             // Password handling - special case that requires controller-level validation
+            boolean passwordChanged = false;
             if (!newPassword.isEmpty()) {
                 // Verify current password
                 if (!currentUser.getPassword().equals(currentPassword)) {
@@ -204,9 +205,11 @@ public class EditProfileController {
 
                 // Set the new password for validation
                 updatedUser.setPassword(newPassword);
+                passwordChanged = true;
             } else {
-                // Keep the existing password
-                updatedUser.setPassword(currentUser.getPassword());
+                // Skip password validation by setting a placeholder
+                // We'll restore the actual password after validation
+                updatedUser.setPassword("placeholder");
             }
 
             // Check if the email is being changed and if it's already in use
@@ -261,7 +264,12 @@ public class EditProfileController {
             currentUser.setEmail(updatedUser.getEmail());
             currentUser.setWalletAddress(updatedUser.getWalletAddress());
             currentUser.setGithubUsername(updatedUser.getGithubUsername());
-            currentUser.setPassword(updatedUser.getPassword());
+            
+            // Only update password if it was changed
+            if (passwordChanged) {
+                currentUser.setPassword(updatedUser.getPassword());
+            }
+            
             if (updatedUser.getProfilePicture() != null) {
                 currentUser.setProfilePicture(updatedUser.getProfilePicture());
             }
