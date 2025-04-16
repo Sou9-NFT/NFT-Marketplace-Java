@@ -42,6 +42,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 
@@ -106,8 +107,26 @@ public class BlogController implements Initializable {
                         VBox container = new VBox(5);
                         container.setPadding(new Insets(10));
                         
+                        HBox header = new HBox(10);
+                        header.setAlignment(Pos.CENTER_LEFT);
+                        
                         Label userLabel = new Label(comment.getUser().getName());
                         userLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+                        
+                        Button deleteButton = new Button("Delete");
+                        deleteButton.getStyleClass().add("button-danger");
+                        
+                        // Only show delete button if the user is the comment author or an admin
+                        if (currentUser != null && (currentUser.getId() == comment.getUser().getId() || 
+                            currentUser.getRoles().contains("ROLE_ADMIN"))) {
+                            deleteButton.setVisible(true);
+                        } else {
+                            deleteButton.setVisible(false);
+                        }
+                        
+                        deleteButton.setOnAction(e -> handleDeleteComment(comment));
+                        
+                        header.getChildren().addAll(userLabel, deleteButton);
                         
                         Label contentLabel = new Label(comment.getContent());
                         contentLabel.setWrapText(true);
@@ -116,7 +135,7 @@ public class BlogController implements Initializable {
                         Label dateLabel = new Label(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
                         dateLabel.setStyle("-fx-text-fill: #999999; -fx-font-size: 11px;");
                         
-                        container.getChildren().addAll(userLabel, contentLabel, dateLabel);
+                        container.getChildren().addAll(header, contentLabel, dateLabel);
                         setGraphic(container);
                     }
                 }
@@ -562,19 +581,51 @@ public class BlogController implements Initializable {
             VBox content = new VBox(10);
             content.setPadding(new Insets(20));
             
+            // Create ListView for comments
+            ListView<Comment> commentsList = new ListView<>();
+            commentsList.setPrefHeight(300);
+            commentsList.setPrefWidth(400);
+
+            // Add create comment section for admins
+            if (currentUser != null && currentUser.getRoles().contains("ROLE_ADMIN")) {
+                HBox createCommentBox = new HBox(10);
+                createCommentBox.setAlignment(Pos.CENTER_LEFT);
+                
+                TextArea newCommentArea = new TextArea();
+                newCommentArea.setPromptText("Write a comment...");
+                newCommentArea.setPrefRowCount(2);
+                newCommentArea.setWrapText(true);
+                HBox.setHgrow(newCommentArea, Priority.ALWAYS);
+                
+                Button createCommentBtn = new Button("Create Comment");
+                createCommentBtn.getStyleClass().add("button-primary");
+                createCommentBtn.setOnAction(e -> {
+                    String commentText = newCommentArea.getText().trim();
+                    if (!commentText.isEmpty()) {
+                        Comment newComment = new Comment(commentText, currentUser, blog);
+                        try {
+                            commentService.add(newComment);
+                            newCommentArea.clear();
+                            List<Comment> updatedComments = commentService.getByBlog(blog);
+                            commentsList.setItems(FXCollections.observableArrayList(updatedComments));
+                        } catch (Exception ex) {
+                            showAlert(Alert.AlertType.ERROR, "Error", "Failed to create comment: " + ex.getMessage());
+                        }
+                    }
+                });
+                
+                createCommentBox.getChildren().addAll(newCommentArea, createCommentBtn);
+                content.getChildren().add(createCommentBox);
+            }
+            
             // Get comments for the blog
             List<Comment> comments = commentService.getByBlog(blog);
-            
+                
             if (comments.isEmpty()) {
                 Label noCommentsLabel = new Label("No comments yet.");
                 noCommentsLabel.setStyle("-fx-font-style: italic;");
                 content.getChildren().add(noCommentsLabel);
             } else {
-                // Create a ListView for comments
-                ListView<Comment> commentsList = new ListView<>();
-                commentsList.setPrefHeight(300);
-                commentsList.setPrefWidth(400);
-                
                 // Set up cell factory for comments
                 commentsList.setCellFactory(lv -> new ListCell<Comment>() {
                     @Override
@@ -587,8 +638,26 @@ public class BlogController implements Initializable {
                             VBox container = new VBox(5);
                             container.setPadding(new Insets(10));
                             
+                            HBox header = new HBox(10);
+                            header.setAlignment(Pos.CENTER_LEFT);
+                            
                             Label userLabel = new Label(comment.getUser().getName());
                             userLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 12px;");
+                            
+                            Button deleteButton = new Button("Delete");
+                            deleteButton.getStyleClass().add("button-danger");
+                            
+                            // Only show delete button if the user is the comment author or an admin
+                            if (currentUser != null && (currentUser.getId() == comment.getUser().getId() || 
+                                currentUser.getRoles().contains("ROLE_ADMIN"))) {
+                                deleteButton.setVisible(true);
+                            } else {
+                                deleteButton.setVisible(false);
+                            }
+                            
+                            deleteButton.setOnAction(e -> handleDeleteComment(comment));
+                            
+                            header.getChildren().addAll(userLabel, deleteButton);
                             
                             Label contentLabel = new Label(comment.getContent());
                             contentLabel.setWrapText(true);
@@ -597,12 +666,12 @@ public class BlogController implements Initializable {
                             Label dateLabel = new Label(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
                             dateLabel.setStyle("-fx-text-fill: #999999; -fx-font-size: 11px;");
                             
-                            container.getChildren().addAll(userLabel, contentLabel, dateLabel);
+                            container.getChildren().addAll(header, contentLabel, dateLabel);
                             setGraphic(container);
                         }
                     }
                 });
-                
+            
                 commentsList.setItems(FXCollections.observableArrayList(comments));
                 content.getChildren().add(commentsList);
             }
@@ -613,5 +682,30 @@ public class BlogController implements Initializable {
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Failed to load comments: " + e.getMessage());
         }
+    }
+
+    private void handleDeleteComment(Comment comment) {
+        if (currentUser == null || (currentUser.getId() != comment.getUser().getId() && 
+            !currentUser.getRoles().contains("ROLE_ADMIN"))) {
+            showAlert(Alert.AlertType.ERROR, "Error", "You don't have permission to delete this comment.");
+            return;
+        }
+
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Delete Comment");
+        confirmation.setHeaderText("Delete Comment");
+        confirmation.setContentText("Are you sure you want to delete this comment?");
+
+        confirmation.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    commentService.delete(comment);
+                    refreshComments();
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Comment deleted successfully!");
+                } catch (Exception e) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to delete comment: " + e.getMessage());
+                }
+            }
+        });
     }
 }
