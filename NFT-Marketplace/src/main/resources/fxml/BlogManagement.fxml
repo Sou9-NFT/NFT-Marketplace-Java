@@ -4,80 +4,213 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.text.Text?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.scene.shape.Rectangle?>
+<?import java.lang.String?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.esprit.controllers.BlogController"
             prefHeight="600.0" prefWidth="1000.0"
             styleClass="root" stylesheets="@../styles/main.css">
-            
-    <top>
-        <VBox spacing="10" styleClass="header">
+              <top>
+        <VBox spacing="15" styleClass="header">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20"/>
-            </padding>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Text text="Blog Management" styleClass="title"/>
+                <Insets top="25" right="30" bottom="25" left="30"/>
+            </padding>            <HBox spacing="15" alignment="CENTER_LEFT">
+                <Button fx:id="backButton" text="Back to Home" onAction="#handleBackToHome" styleClass="button-secondary">
+                    <graphic>
+                        <Region styleClass="icon-back"/>
+                    </graphic>
+                </Button>
+                <StackPane>
+                    <Rectangle width="4" height="24" fill="#4CAF50"/>
+                    <Text text="Blog Management" styleClass="title">
+                        <font>
+                            <Font name="System Bold" size="24"/>
+                        </font>
+                    </Text>
+                    <padding>
+                        <Insets left="15"/>
+                    </padding>
+                </StackPane>
                 <Region HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="searchField" promptText="Search blogs..." prefWidth="250"/>
-                <Button fx:id="createBlogButton" text="Create New Blog" onAction="#handleCreateBlog"/>
+                <HBox spacing="10" alignment="CENTER" styleClass="search-container">
+                    <TextField fx:id="searchField" promptText="Search blogs..." prefWidth="300">
+                        <styleClass>
+                            <String fx:value="search-field"/>
+                            <String fx:value="modern-field"/>
+                        </styleClass>
+                    </TextField>
+                </HBox>
+                <Button fx:id="createBlogButton" text="Create New Blog" onAction="#handleCreateBlog" styleClass="button-success">
+                    <graphic>
+                        <Region styleClass="icon-add"/>
+                    </graphic>
+                </Button>
             </HBox>
         </VBox>
     </top>
-    
-    <center>
-        <SplitPane dividerPositions="0.4">
-            <TableView fx:id="blogTableView" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="titleColumn" text="Title" prefWidth="200"/>
-                    <TableColumn fx:id="authorColumn" text="Author" prefWidth="150"/>
-                    <TableColumn fx:id="dateColumn" text="Date" prefWidth="100"/>
-                    <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150"/>
-                </columns>
-            </TableView>
-            
-            <VBox spacing="15" styleClass="blog-edit-form">
-                <padding>
-                    <Insets top="20" right="20" bottom="20" left="20"/>
-                </padding>
-                
-                <Label text="Blog Details" styleClass="section-header"/>
-                
-                <Label text="Title"/>
-                <TextField fx:id="titleField"/>
-                
-                <Label text="Content"/>
-                <TextArea fx:id="contentArea" wrapText="true" prefRowCount="10"/>
-                
-                <Label text="Featured Image"/>
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <ImageView fx:id="blogImageView" fitHeight="150" fitWidth="150" preserveRatio="true"/>
-                    <Button text="Choose Image" onAction="#handleChooseImage"/>
-                </HBox>
-                
-                <Label text="Translation"/>
-                <HBox spacing="10" alignment="CENTER_LEFT">
-                    <ComboBox fx:id="languageComboBox" prefWidth="150"/>
-                    <Button fx:id="translateButton" text="Translate" onAction="#handleTranslate"/>
-                </HBox>
-                
-                <Region VBox.vgrow="ALWAYS"/>
-                
-                <HBox spacing="10" alignment="CENTER_RIGHT">
-                    <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete" styleClass="button-danger"/>
-                    <Button fx:id="saveButton" text="Save Changes" onAction="#handleSave" styleClass="button-primary"/>
-                </HBox>
+      <center>
+        <SplitPane dividerPositions="0.4" styleClass="modern-split-pane">
+            <VBox spacing="10">
+                <ScrollPane fitToWidth="true" styleClass="edge-to-edge">
+                    <TableView fx:id="blogTableView" VBox.vgrow="ALWAYS" styleClass="modern-table">
+                        <columns>
+                            <TableColumn fx:id="titleColumn" text="Title" prefWidth="200">
+                                <graphic>
+                                    <HBox spacing="5" alignment="CENTER">
+                                        <Region styleClass="icon-article"/>
+                                        <Label text="Title"/>
+                                    </HBox>
+                                </graphic>
+                            </TableColumn>
+                            <TableColumn fx:id="authorColumn" text="Author" prefWidth="150">
+                                <graphic>
+                                    <HBox spacing="5" alignment="CENTER">
+                                        <Region styleClass="icon-person"/>
+                                        <Label text="Author"/>
+                                    </HBox>
+                                </graphic>
+                            </TableColumn>
+                            <TableColumn fx:id="dateColumn" text="Date" prefWidth="120">
+                                <graphic>
+                                    <HBox spacing="5" alignment="CENTER">
+                                        <Region styleClass="icon-calendar"/>
+                                        <Label text="Date"/>
+                                    </HBox>
+                                </graphic>
+                            </TableColumn>
+                            <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="150"/>
+                        </columns>
+                        <effect>
+                            <DropShadow color="#0000001a" radius="10" spread="0.05"/>
+                        </effect>
+                    </TableView>
+                </ScrollPane>
             </VBox>
+            
+            <ScrollPane fitToWidth="true" styleClass="edge-to-edge">
+                <VBox spacing="20" styleClass="blog-edit-form">
+                    <padding>
+                        <Insets top="25" right="30" bottom="25" left="30"/>
+                    </padding>
+                    
+                    <VBox styleClass="form-section">
+                        <Label text="Blog Details" styleClass="section-header">
+                            <font>
+                                <Font name="System Bold" size="18"/>
+                            </font>
+                        </Label>
+                        
+                        <VBox spacing="10" styleClass="input-group">
+                            <Label text="Title" styleClass="field-label"/>
+                            <TextField fx:id="titleField" styleClass="modern-field"/>
+                        </VBox>
+                        
+                        <VBox spacing="10" styleClass="input-group">
+                            <Label text="Content" styleClass="field-label"/>
+                            <TextArea fx:id="contentArea" wrapText="true" prefRowCount="12" styleClass="modern-field"/>
+                        </VBox>
+                    </VBox>
+                    
+                    <VBox styleClass="form-section" spacing="15">
+                        <Label text="Media" styleClass="section-header">
+                            <font>
+                                <Font name="System Bold" size="18"/>
+                            </font>
+                        </Label>
+                        
+                        <VBox styleClass="image-upload-container" spacing="10">
+                            <StackPane styleClass="image-preview-container">
+                                <ImageView fx:id="blogImageView" fitHeight="200" fitWidth="300" preserveRatio="true"/>
+                                <Button text="Choose Image" onAction="#handleChooseImage" styleClass="overlay-button"/>
+                            </StackPane>
+                            <Label text="Recommended size: 1200 x 630 pixels" styleClass="helper-text"/>
+                        </VBox>
+                    </VBox>
+                    
+                    <VBox styleClass="form-section" spacing="15">
+                        <Label text="Translation Options" styleClass="section-header">
+                            <font>
+                                <Font name="System Bold" size="16"/>
+                            </font>
+                        </Label>
+                        
+                        <HBox spacing="15" alignment="CENTER_LEFT">
+                            <ComboBox fx:id="languageComboBox" prefWidth="200" styleClass="modern-combo"/>
+                            <Button fx:id="translateButton" text="Translate" onAction="#handleTranslate" styleClass="button-secondary">
+                                <graphic>
+                                    <Region styleClass="icon-translate"/>
+                                </graphic>
+                            </Button>
+                        </HBox>                    </VBox>
+                    
+                    <VBox styleClass="form-section" spacing="15">
+                        <Label text="Comments" styleClass="section-header">
+                            <font>
+                                <Font name="System Bold" size="18"/>
+                            </font>
+                        </Label>
+                        
+                        <ListView fx:id="commentsListView" VBox.vgrow="ALWAYS" prefHeight="200" styleClass="modern-list">
+                            <effect>
+                                <DropShadow color="#0000001a" radius="5" spread="0.05"/>
+                            </effect>
+                        </ListView>
+                        
+                        <VBox spacing="10" styleClass="comment-input">
+                            <TextArea fx:id="commentTextArea" promptText="Write a comment..." 
+                                    wrapText="true" prefRowCount="3" styleClass="modern-field"/>
+                            <HBox spacing="10" alignment="CENTER_RIGHT">
+                                <Button fx:id="addCommentButton" text="Add Comment" 
+                                        onAction="#handleAddComment" styleClass="button-primary">
+                                    <graphic>
+                                        <Region styleClass="icon-comment"/>
+                                    </graphic>
+                                </Button>
+                            </HBox>
+                        </VBox>
+                    </VBox>
+                    
+                    <Region VBox.vgrow="ALWAYS"/>
+                    
+                    <HBox spacing="15" alignment="CENTER_RIGHT" styleClass="action-buttons">
+                        <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete" styleClass="button-danger">
+                            <graphic>
+                                <Region styleClass="icon-delete"/>
+                            </graphic>
+                        </Button>
+                        <Button fx:id="saveButton" text="Save Changes" onAction="#handleSave" styleClass="button-primary">
+                            <graphic>
+                                <Region styleClass="icon-save"/>
+                            </graphic>
+                        </Button>
+                    </HBox>
+                </VBox>
+            </ScrollPane>
         </SplitPane>
     </center>
-    
-    <bottom>
-        <HBox styleClass="footer" alignment="CENTER">
+      <bottom>
+        <HBox styleClass="footer" alignment="CENTER_LEFT">
             <padding>
-                <Insets top="10" right="20" bottom="10" left="20"/>
+                <Insets top="15" right="30" bottom="15" left="30"/>
             </padding>
-            <Label fx:id="statusLabel"/>
+            <HBox spacing="20" alignment="CENTER_LEFT">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Region styleClass="icon-info"/>
+                    <Label fx:id="statusLabel" styleClass="status-label"/>
+                </HBox>
+                <Separator orientation="VERTICAL"/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Region styleClass="icon-document"/>
+                    <Label fx:id="totalBlogsLabel" text="Total Blogs: 0" styleClass="info-label"/>
+                </HBox>
+            </HBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lastUpdateLabel" text="Last updated: Never" styleClass="info-label"/>
         </HBox>
     </bottom>
 </BorderPane>
