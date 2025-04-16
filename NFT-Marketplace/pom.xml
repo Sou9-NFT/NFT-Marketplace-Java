@@ -32,6 +32,20 @@
             <version>21.0.2</version>
         </dependency>
         <!-- END from Blackboard -->
+        
+        <!-- JSON library for OAuth -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
+        </dependency>
+        
+        <!-- JavaFX WebView for OAuth Web Flow -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>21.0.2</version>
+        </dependency>
     </dependencies>
 
     <properties>        <maven.compiler.source>17</maven.compiler.source>

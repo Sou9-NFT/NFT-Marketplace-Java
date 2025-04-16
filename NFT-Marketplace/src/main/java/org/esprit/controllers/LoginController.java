@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -34,6 +35,9 @@ public class LoginController {
     
     @FXML
     private Label passwordErrorLabel;
+    
+    @FXML
+    private Button githubLoginButton;
     
     private UserService userService;
     
@@ -96,6 +100,28 @@ public class LoginController {
             }
         } catch (Exception e) {
             showError("An error occurred: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Handle GitHub OAuth login button click
+     * This method will redirect the user to the GitHub OAuth authorization page
+     */
+    @FXML
+    private void handleGitHubLogin(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/GitHubOAuth.fxml"));
+            Parent oauthView = loader.load();
+            
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            
+            stage.setScene(new Scene(oauthView, 800, 600));
+            stage.setTitle("NFT Marketplace - GitHub Authentication");
+            stage.show();
+        } catch (IOException e) {
+            showError("Error initiating GitHub login: " + e.getMessage());
             e.printStackTrace();
         }
     }
