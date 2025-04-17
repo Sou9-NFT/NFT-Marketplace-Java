@@ -31,9 +31,12 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -486,7 +489,140 @@ public class BetSessionController implements Initializable {
             warning.showAndWait();
         }
     }
-
+    
+    @FXML
+    private void viewBetSessionDetails() {
+        BetSession selectedBetSession = tableView.getSelectionModel().getSelectedItem();
+        if (selectedBetSession == null) {
+            Alert alert = new Alert(AlertType.WARNING, 
+                    "Please select a bet session to view.");
+            alert.showAndWait();
+            return;
+        }
+        
+        try {
+            // Create new stage for the detail view
+            Stage detailStage = new Stage();
+            detailStage.initModality(Modality.APPLICATION_MODAL);
+            detailStage.setTitle("Bet Session Details");
+            
+            // Create layout for details
+            VBox root = new VBox(15);
+            root.setPadding(new Insets(20));
+            root.setAlignment(Pos.CENTER);
+            
+            // Header and info sections
+            Label titleLabel = new Label("Bet Session Details");
+            titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+            
+            // Session info
+            GridPane infoGrid = new GridPane();
+            infoGrid.setHgap(15);
+            infoGrid.setVgap(10);
+            infoGrid.setPadding(new Insets(10));
+            
+            // Artwork image
+            ImageView artworkImageView = new ImageView();
+            artworkImageView.setFitWidth(300);
+            artworkImageView.setFitHeight(300);
+            artworkImageView.setPreserveRatio(true);
+            
+            // Try to load artwork image
+            if (selectedBetSession.getArtwork() != null) {
+                int artworkId = selectedBetSession.getArtwork().getId();
+                // Get artwork image path (this implementation might need to be adjusted based on your image storage system)
+                String imagePath = "/uploads/artwork_" + artworkId + ".jpg";
+                
+                try {
+                    // First try to load from the specified path
+                    Image image = new Image(getClass().getResourceAsStream(imagePath));
+                    
+                    // If image failed to load (width = 0), try a different extension
+                    if (image.getWidth() == 0) {
+                        imagePath = "/uploads/artwork_" + artworkId + ".png";
+                        image = new Image(getClass().getResourceAsStream(imagePath));
+                    }
+                    
+                    // If still failed, try the default image
+                    if (image.getWidth() == 0) {
+                        image = new Image(getClass().getResourceAsStream("/assets/default/artwork-placeholder.png"));
+                    }
+                    
+                    artworkImageView.setImage(image);
+                } catch (Exception e) {
+                    // Fall back to default image
+                    try {
+                        Image defaultImage = new Image(getClass().getResourceAsStream("/assets/default/artwork-placeholder.png"));
+                        artworkImageView.setImage(defaultImage);
+                    } catch (Exception ex) {
+                        System.err.println("Could not load default artwork image: " + ex.getMessage());
+                    }
+                }
+            }
+            
+            // Add info to grid
+            infoGrid.add(new Label("ID:"), 0, 0);
+            infoGrid.add(new Label(String.valueOf(selectedBetSession.getId())), 1, 0);
+            
+            if (selectedBetSession.getAuthor() != null) {
+                infoGrid.add(new Label("Author:"), 0, 1);
+                infoGrid.add(new Label(selectedBetSession.getAuthor().getName()), 1, 1);
+            }
+            
+            if (selectedBetSession.getArtwork() != null) {
+                infoGrid.add(new Label("Artwork:"), 0, 2);
+                infoGrid.add(new Label(selectedBetSession.getArtwork().getTitle()), 1, 2);
+            }
+            
+            infoGrid.add(new Label("Initial Price:"), 0, 3);
+            infoGrid.add(new Label(String.valueOf(selectedBetSession.getInitialPrice())), 1, 3);
+            
+            infoGrid.add(new Label("Current Price:"), 0, 4);
+            infoGrid.add(new Label(String.valueOf(selectedBetSession.getCurrentPrice())), 1, 4);
+            
+            infoGrid.add(new Label("Status:"), 0, 5);
+            infoGrid.add(new Label(selectedBetSession.getStatus()), 1, 5);
+            
+            if (selectedBetSession.getStartTime() != null) {
+                infoGrid.add(new Label("Start Time:"), 0, 6);
+                infoGrid.add(new Label(selectedBetSession.getStartTime().toString()), 1, 6);
+            }
+            
+            if (selectedBetSession.getEndTime() != null) {
+                infoGrid.add(new Label("End Time:"), 0, 7);
+                infoGrid.add(new Label(selectedBetSession.getEndTime().toString()), 1, 7);
+            }
+            
+            // Close button
+            Button closeButton = new Button("Close");
+            closeButton.setOnAction(e -> detailStage.close());
+            
+            // Add all components to root layout
+            root.getChildren().addAll(
+                titleLabel, 
+                new Separator(), 
+                new Label("Artwork Image:"),
+                artworkImageView, 
+                new Separator(),
+                infoGrid, 
+                closeButton
+            );
+            
+            // Create scene and show the stage
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/styles/main.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/styles/bet-session.css").toExternalForm());
+            
+            detailStage.setScene(scene);
+            detailStage.show();
+        } catch (Exception e) {
+            Alert alert = new Alert(AlertType.ERROR, 
+                    "Error showing bet session details: " + e.getMessage());
+            alert.showAndWait();
+            e.printStackTrace();
+        }
+    }
+    
     /**
      * Starts a timer to update the countdown display every second
      */

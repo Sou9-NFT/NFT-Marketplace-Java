@@ -37,12 +37,12 @@
                 </columns>
             </TableView>
         </VBox>
-    </center>
-    <bottom>
+    </center>    <bottom>
         <HBox spacing="15" alignment="CENTER" styleClass="bet-session-actions">
             <padding>
                 <Insets top="15" right="20" bottom="15" left="20"/>
             </padding>
+            <Button fx:id="viewButton" text="View Details" onAction="#viewBetSessionDetails" styleClass="view-button"/>
             <Button fx:id="addButton" text="Add New Session" onAction="#showAddDialog" styleClass="add-button"/>
             <Button fx:id="updateButton" text="Update Session" onAction="#showUpdateDialog" styleClass="update-button"/>
             <Button fx:id="deleteButton" text="Delete Session" onAction="#deleteSelectedBetSession" styleClass="delete-button"/>
