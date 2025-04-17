@@ -1,16 +1,22 @@
 package org.esprit.controllers;
 
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.esprit.models.Artwork;
 import org.esprit.models.BetSession;
 import org.esprit.models.User;
 import org.esprit.services.BetSessionService;
 import org.esprit.services.UserService;
+import org.esprit.utils.TimeUtils;
 
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -71,14 +77,17 @@ public class BetSessionController implements Initializable {
     
     @FXML
     private Button updateButton;
-    
-    @FXML
+      @FXML
     private Button deleteButton;
-      private BetSessionService betSessionService;
+    
+    private BetSessionService betSessionService;
     private UserService userService;
     
     // Add field for current user
     private User currentUser;
+    
+    // Scheduler for countdown updates
+    private ScheduledExecutorService countdownExecutor;
     
     public BetSessionController() {
         betSessionService = new BetSessionService();
@@ -108,20 +117,55 @@ public class BetSessionController implements Initializable {
                    new SimpleStringProperty(artwork.getTitle()) : 
                    new SimpleStringProperty("N/A");
         });
-        
-        createdAtColumn.setCellValueFactory(cellData -> cellData.getValue().createdAtProperty());
+          createdAtColumn.setCellValueFactory(cellData -> cellData.getValue().createdAtProperty());
         startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
+        
+        // Custom cell factory to show countdown for active sessions
         endTimeColumn.setCellValueFactory(cellData -> cellData.getValue().endTimeProperty());
+        endTimeColumn.setCellFactory(column -> new javafx.scene.control.TableCell<BetSession, LocalDateTime>() {
+            @Override
+            protected void updateItem(LocalDateTime endTime, boolean empty) {
+                super.updateItem(endTime, empty);
+                
+                if (empty || endTime == null) {
+                    setText(null);
+                    return;
+                }
+                
+                BetSession betSession = getTableView().getItems().get(getIndex());
+                if (betSession != null && "active".equals(betSession.getStatus())) {
+                    // For active sessions, show a countdown
+                    setText(TimeUtils.formatCountdown(endTime));
+                } else {
+                    // For other sessions, show the regular date/time
+                    setText(endTime.toString());
+                }
+            }
+        });
+        
         initialPriceColumn.setCellValueFactory(cellData -> cellData.getValue().initialPriceProperty());
         currentPriceColumn.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
         statusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
         
+        // Set up countdown timer to refresh the display every second
+        startCountdownTimer();
+        
         // Load data
         loadBetSessions();
     }
-    
     private void loadBetSessions() {
-        tableView.setItems(FXCollections.observableArrayList(betSessionService.getAllBetSessions()));
+        try {
+            tableView.setItems(FXCollections.observableArrayList(betSessionService.getAllBetSessions()));
+        } catch (Exception e) {
+            System.err.println("Error loading bet sessions: " + e.getMessage());
+            e.printStackTrace();
+            
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Database Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Failed to load bet sessions from the database.");
+            alert.showAndWait();
+        }
     }
       @FXML
     private void showAddDialog() {
@@ -421,8 +465,16 @@ public class BetSessionController implements Initializable {
             
             // If user confirms, delete the bet session
             if (result == ButtonType.YES) {
-                betSessionService.deleteBetSession(selected.getId());
-                loadBetSessions();
+                try {
+                    betSessionService.deleteBetSession(selected.getId());
+                    loadBetSessions();
+                } catch (SQLException ex) {
+                    Alert errorAlert = new Alert(AlertType.ERROR,
+                            "Error deleting bet session: " + ex.getMessage());
+                    errorAlert.setTitle("Database Error");
+                    errorAlert.setHeaderText("Failed to Delete Bet Session");
+                    errorAlert.showAndWait();
+                }
             }
         } else {
             // No bet session selected, show warning
@@ -433,5 +485,43 @@ public class BetSessionController implements Initializable {
             warning.setHeaderText("No Bet Session Selected");
             warning.showAndWait();
         }
+    }
+
+    /**
+     * Starts a timer to update the countdown display every second
+     */
+    private void startCountdownTimer() {
+        // Stop any existing timer first
+        stopCountdownTimer();
+        
+        // Create a new scheduler
+        countdownExecutor = Executors.newSingleThreadScheduledExecutor();
+        
+        // Schedule a task to update the table every second
+        countdownExecutor.scheduleAtFixedRate(() -> {
+            // Update UI on JavaFX thread
+            Platform.runLater(() -> {
+                tableView.refresh();
+            });
+        }, 0, 1, TimeUnit.SECONDS);
+    }
+    
+    /**
+     * Stops the countdown timer and releases resources
+     */
+    private void stopCountdownTimer() {
+        if (countdownExecutor != null && !countdownExecutor.isShutdown()) {
+            countdownExecutor.shutdownNow();
+            countdownExecutor = null;
+        }
+    }
+
+    // Clean up resources when controller is no longer needed
+    public void cleanup() {
+        stopCountdownTimer();
+    }
+
+    void setBetSession(BetSession selectedSession) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

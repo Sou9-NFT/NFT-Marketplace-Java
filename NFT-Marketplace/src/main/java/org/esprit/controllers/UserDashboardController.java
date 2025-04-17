@@ -199,20 +199,22 @@ public class UserDashboardController {
             showAlert("Error", "Could not load blog: " + e.getMessage());
         }
     }
-    
-    @FXML
+      @FXML
     private void handleBetSessionButton(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BetSession.fxml"));
+            // Changed to load MyBetSessions.fxml instead of BetSession.fxml
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MyBetSessions.fxml"));
             Parent betSessionView = loader.load();
             
             // If there's a controller with setUser method, call it
             Object controller = loader.getController();
             tryToSetUser(controller);
             
-            navigateToView(event, betSessionView, "NFT Marketplace - Bet Sessions");
+            navigateToView(event, betSessionView, "NFT Marketplace - My Bet Sessions");
         } catch (IOException e) {
-            showAlert("Error", "Could not load bet sessions: " + e.getMessage());
+            // Print stack trace to terminal
+            e.printStackTrace();
+            showAlert("Error", "Could not load my bet sessions: " + e.getMessage());
         }
     }
     
