@@ -256,17 +256,50 @@ public class AdminDashboardController implements Initializable {
     @FXML
     private void handleManageRaffles(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleManagement.fxml"));
+            // Log the resource path we're looking for
+            System.out.println("Attempting to load resource: /fxml/RaffleManagement.fxml");
+            
+            // Try to get the resource URL
+            URL resourceUrl = getClass().getResource("/fxml/RaffleManagement.fxml");
+            
+            // Debug information
+            if (resourceUrl == null) {
+                System.err.println("ERROR: Resource not found: /fxml/RaffleManagement.fxml");
+                
+                // Try alternate paths to debug
+                System.out.println("Checking classpath resources:");
+                URL rootResource = getClass().getResource("/");
+                if (rootResource != null) {
+                    System.out.println("Root resource path: " + rootResource.getPath());
+                } else {
+                    System.out.println("Root resource path not found");
+                }
+                
+                showAlert("Error", "Could not find RaffleManagement.fxml resource. Check console for details.");
+                return;
+            }
+            
+            System.out.println("Resource found at: " + resourceUrl.toString());
+            
+            // Load the FXML file
+            FXMLLoader loader = new FXMLLoader(resourceUrl);
             Parent raffleView = loader.load();
             
+            // Get the controller and set the current user
             RaffleManagementController controller = loader.getController();
             controller.setCurrentUser(currentAdminUser);
             
+            // Navigate to the raffle management view
             navigateToView(event, raffleView, "NFT Marketplace - Raffle Management");
             
         } catch (IOException e) {
+            System.err.println("ERROR in handleManageRaffles: " + e.getMessage());
+            e.printStackTrace(); // Print full stack trace for debugging
             showAlert("Error", "Could not load raffle management: " + e.getMessage());
-            System.err.println("Error in handleManageRaffles: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("UNEXPECTED ERROR in handleManageRaffles: " + e.getMessage());
+            e.printStackTrace();
+            showAlert("Error", "Unexpected error loading raffle management: " + e.getMessage());
         }
     }
     

@@ -112,6 +112,7 @@ public class BetSessionService {
             while (rs.next()) {
                 betSessions.add(extractBetSessionFromResultSet(rs));
             }
+
         }
         
         return betSessions;
