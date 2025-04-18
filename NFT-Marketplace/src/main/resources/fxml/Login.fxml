@@ -3,9 +3,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Text?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.text.Font?>
 <VBox 
 	xmlns="http://javafx.com/javafx" 
-	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.LoginController" spacing="15" alignment="CENTER" prefWidth="600" prefHeight="400" styleClass="root" stylesheets="@../styles/main.css">
+	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.LoginController" spacing="15" alignment="CENTER" prefWidth="600" prefHeight="450" styleClass="root" stylesheets="@../styles/main.css">
 	<padding>
 		<Insets top="20" right="20" bottom="20" left="20"/>
 	</padding>
@@ -13,8 +16,18 @@
 		<padding>
 			<Insets top="30" right="30" bottom="30" left="30"/>
 		</padding>
-		<Text text="Test Test" styleClass="title"/>
-		<Text text="NFT Marketplace" styleClass="subtitle"/>
+		<!-- Logo and business name section -->
+		<VBox alignment="CENTER" spacing="5">
+			<ImageView fitHeight="80" fitWidth="80" preserveRatio="true">
+				<Image url="@../kit/icon.png"/>
+			</ImageView>
+			<Text text="Sou9 NFT" styleClass="title">
+				<font>
+					<Font name="System Bold" size="32.0" />
+				</font>
+			</Text>
+			<Text text="NFT Marketplace" styleClass="subtitle"/>
+		</VBox>
 		<Label text="Login to Your Account" styleClass="header-text"/>
 		<GridPane hgap="10" vgap="8" alignment="CENTER">
 			<Label text="Email:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>

@@ -2,8 +2,8 @@ package org.esprit.main;
 
 import java.io.IOException;
 
-import org.esprit.controllers.ResetPasswordController;
 import org.esprit.controllers.RaffleListController;
+import org.esprit.controllers.ResetPasswordController;
 import org.esprit.models.User;
 import org.esprit.utils.UrlProtocolHandler;
 
@@ -11,6 +11,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class NftMarketplaceApplication extends Application {
@@ -21,6 +22,14 @@ public class NftMarketplaceApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
+        
+        // Set application icon that will appear in the taskbar
+        try {
+            Image icon = new Image(getClass().getResourceAsStream("/kit/icon_2.png"));
+            primaryStage.getIcons().add(icon);
+        } catch (Exception e) {
+            System.err.println("Failed to load application icon: " + e.getMessage());
+        }
         
         // Check if we have a reset token to process
         if (resetToken != null) {
