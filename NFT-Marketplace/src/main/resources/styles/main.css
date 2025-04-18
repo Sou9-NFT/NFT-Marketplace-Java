@@ -1,35 +1,35 @@
 /* Main Colors */
 * {
   -primary-color: #4528dc;
-  -secondary-color: #57048a;
-  -primary-text-color: #333333;
-  -secondary-text-color: #555555;
-  -primary-paragraph-color: #666666;
-  -secondary-paragraph-color: #777777;
-  -primary-border-color: #dddddd;
+  -secondary-color: #4e16b3;
+  -primary-text-color: #040402;
+  -secondary-text-color: #57048a;
+  -primary-paragraph-color: #57048a;
+  -secondary-paragraph-color: #4e16b3;
+  -primary-border-color: #4528dc;
 
   /* Background Colors */
-  -primary-background-color: #ffffff;
+  -primary-background-color: #f9f9f9;
   -primary-background-color-2: #f9f9f9;
-  -primary-background-color-3: #f5f5f5;
-  -secondary-background-color: #ffffff;
-  -secondary-background-color-2: #f7f7f7;
-  -secondary-background-color-3: #eeeeee;
-  -card-background-color: #ffffff;
-  -header-background-color: #f5f5f5;
-  -footer-background-color: #f5f5f5;
+  -primary-background-color-3: #f9f9f9;
+  -secondary-background-color: #f9f9f9;
+  -secondary-background-color-2: #f9f9f9;
+  -secondary-background-color-3: #f9f9f9;
+  -card-background-color: #f9f9f9;
+  -header-background-color: #f9f9f9;
+  -footer-background-color: #f9f9f9;
 
   /* UI Colors */
-  -white-color: #ffffff;
-  -black-color: #333333;
-  -grey-color: #eeeeee;
-  -dark-grey-color: #999999;
-  -valid-color: #007a4d;
-  -invalid-color: #e34f4f;
+  -white-color: #f9f9f9;
+  -black-color: #040402;
+  -grey-color: #4e16b3;
+  -dark-grey-color: #57048a;
+  -valid-color: #4528dc;
+  -invalid-color: #57048a;
 
   /* Line Colors */
-  -primary-line-color: rgba(0, 0, 0, 0.12);
-  -secondary-line-color: rgba(0, 0, 0, 0.08);
+  -primary-line-color: rgba(69, 40, 220, 0.12);
+  -secondary-line-color: rgba(69, 40, 220, 0.08);
 }
 
 /* Apply Fonts */
@@ -82,10 +82,10 @@
 
 /* Field validation styling */
 .field-error {
-  -fx-text-fill: -invalid-color;
+  -fx-text-fill: #ff0000 !important;
   -fx-font-size: 12px;
   -fx-padding: 0 0 0 2px;
-  -fx-graphic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%23e34f4f" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0-1.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>');
+  -fx-graphic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%23FF0000" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0-1.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>');
   -fx-graphic-text-gap: 4px;
   -fx-opacity: 0.9;
 }
@@ -94,7 +94,7 @@
   -fx-text-fill: -invalid-color;
   -fx-font-size: 12px;
   -fx-padding: 0 0 0 2px;
-  -fx-graphic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%23e34f4f" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0-1.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>');
+  -fx-graphic: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%2357048A" viewBox="0 0 16 16"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0-1.5a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/></svg>');
   -fx-graphic-text-gap: 4px;
   -fx-opacity: 0.9;
 }
@@ -102,13 +102,21 @@
 .text-field:error,
 .password-field:error {
   -fx-border-color: -invalid-color;
-  -fx-effect: dropshadow(gaussian, rgba(227, 79, 79, 0.15), 4, 0, 0, 0);
+  -fx-effect: dropshadow(gaussian, rgba(87, 4, 138, 0.15), 4, 0, 0, 0);
 }
 
 .text-field.error,
 .password-field.error {
   -fx-border-color: -invalid-color;
-  -fx-effect: dropshadow(gaussian, rgba(227, 79, 79, 0.15), 4, 0, 0, 0);
+  -fx-effect: dropshadow(gaussian, rgba(87, 4, 138, 0.15), 4, 0, 0, 0);
+}
+
+.text-field.error,
+.password-field.error,
+.text-field:invalid,
+.password-field:invalid {
+  -fx-border-color: #ff0000 !important;
+  -fx-text-fill: #ff0000 !important;
 }
 
 /* Buttons */
@@ -128,7 +136,7 @@
 
 /* GitHub OAuth button styling */
 .github-button {
-  -fx-background-color: #333333;
+  -fx-background-color: #040402;
   -fx-text-fill: white;
   -fx-font-family: "Jost", sans-serif;
   -fx-font-weight: 600;
@@ -144,7 +152,7 @@
 }
 
 .button-secondary {
-  -fx-background-color: -white-color;
+  -fx-background-color: #4528dc;
   -fx-border-color: -primary-color;
   -fx-border-radius: 100px;
 }
@@ -160,7 +168,7 @@
 }
 
 .table-view .column-header-background {
-  -fx-background-color: linear-gradient(135deg, #4528dc 10%, #57048a);
+  -fx-background-color: linear-gradient(135deg, #4528dc 10%, #4e16b3);
   -fx-background-radius: 8px 8px 0 0;
   -fx-padding: 5px;
 }
@@ -251,12 +259,7 @@
 }
 
 .status-error {
-  -fx-text-fill: -invalid-color;
-}
-
-/* Gradient text (not directly supported in JavaFX, but we can apply it to specific elements) */
-.gradient-text {
-  -fx-text-fill: -primary-color;
+  -fx-text-fill: #ff0000 !important;
 }
 
 /* Blog Styles */
@@ -412,7 +415,7 @@
 }
 
 .delete-button {
-  -fx-background-color: transparent;
+  -fx-background-color: #57048a;
   -fx-border-color: #dc3545;
   -fx-text-fill: #dc3545;
   -fx-padding: 8 15;
@@ -525,7 +528,7 @@
 }
 
 .status-error {
-  -fx-text-fill: #c62828;
+  -fx-text-fill: #ff0000 !important;
   -fx-background-color: #ffebee;
 }
 
