@@ -381,9 +381,7 @@ public class BlogController implements Initializable {
                 }
             });
         }
-    }
-
-    @FXML
+    }    @FXML
     private void handleChooseImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(
@@ -393,16 +391,42 @@ public class BlogController implements Initializable {
         File selectedFile = fileChooser.showOpenDialog(null);
         if (selectedFile != null) {
             try {
-                String fileName = "blog_" + System.currentTimeMillis() + 
-                    selectedFile.getName().substring(selectedFile.getName().lastIndexOf("."));
-                Path destination = Paths.get(UPLOAD_DIR + fileName);
+                // Create upload directory if it doesn't exist
+                Path uploadPath = Paths.get(UPLOAD_DIR);
+                if (!Files.exists(uploadPath)) {
+                    Files.createDirectories(uploadPath);
+                }
+
+                // Generate unique filename
+                String originalFileName = selectedFile.getName();
+                String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
+                String fileName = "blog_" + System.currentTimeMillis() + extension;
+                
+                // Create full destination path
+                Path destination = uploadPath.resolve(fileName);
+                
+                // Copy file with overwrite
                 Files.copy(selectedFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
                 
+                // Update blog and image view
+                if (currentBlog == null) {
+                    currentBlog = new Blog();
+                }
                 currentBlog.setImageFilename(fileName);
-                blogImageView.setImage(new Image(destination.toUri().toString()));
-            } catch (Exception e) {
+                
+                // Load and display the image
+                Image image = new Image(destination.toUri().toString());
+                blogImageView.setImage(image);
+                
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Image uploaded successfully!");
+            } catch (IOException e) {
+                e.printStackTrace();
                 showAlert(Alert.AlertType.ERROR, "Error", 
-                    "Failed to upload image: " + e.getMessage());
+                    "Failed to upload image: " + e.getMessage() + "\nPlease make sure you have write permissions to " + UPLOAD_DIR);
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Error", 
+                    "Unexpected error while uploading image: " + e.getMessage());
             }
         }
     }
@@ -719,10 +743,8 @@ public class BlogController implements Initializable {
     @FXML
     public void handleBackToHome(ActionEvent event) {
         try {
-            // Determine which dashboard to return to based on admin mode
+            // Determine which dashboard to return to based on user role
             String fxmlPath = isAdminMode ? "/fxml/AdminDashboard.fxml" : "/fxml/UserDashboard.fxml";
-            String title = "NFT Marketplace - " + (isAdminMode ? "Admin" : "User") + " Dashboard";
-            
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
             Parent dashboardView = loader.load();
             
@@ -735,15 +757,14 @@ public class BlogController implements Initializable {
                 controller.setCurrentUser(currentUser);
             }
             
-            // Navigate to the dashboard
             Scene currentScene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) currentScene.getWindow();
             
             stage.setScene(new Scene(dashboardView));
-            stage.setTitle(title);
+            stage.setTitle("NFT Marketplace - " + (isAdminMode ? "Admin" : "User") + " Dashboard");
             stage.show();
         } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not return to dashboard: " + e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not navigate back to dashboard: " + e.getMessage());
             e.printStackTrace();
         }
     }

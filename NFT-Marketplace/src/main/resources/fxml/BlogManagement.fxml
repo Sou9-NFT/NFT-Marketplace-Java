@@ -18,14 +18,7 @@
               <top>
         <VBox spacing="15" styleClass="header">
             <padding>
-                <Insets top="25" right="30" bottom="25" left="30"/>
-            </padding>            <HBox spacing="15" alignment="CENTER_LEFT">
-                <Button fx:id="backButton" text="Back to Home" onAction="#handleBackToHome" styleClass="button-secondary">
-                    <graphic>
-                        <Region styleClass="icon-back"/>
-                    </graphic>
-                </Button>
-                <StackPane>
+                <Insets top="25" right="30" bottom="25" left="30"/>            </padding>            <HBox spacing="15" alignment="CENTER_LEFT">                <StackPane>
                     <Rectangle width="4" height="24" fill="#4CAF50"/>
                     <Text text="Blog Management" styleClass="title">
                         <font>
@@ -44,10 +37,14 @@
                             <String fx:value="modern-field"/>
                         </styleClass>
                     </TextField>
-                </HBox>
-                <Button fx:id="createBlogButton" text="Create New Blog" onAction="#handleCreateBlog" styleClass="button-success">
+                </HBox>                <Button fx:id="createBlogButton" text="Create New Blog" onAction="#handleCreateBlog" styleClass="button-success">
                     <graphic>
                         <Region styleClass="icon-add"/>
+                    </graphic>
+                </Button>
+                <Button fx:id="backButton" text="Back to Home" onAction="#handleBackToHome" styleClass="button-secondary">
+                    <graphic>
+                        <Region styleClass="icon-back"/>
                     </graphic>
                 </Button>
             </HBox>
