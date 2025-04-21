@@ -2,9 +2,11 @@ package org.esprit.models;
 
 import java.time.LocalDateTime;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -25,6 +27,7 @@ public class BetSession {
     private final DoubleProperty initialPrice = new SimpleDoubleProperty();
     private final DoubleProperty currentPrice = new SimpleDoubleProperty();
     private final StringProperty status = new SimpleStringProperty("pending");
+    private final BooleanProperty mysteriousMode = new SimpleBooleanProperty(false);
 
     // Constructor
     public BetSession() {
@@ -194,6 +197,18 @@ public class BetSession {
 
     public StringProperty statusProperty() {
         return status;
+    }
+
+    public boolean isMysteriousMode() {
+        return mysteriousMode.get();
+    }
+
+    public void setMysteriousMode(boolean mysteriousMode) {
+        this.mysteriousMode.set(mysteriousMode);
+    }
+
+    public BooleanProperty mysteriousModeProperty() {
+        return mysteriousMode;
     }
 
     // Update status based on time

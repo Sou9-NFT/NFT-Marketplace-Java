@@ -37,7 +37,8 @@
 						<ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
 						<ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
 						<ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
-					</columnConstraints>					<rowConstraints>
+					</columnConstraints>
+					<rowConstraints>
 						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
 						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
 						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
@@ -83,12 +84,18 @@
 							<font>
 								<Font size="16.0" />
 							</font>
-						</Button>						<Button maxWidth="Infinity" maxHeight="Infinity" text="System Logs" onAction="#handleSystemLogs" styleClass="dashboard-button" GridPane.columnIndex="2" GridPane.rowIndex="2">
+						</Button>
+						<Button maxWidth="Infinity" maxHeight="Infinity" text="System Logs" onAction="#handleSystemLogs" styleClass="dashboard-button" GridPane.columnIndex="2" GridPane.rowIndex="2">
 							<font>
 								<Font size="16.0" />
 							</font>
 						</Button>
 						<Button maxWidth="Infinity" maxHeight="Infinity" text="Bet Sessions" onAction="#handleBetSessions" styleClass="dashboard-button" GridPane.rowIndex="3">
+							<font>
+								<Font size="16.0" />
+							</font>
+						</Button>
+						<Button maxWidth="Infinity" maxHeight="Infinity" text="Artworks" onAction="#handleManageArtworks" styleClass="dashboard-button" GridPane.columnIndex="1" GridPane.rowIndex="3">
 							<font>
 								<Font size="16.0" />
 							</font>

@@ -179,7 +179,34 @@ public class RaffleService implements IService<Raffle> {
         raffle.setRaffleDescription(rs.getString("raffle_description"));
         raffle.setStartTime(rs.getTimestamp("start_time"));
         raffle.setEndTime(rs.getTimestamp("end_time"));
-        raffle.setStatus(rs.getString("status"));
+        
+        // Get the status from the result set
+        String status = rs.getString("status");
+        
+        // Check if this is an active raffle with an end time in the past
+        // If so, we'll automatically update it to "ended" status
+        Date now = new Date();
+        if ("active".equals(status) && rs.getTimestamp("end_time").before(now)) {
+            System.out.println("Auto-correcting expired raffle status for ID: " + rs.getInt("id"));
+            status = "ended";
+            
+            // Also update the database immediately to fix the status
+            try {
+                String updateStatusSql = "UPDATE raffle SET status = 'ended' WHERE id = ?";
+                PreparedStatement updateStmt = connection.prepareStatement(updateStatusSql);
+                updateStmt.setInt(1, rs.getInt("id"));
+                updateStmt.executeUpdate();
+                updateStmt.close();
+                System.out.println("Updated raffle ID: " + rs.getInt("id") + " status to 'ended' in database");
+            } catch (SQLException e) {
+                System.err.println("Failed to update expired raffle status in database: " + e.getMessage());
+                // Continue with the corrected status in memory even if DB update fails
+            }
+        }
+        
+        // Set the possibly corrected status
+        raffle.setStatus(status);
+        
         raffle.setCreatedAt(rs.getTimestamp("created_at"));
         raffle.setCreatorName(rs.getString("creator_name"));
         raffle.setArtworkId(rs.getInt("artwork_id"));

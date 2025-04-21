@@ -6,6 +6,7 @@ import java.util.Map;
 import org.esprit.models.User;
 import org.esprit.models.User.ValidationResult;
 import org.esprit.services.UserService;
+import org.esprit.utils.PasswordHasher;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -66,31 +67,23 @@ public class RegisterController {
         
         boolean hasErrors = false;
         
-        // Validation for name field
+        // Basic field presence validation
         if (name.isEmpty()) {
             showFieldError(nameErrorLabel, "Name cannot be empty");
             hasErrors = true;
         }
         
-        // Validation for email field
         if (email.isEmpty()) {
             showFieldError(emailErrorLabel, "Email cannot be empty");
             hasErrors = true;
-        } else if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
-            showFieldError(emailErrorLabel, "Invalid email format");
-            hasErrors = true;
         }
         
-        // Validation for password
         if (password.isEmpty()) {
             showFieldError(passwordErrorLabel, "Password cannot be empty");
             hasErrors = true;
-        } else if (password.length() < 6) {
-            showFieldError(passwordErrorLabel, "Password must be at least 6 characters");
-            hasErrors = true;
         }
         
-        // Basic confirmation password check
+        // Confirm password validation
         if (!password.equals(confirmPassword)) {
             showFieldError(confirmPasswordErrorLabel, "Passwords do not match");
             hasErrors = true;
@@ -101,6 +94,35 @@ public class RegisterController {
             return;
         }
         
+        // Create a temporary user for full validation
+        User userToValidate = new User(email, password, name);
+        ValidationResult validationResult = userToValidate.validate();
+        
+        if (!validationResult.isValid()) {
+            // Show validation errors on specific fields
+            Map<String, String> errors = validationResult.getErrors();
+            
+            if (errors.containsKey("name")) {
+                showFieldError(nameErrorLabel, errors.get("name"));
+                hasErrors = true;
+            }
+            
+            if (errors.containsKey("email")) {
+                showFieldError(emailErrorLabel, errors.get("email"));
+                hasErrors = true;
+            }
+            
+            if (errors.containsKey("password")) {
+                showFieldError(passwordErrorLabel, errors.get("password"));
+                hasErrors = true;
+            }
+            
+            // If any validation errors were found, stop here
+            if (hasErrors) {
+                return;
+            }
+        }
+        
         try {
             // Check if user with this email already exists
             User existingUser = userService.getByEmail(email);
@@ -109,38 +131,11 @@ public class RegisterController {
                 return;
             }
             
-            // Create new user with form data
-            User newUser = new User(email, password, name);
+            // Create new user with form data and hash the password
+            User newUser = new User(email, PasswordHasher.hashPassword(password), name);
             
             // Set default profile picture
             newUser.setProfilePicture("/assets/default/default_profile.jpg");
-            
-            // Validate user at entity level
-            ValidationResult validationResult = newUser.validate();
-            
-            if (!validationResult.isValid()) {
-                // Show validation errors on specific fields
-                Map<String, String> errors = validationResult.getErrors();
-                
-                if (errors.containsKey("name")) {
-                    showFieldError(nameErrorLabel, errors.get("name"));
-                }
-                if (errors.containsKey("email")) {
-                    showFieldError(emailErrorLabel, errors.get("email"));
-                }
-                if (errors.containsKey("password")) {
-                    showFieldError(passwordErrorLabel, errors.get("password"));
-                }
-                
-                // If other errors exist, show them in the general error label
-                for (Map.Entry<String, String> error : errors.entrySet()) {
-                    if (!error.getKey().equals("name") && !error.getKey().equals("email") && !error.getKey().equals("password")) {
-                        showError("Error: " + error.getValue());
-                    }
-                }
-                
-                return;
-            }
             
             // If validation passed, save the user
             userService.add(newUser);

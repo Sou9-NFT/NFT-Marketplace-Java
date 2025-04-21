@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.esprit.models.User;
 import org.esprit.services.UserService;
+import org.esprit.utils.PasswordHasher;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -326,7 +327,7 @@ public class UserFormController {
         }
 
         // Create new user
-        User newUser = new User(email, password, name);
+        User newUser = new User(email, PasswordHasher.hashPassword(password), name);
 
         // Set default profile picture
         newUser.setProfilePicture("/assets/default/default_profile.jpg");
@@ -384,7 +385,7 @@ public class UserFormController {
 
         // Update password if provided
         if (!password.isEmpty()) {
-            userToEdit.setPassword(password);
+            userToEdit.setPassword(PasswordHasher.hashPassword(password));
         }
 
         // Update roles
