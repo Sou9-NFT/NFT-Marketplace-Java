@@ -29,6 +29,21 @@ public class BetSession {
     private final StringProperty status = new SimpleStringProperty("pending");
     private final BooleanProperty mysteriousMode = new SimpleBooleanProperty(false);
 
+    // Add numberOfBids property
+    private final IntegerProperty numberOfBids = new SimpleIntegerProperty(0);
+
+    public int getNumberOfBids() {
+        return numberOfBids.get();
+    }
+
+    public void setNumberOfBids(int numberOfBids) {
+        this.numberOfBids.set(numberOfBids);
+    }
+
+    public IntegerProperty numberOfBidsProperty() {
+        return numberOfBids;
+    }
+
     // Constructor
     public BetSession() {
         this.currentPrice.set(this.initialPrice.get());

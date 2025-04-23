@@ -1,5 +1,6 @@
 package org.esprit.controllers;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -9,9 +10,11 @@ import java.util.stream.Collectors;
 
 import org.esprit.models.Artwork;
 import org.esprit.models.BetSession;
+import org.esprit.models.Bid;
 import org.esprit.models.User;
 import org.esprit.services.ArtworkService;
 import org.esprit.services.BetSessionService;
+import org.esprit.services.BidService;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -21,7 +24,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -396,51 +401,60 @@ public class MyBetSessionsController implements Initializable {
         Stage dialog = new Stage();
         dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
         dialog.setTitle("Bet Session Details");
-        
+
         // Create layout with all the details
         javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
         grid.setPadding(new javafx.geometry.Insets(20, 20, 20, 20));
         grid.setHgap(10);
         grid.setVgap(10);
-        
-        // Add all the details
+
         int row = 0;
-        grid.add(new javafx.scene.control.Label("ID:"), 0, row);
-        grid.add(new javafx.scene.control.Label(String.valueOf(session.getId())), 1, row++);
-        
+        // Display artwork image if available
+        javafx.scene.image.ImageView artworkImageView = new javafx.scene.image.ImageView();
+        artworkImageView.setFitHeight(180);
+        artworkImageView.setPreserveRatio(true);
+        if (session.getArtwork() != null && session.getArtwork().getImageName() != null) {
+            String imagePath = "src/main/resources/uploads/" + session.getArtwork().getImageName();
+            java.io.File imageFile = new java.io.File(imagePath);
+            if (imageFile.exists()) {
+                javafx.scene.image.Image image = new javafx.scene.image.Image(imageFile.toURI().toString());
+                artworkImageView.setImage(image);
+            }
+        }
+        grid.add(artworkImageView, 0, row, 2, 1);
+        row++;
+
+        // Remove any display of session.getId() or BetSession ID from the dialog
+        // Only show user-friendly fields (author, artwork, dates, prices, status, etc.)
         grid.add(new javafx.scene.control.Label("Author:"), 0, row);
         grid.add(new javafx.scene.control.Label(session.getAuthor() != null ? session.getAuthor().getName() : "N/A"), 1, row++);
-        
         grid.add(new javafx.scene.control.Label("Artwork:"), 0, row);
         grid.add(new javafx.scene.control.Label(session.getArtwork() != null ? session.getArtwork().getTitle() : "N/A"), 1, row++);
-        
         grid.add(new javafx.scene.control.Label("Created at:"), 0, row);
         grid.add(new javafx.scene.control.Label(session.getCreatedAt() != null ? session.getCreatedAt().toString() : "N/A"), 1, row++);
-        
         grid.add(new javafx.scene.control.Label("Start time:"), 0, row);
         grid.add(new javafx.scene.control.Label(session.getStartTime() != null ? session.getStartTime().toString() : "N/A"), 1, row++);
-        
         grid.add(new javafx.scene.control.Label("End time:"), 0, row);
         grid.add(new javafx.scene.control.Label(session.getEndTime() != null ? session.getEndTime().toString() : "N/A"), 1, row++);
-        
         grid.add(new javafx.scene.control.Label("Initial price:"), 0, row);
         grid.add(new javafx.scene.control.Label(String.format("%.2f", session.getInitialPrice())), 1, row++);
-        
         grid.add(new javafx.scene.control.Label("Current price:"), 0, row);
         grid.add(new javafx.scene.control.Label(String.format("%.2f", session.getCurrentPrice())), 1, row++);
-        
         grid.add(new javafx.scene.control.Label("Status:"), 0, row);
         grid.add(new javafx.scene.control.Label(session.getStatus()), 1, row++);
-        
+        // Show if NFT is in Mystery Mode
+        grid.add(new javafx.scene.control.Label("Mystery Mode:"), 0, row);
+        grid.add(new javafx.scene.control.Label(session.isMysteriousMode() ? "Yes" : "No"), 1, row++);
+
         // Add close button
         javafx.scene.control.Button closeButton = new javafx.scene.control.Button("Close");
         closeButton.setOnAction(e -> dialog.close());
-        
+
         // Create root layout
         javafx.scene.layout.VBox root = new javafx.scene.layout.VBox(20, grid, closeButton);
         root.setPadding(new javafx.geometry.Insets(10));
         root.setAlignment(javafx.geometry.Pos.CENTER);
-        
+
         // Set the scene
         Scene scene = new Scene(root);
         dialog.setScene(scene);
@@ -487,31 +501,40 @@ public class MyBetSessionsController implements Initializable {
         submitButton.setOnAction(e -> {
             try {
                 double bidAmount = Double.parseDouble(bidField.getText());
-                
                 if (bidAmount <= session.getCurrentPrice()) {
                     showError("Bid must be higher than the current price.");
                     return;
                 }
-                
-                // Update the session
+                // Check if user has enough balance
+                if (!canUserPlaceBid(currentUser, bidAmount)) {
+                    return;
+                }
                 try {
-                    // Create a new instance of BetSessionService here to avoid potential null issues
-                    BetSessionService service = new BetSessionService();
-                    
+                    // Create a new Bid entity
+                    Bid bid = new Bid(bidAmount, session, currentUser);
+                    BidService bidService = new BidService();
+                    bidService.addBid(bid);
+
+                    // Deduct bid amount from user balance
+                    BigDecimal newBalance = currentUser.getBalance().subtract(BigDecimal.valueOf(bidAmount));
+                    currentUser.setBalance(newBalance);
+                    new org.esprit.services.UserService().update(currentUser);
+
                     // Update session with new price
                     session.setCurrentPrice(bidAmount);
+                    BetSessionService service = new BetSessionService();
                     service.updateBetSession(session);
-                    
+
                     // Success message
                     Alert alert = new Alert(Alert.AlertType.INFORMATION);
                     alert.setTitle("Success");
                     alert.setHeaderText(null);
                     alert.setContentText("Your bid has been placed successfully!");
                     alert.showAndWait();
-                    
+
                     // Refresh the table
                     loadMyBetSessions();
-                    
+
                     // Close dialog
                     dialog.close();
                 } catch (Exception ex) {
@@ -592,8 +615,8 @@ public class MyBetSessionsController implements Initializable {
         dialog.setTitle("Create New Bet Session");
         
         // Create form components
-        Label authorInfoLabel = new Label("Author: " + currentUser.getName() + " (ID: " + currentUser.getId() + ")");
-        TextField artworkIdField = new TextField();
+        Label authorInfoLabel = new Label("Author: " + currentUser.getName());
+        ComboBox<Artwork> artworkComboBox = new ComboBox<>();
         DatePicker startDatePicker = new DatePicker();
         DatePicker endDatePicker = new DatePicker();
         TextField initialPriceField = new TextField();
@@ -605,10 +628,15 @@ public class MyBetSessionsController implements Initializable {
         formLayout.setHgap(10);
         formLayout.setVgap(10);
         
+        // Add Mystery Mode checkbox
+        javafx.scene.control.CheckBox mysteryModeCheckBox = new javafx.scene.control.CheckBox("Mystery Mode");
+        formLayout.add(new Label("Mystery Mode:"), 0, 6);
+        formLayout.add(mysteryModeCheckBox, 1, 6);
+        
         formLayout.add(new Label("Author:"), 0, 0);
         formLayout.add(authorInfoLabel, 1, 0);
-        formLayout.add(new Label("Artwork ID:"), 0, 1);
-        formLayout.add(artworkIdField, 1, 1);
+        formLayout.add(new Label("Artwork:"), 0, 1);
+        formLayout.add(artworkComboBox, 1, 1);
         formLayout.add(new Label("Start Date:"), 0, 2);
         formLayout.add(startDatePicker, 1, 2);
         formLayout.add(new Label("End Date:"), 0, 3);
@@ -617,8 +645,7 @@ public class MyBetSessionsController implements Initializable {
         formLayout.add(initialPriceField, 1, 4);
         formLayout.add(new Label("Status:"), 0, 5);
         formLayout.add(statusLabel, 1, 5);
-        
-        // Buttons
+        // Add buttons
         Button saveButton = new Button("Save");
         Button cancelButton = new Button("Cancel");
         
@@ -634,17 +661,13 @@ public class MyBetSessionsController implements Initializable {
                 // Set Author from current user automatically
                 newBetSession.setAuthor(currentUser);
                 
-                // Set Artwork from ID field
-                try {
-                    int artworkId = Integer.parseInt(artworkIdField.getText());
-                    Artwork artwork = new Artwork();
-                    artwork.setId(artworkId);
-                    newBetSession.setArtwork(artwork);
-                } catch (NumberFormatException ex) {
-                    showAlert(Alert.AlertType.ERROR, "Invalid Input", 
-                              "Please enter a valid numeric ID for Artwork.");
+                // Set Artwork from ComboBox
+                Artwork selectedArtwork = artworkComboBox.getValue();
+                if (selectedArtwork == null) {
+                    showAlert(Alert.AlertType.ERROR, "Missing Input", "Please select an artwork.");
                     return;
                 }
+                newBetSession.setArtwork(selectedArtwork);
                 
                 // Get time values - set to noon by default
                 LocalTime defaultTime = LocalTime.of(12, 0);
@@ -680,10 +703,10 @@ public class MyBetSessionsController implements Initializable {
                 
                 // Set status to pending automatically
                 newBetSession.setStatus("pending");
-                
                 // Set creation date to current date/time
                 newBetSession.setCreatedAt(LocalDateTime.now());
-                
+                // Set mystery mode from checkbox
+                newBetSession.setMysteriousMode(mysteryModeCheckBox.isSelected());
                 // Save to database
                 betSessionService.addBetSession(newBetSession);
                 
@@ -704,6 +727,29 @@ public class MyBetSessionsController implements Initializable {
         });
         
         cancelButton.setOnAction(e -> dialog.close());
+        
+        // Fill artworkComboBox with artworks owned by the user
+        try {
+            List<Artwork> userArtworks = artworkService.getByOwner(currentUser.getId());
+            artworkComboBox.setItems(FXCollections.observableArrayList(userArtworks));
+            artworkComboBox.setPromptText("Select your artwork");
+            artworkComboBox.setCellFactory(cb -> new javafx.scene.control.ListCell<>() {
+                @Override
+                protected void updateItem(Artwork item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item.getTitle());
+                }
+            });
+            artworkComboBox.setButtonCell(new javafx.scene.control.ListCell<>() {
+                @Override
+                protected void updateItem(Artwork item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty || item == null ? null : item.getTitle());
+                }
+            });
+        } catch (Exception ex) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not load your artworks: " + ex.getMessage());
+        }
         
         // Create scene
         VBox root = new VBox(10, formLayout, buttonLayout);
@@ -735,8 +781,8 @@ public class MyBetSessionsController implements Initializable {
         dialog.setTitle("Update Bet Session");
         
         // Create form components with values from the selected session
-        String authorInfo = "Author: " + betSession.getAuthor().getName() + " (ID: " + betSession.getAuthor().getId() + ")";
-        String artworkInfo = "Artwork: " + betSession.getArtwork().getTitle() + " (ID: " + betSession.getArtwork().getId() + ")";
+        String authorInfo = "Author: " + betSession.getAuthor().getName();
+        String artworkInfo = "Artwork: " + betSession.getArtwork().getTitle();
         
         DatePicker startDatePicker = new DatePicker();
         DatePicker endDatePicker = new DatePicker();
@@ -980,5 +1026,19 @@ public class MyBetSessionsController implements Initializable {
                 setGraphic(empty ? null : viewButton);
             }
         });
+    }
+
+        private boolean canUserPlaceBid(User user, double bidAmount) {
+        if (user == null || user.getBalance() == null) {
+            Alert alert = new Alert(AlertType.ERROR, "User or balance not found.");
+            alert.showAndWait();
+            return false;
+        }
+        if (user.getBalance().doubleValue() < bidAmount) {
+            Alert alert = new Alert(AlertType.WARNING, "Insufficient balance to place this bid.");
+            alert.showAndWait();
+            return false;
+        }
+        return true;
     }
 }

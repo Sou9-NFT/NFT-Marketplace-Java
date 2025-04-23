@@ -32,6 +32,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -47,9 +48,6 @@ public class BetSessionController implements Initializable {
 
     @FXML
     private TableView<BetSession> tableView;
-    
-    @FXML
-    private TableColumn<BetSession, Integer> idColumn;
     
     @FXML
     private TableColumn<BetSession, String> authorColumn;
@@ -74,6 +72,9 @@ public class BetSessionController implements Initializable {
     
     @FXML
     private TableColumn<BetSession, String> statusColumn;
+    
+    @FXML
+    private TableColumn<BetSession, Void> actionsColumn;
     
     @FXML
     private Button addButton;
@@ -105,8 +106,6 @@ public class BetSessionController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Setup table columns
-        idColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
-        
         authorColumn.setCellValueFactory(cellData -> {
             User author = cellData.getValue().getAuthor();
             return author != null ? 
@@ -149,6 +148,39 @@ public class BetSessionController implements Initializable {
         initialPriceColumn.setCellValueFactory(cellData -> cellData.getValue().initialPriceProperty());
         currentPriceColumn.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
         statusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
+
+        // Set up actions column with icon buttons
+        actionsColumn.setCellFactory(param -> new TableCell<>() {
+            private final Button viewButton = new Button("\uD83D\uDC41"); // Eye icon
+            private final Button editButton = new Button("\uD83D\uDD8C"); // Unicode for paintbrush/edit
+            private final Button deleteButton = new Button("\uD83D\uDDD1"); // Trash icon
+            private final HBox hbox = new HBox(5, viewButton, editButton, deleteButton);
+            {
+                viewButton.setStyle("-fx-font-size: 12px; -fx-padding: 2px 5px;");
+                editButton.setStyle("-fx-font-size: 12px; -fx-padding: 2px 5px;");
+                deleteButton.setStyle("-fx-font-size: 12px; -fx-padding: 2px 5px;");
+                viewButton.setOnAction(event -> {
+                    BetSession session = getTableView().getItems().get(getIndex());
+                    tableView.getSelectionModel().select(session);
+                    viewBetSessionDetails();
+                });
+                editButton.setOnAction(event -> {
+                    BetSession session = getTableView().getItems().get(getIndex());
+                    tableView.getSelectionModel().select(session);
+                    showUpdateDialog();
+                });
+                deleteButton.setOnAction(event -> {
+                    BetSession session = getTableView().getItems().get(getIndex());
+                    tableView.getSelectionModel().select(session);
+                    deleteSelectedBetSession();
+                });
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : hbox);
+            }
+        });
         
         // Set up countdown timer to refresh the display every second
         startCountdownTimer();
@@ -561,36 +593,30 @@ public class BetSessionController implements Initializable {
             }
             
             // Add info to grid
-            infoGrid.add(new Label("ID:"), 0, 0);
-            infoGrid.add(new Label(String.valueOf(selectedBetSession.getId())), 1, 0);
-            
+            // infoGrid.add(new Label("ID:"), 0, 0);
+            // infoGrid.add(new Label(String.valueOf(selectedBetSession.getId())), 1, 0);
+            // Do not display BetSession ID
             if (selectedBetSession.getAuthor() != null) {
-                infoGrid.add(new Label("Author:"), 0, 1);
-                infoGrid.add(new Label(selectedBetSession.getAuthor().getName()), 1, 1);
+                infoGrid.add(new Label("Author:"), 0, 0);
+                infoGrid.add(new Label(selectedBetSession.getAuthor().getName()), 1, 0);
             }
-            
             if (selectedBetSession.getArtwork() != null) {
-                infoGrid.add(new Label("Artwork:"), 0, 2);
-                infoGrid.add(new Label(selectedBetSession.getArtwork().getTitle()), 1, 2);
+                infoGrid.add(new Label("Artwork:"), 0, 1);
+                infoGrid.add(new Label(selectedBetSession.getArtwork().getTitle()), 1, 1);
             }
-            
-            infoGrid.add(new Label("Initial Price:"), 0, 3);
-            infoGrid.add(new Label(String.valueOf(selectedBetSession.getInitialPrice())), 1, 3);
-            
-            infoGrid.add(new Label("Current Price:"), 0, 4);
-            infoGrid.add(new Label(String.valueOf(selectedBetSession.getCurrentPrice())), 1, 4);
-            
-            infoGrid.add(new Label("Status:"), 0, 5);
-            infoGrid.add(new Label(selectedBetSession.getStatus()), 1, 5);
-            
+            infoGrid.add(new Label("Initial Price:"), 0, 2);
+            infoGrid.add(new Label(String.valueOf(selectedBetSession.getInitialPrice())), 1, 2);
+            infoGrid.add(new Label("Current Price:"), 0, 3);
+            infoGrid.add(new Label(String.valueOf(selectedBetSession.getCurrentPrice())), 1, 3);
+            infoGrid.add(new Label("Status:"), 0, 4);
+            infoGrid.add(new Label(selectedBetSession.getStatus()), 1, 4);
             if (selectedBetSession.getStartTime() != null) {
-                infoGrid.add(new Label("Start Time:"), 0, 6);
-                infoGrid.add(new Label(selectedBetSession.getStartTime().toString()), 1, 6);
+                infoGrid.add(new Label("Start Time:"), 0, 5);
+                infoGrid.add(new Label(selectedBetSession.getStartTime().toString()), 1, 5);
             }
-            
             if (selectedBetSession.getEndTime() != null) {
-                infoGrid.add(new Label("End Time:"), 0, 7);
-                infoGrid.add(new Label(selectedBetSession.getEndTime().toString()), 1, 7);
+                infoGrid.add(new Label("End Time:"), 0, 6);
+                infoGrid.add(new Label(selectedBetSession.getEndTime().toString()), 1, 6);
             }
             
             // Close button
@@ -660,4 +686,6 @@ public class BetSessionController implements Initializable {
     void setBetSession(BetSession selectedSession) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    // Example method for placing a bid (add this where you handle bid placement)
+
 }
