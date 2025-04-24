@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.TradeOfferListController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Trade Offers" style="-fx-font-size: 24px;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="createTradeButton" text="Create New Trade" onAction="#handleCreateTrade"/>
+    </HBox>
+
+    <TableView fx:id="tradeTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="senderColumn" text="Sender" prefWidth="120"/>
+            <TableColumn fx:id="receiverColumn" text="Receiver" prefWidth="120"/>
+            <TableColumn fx:id="offeredItemColumn" text="Offered Item" prefWidth="150"/>
+            <TableColumn fx:id="requestedItemColumn" text="Requested Item" prefWidth="150"/>
+            <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox>

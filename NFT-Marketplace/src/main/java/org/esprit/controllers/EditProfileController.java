@@ -6,9 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.regex.Pattern;
 
 import org.esprit.models.User;
-import org.esprit.models.User.ValidationResult;
 import org.esprit.services.UserService;
 
 import javafx.event.ActionEvent;
@@ -18,7 +18,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -32,15 +31,6 @@ public class EditProfileController {
 
     @FXML
     private TextField emailField;
-
-    @FXML
-    private PasswordField currentPasswordField;
-
-    @FXML
-    private PasswordField newPasswordField;
-
-    @FXML
-    private PasswordField confirmPasswordField;
 
     @FXML
     private TextField walletField;
@@ -76,8 +66,6 @@ public class EditProfileController {
         if (currentUser != null) {
             nameField.setText(currentUser.getName());
             emailField.setText(currentUser.getEmail());
-
-            // Leave password fields empty for security
 
             // Set optional fields if they exist
             if (currentUser.getWalletAddress() != null) {
@@ -167,9 +155,6 @@ public class EditProfileController {
     private void handleSave(ActionEvent event) {
         String name = nameField.getText().trim();
         String email = emailField.getText().trim();
-        String currentPassword = currentPasswordField.getText();
-        String newPassword = newPasswordField.getText();
-        String confirmPassword = confirmPasswordField.getText();
         String walletAddress = walletField.getText().trim();
         String githubUsername = githubField.getText().trim();
 
@@ -220,18 +205,51 @@ public class EditProfileController {
                     return;
                 }
             }
-
-            // Validate the user at entity level
-            ValidationResult validationResult = updatedUser.validate();
             
-            if (!validationResult.isValid()) {
-                // Show the first validation error found
-                for (String errorMessage : validationResult.getErrors().values()) {
-                    showStatus(errorMessage);
+            // Validate basic fields manually instead of using the full User validation
+            if (name.isEmpty()) {
+                showStatus("Name cannot be blank");
+                return;
+            }
+            
+            if (email.isEmpty()) {
+                showStatus("Email cannot be blank");
+                return;
+            }
+            
+            // Validate email format with a regex pattern
+            String emailRegex = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
+            if (!Pattern.compile(emailRegex).matcher(email).matches()) {
+                showStatus("Invalid email format");
+                return;
+            }
+            
+            // Validate wallet address if provided
+            if (walletAddress != null && !walletAddress.isEmpty()) {
+                // Ethereum address format: 0x followed by 40 hex characters
+                String walletRegex = "^0x[a-fA-F0-9]{40}$";
+                if (!Pattern.compile(walletRegex).matcher(walletAddress).matches()) {
+                    showStatus("Invalid Ethereum address format");
+                    return;
+                }
+            }
+            
+            // Validate GitHub username if provided
+            if (githubUsername != null && !githubUsername.isEmpty()) {
+                // GitHub username validation (alphanumeric with hyphens, no consecutive hyphens)
+                String githubRegex = "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$";
+                if (!Pattern.compile(githubRegex).matcher(githubUsername).matches()) {
+                    showStatus("Invalid GitHub username format");
                     return;
                 }
             }
 
+            // Update the user with validated data
+            currentUser.setName(name);
+            currentUser.setEmail(email);
+            currentUser.setWalletAddress(walletAddress.isEmpty() ? null : walletAddress);
+            currentUser.setGithubUsername(githubUsername.isEmpty() ? null : githubUsername);
+            
             // Process and save profile picture if one was selected
             if (selectedProfilePicFile != null) {
                 try {
@@ -251,7 +269,7 @@ public class EditProfileController {
                     Files.copy(selectedProfilePicFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
                     // Save the relative path to be stored in database
-                    updatedUser.setProfilePicture("/uploads/" + fileName);
+                    currentUser.setProfilePicture("/uploads/" + fileName);
                 } catch (IOException e) {
                     showStatus("Error saving profile picture: " + e.getMessage());
                     e.printStackTrace();
