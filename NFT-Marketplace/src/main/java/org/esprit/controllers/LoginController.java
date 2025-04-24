@@ -214,6 +214,16 @@ public class LoginController {
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
+        errorLabel.getStyleClass().remove("status-success");
+        errorLabel.getStyleClass().add("status-error");
+    }
+    
+    // Show success message in the main error label
+    public void showSuccess(String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.getStyleClass().remove("status-error");
+        errorLabel.getStyleClass().add("status-success");
     }
     
     // Clear all error messages
