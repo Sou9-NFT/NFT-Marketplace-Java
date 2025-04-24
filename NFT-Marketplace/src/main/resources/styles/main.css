@@ -30,6 +30,12 @@
   /* Line Colors */
   -primary-line-color: rgba(69, 40, 220, 0.12);
   -secondary-line-color: rgba(69, 40, 220, 0.08);
+
+  /* Sidebar Colors */
+  -sidebar-bg-color: #2c3e50;
+  -sidebar-hover-color: #34495e;
+  -sidebar-active-color: #3498db;
+  -sidebar-text-color: #ecf0f1;
 }
 
 /* Apply Fonts */
@@ -37,6 +43,67 @@
   -fx-font-family: "Poppins", sans-serif;
   -fx-font-size: 14px;
   -fx-background-color: -primary-background-color;
+}
+
+/* Admin Dashboard Sidebar Styling */
+.sidebar {
+  -fx-background-color: -sidebar-bg-color;
+  -fx-padding: 0;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 10, 0, 0, 0);
+}
+
+.sidebar-title {
+  -fx-text-fill: -sidebar-text-color;
+  -fx-font-size: 16px;
+  -fx-padding: 15px 10px;
+  -fx-alignment: center;
+}
+
+.sidebar .separator {
+  -fx-background-color: rgba(255, 255, 255, 0.15);
+  -fx-opacity: 0.6;
+}
+
+.sidebar-button {
+  -fx-background-color: transparent;
+  -fx-text-fill: -sidebar-text-color;
+  -fx-font-size: 14px;
+  -fx-alignment: center-left;
+  -fx-padding: 12px 15px;
+  -fx-border-width: 0 0 0 4px;
+  -fx-border-color: transparent;
+}
+
+.sidebar-button:hover {
+  -fx-background-color: -sidebar-hover-color;
+  -fx-border-color: rgba(52, 152, 219, 0.7);
+  -fx-cursor: hand;
+}
+
+.sidebar-button:pressed,
+.sidebar-button:focused,
+.sidebar-button.active {
+  -fx-background-color: derive(-sidebar-hover-color, 10%);
+  -fx-border-color: -sidebar-active-color;
+}
+
+/* Welcome Screen Styling */
+.welcome-title {
+  -fx-fill: -primary-color;
+  -fx-font-size: 32px;
+  -fx-font-weight: bold;
+}
+
+.welcome-subtitle {
+  -fx-fill: -secondary-color;
+  -fx-font-size: 18px;
+}
+
+/* Content Area Styling */
+.section-title {
+  -fx-fill: -primary-color;
+  -fx-font-size: 24px;
+  -fx-font-weight: bold;
 }
 
 /* Headings */
