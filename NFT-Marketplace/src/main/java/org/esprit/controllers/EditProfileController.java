@@ -6,9 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.regex.Pattern;
 
 import org.esprit.models.User;
-import org.esprit.models.User.ValidationResult;
 import org.esprit.services.UserService;
 
 import javafx.event.ActionEvent;
@@ -18,7 +18,6 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -34,19 +33,19 @@ public class EditProfileController {
     private TextField emailField;
 
     @FXML
-    private PasswordField currentPasswordField;
-
-    @FXML
-    private PasswordField newPasswordField;
-
-    @FXML
-    private PasswordField confirmPasswordField;
-
-    @FXML
     private TextField walletField;
 
     @FXML
     private TextField githubField;
+    
+    @FXML
+    private TextField currentPassword;
+    
+    @FXML
+    private TextField newPassword;
+    
+    @FXML
+    private TextField confirmPassword;
 
     @FXML
     private Label statusLabel;
@@ -55,7 +54,7 @@ public class EditProfileController {
     private ImageView profileImageView;
 
     private User currentUser;
-    private UserService userService;
+    private final UserService userService;
     private File selectedProfilePicFile;
 
     public EditProfileController() {
@@ -76,8 +75,6 @@ public class EditProfileController {
         if (currentUser != null) {
             nameField.setText(currentUser.getName());
             emailField.setText(currentUser.getEmail());
-
-            // Leave password fields empty for security
 
             // Set optional fields if they exist
             if (currentUser.getWalletAddress() != null) {
@@ -101,8 +98,19 @@ public class EditProfileController {
                 profilePicPath = "/assets/default/default_profile.jpg";
             }
 
-            // Load the image
-            Image profileImage = new Image(getClass().getResourceAsStream(profilePicPath));
+            Image profileImage;
+            
+            // Check if the profile picture is a URL (GitHub avatar) or a local resource
+            if (profilePicPath.startsWith("http://") || profilePicPath.startsWith("https://")) {
+                // For remote URLs (like GitHub avatars)
+                profileImage = new Image(profilePicPath);
+                System.out.println("Loading remote profile image from: " + profilePicPath);
+            } else {
+                // For local resource paths
+                profileImage = new Image(getClass().getResourceAsStream(profilePicPath));
+                System.out.println("Loading local profile image from: " + profilePicPath);
+            }
+            
             profileImageView.setImage(profileImage);
 
             // Apply styling to make the image circular
@@ -156,9 +164,6 @@ public class EditProfileController {
     private void handleSave(ActionEvent event) {
         String name = nameField.getText().trim();
         String email = emailField.getText().trim();
-        String currentPassword = currentPasswordField.getText();
-        String newPassword = newPasswordField.getText();
-        String confirmPassword = confirmPasswordField.getText();
         String walletAddress = walletField.getText().trim();
         String githubUsername = githubField.getText().trim();
 
@@ -178,24 +183,27 @@ public class EditProfileController {
             updatedUser.setProfilePicture(currentUser.getProfilePicture());
             
             // Password handling - special case that requires controller-level validation
-            if (!newPassword.isEmpty()) {
+            boolean passwordChanged = false;
+            if (!newPassword.getText().isEmpty()) {
                 // Verify current password
-                if (!currentUser.getPassword().equals(currentPassword)) {
+                if (!currentUser.getPassword().equals(currentPassword.getText())) {
                     showStatus("Current password is incorrect.");
                     return;
                 }
 
                 // Check if new passwords match
-                if (!newPassword.equals(confirmPassword)) {
+                if (!newPassword.getText().equals(confirmPassword.getText())) {
                     showStatus("New passwords do not match.");
                     return;
                 }
 
                 // Set the new password for validation
-                updatedUser.setPassword(newPassword);
+                updatedUser.setPassword(newPassword.getText());
+                passwordChanged = true;
             } else {
-                // Keep the existing password
-                updatedUser.setPassword(currentUser.getPassword());
+                // Skip password validation by setting a placeholder
+                // We'll restore the actual password after validation
+                updatedUser.setPassword("placeholder");
             }
 
             // Check if the email is being changed and if it's already in use
@@ -206,18 +214,51 @@ public class EditProfileController {
                     return;
                 }
             }
-
-            // Validate the user at entity level
-            ValidationResult validationResult = updatedUser.validate();
             
-            if (!validationResult.isValid()) {
-                // Show the first validation error found
-                for (String errorMessage : validationResult.getErrors().values()) {
-                    showStatus(errorMessage);
+            // Validate basic fields manually instead of using the full User validation
+            if (name.isEmpty()) {
+                showStatus("Name cannot be blank");
+                return;
+            }
+            
+            if (email.isEmpty()) {
+                showStatus("Email cannot be blank");
+                return;
+            }
+            
+            // Validate email format with a regex pattern
+            String emailRegex = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
+            if (!Pattern.compile(emailRegex).matcher(email).matches()) {
+                showStatus("Invalid email format");
+                return;
+            }
+            
+            // Validate wallet address if provided
+            if (!walletAddress.isEmpty()) {
+                // Ethereum address format: 0x followed by 40 hex characters
+                String walletRegex = "^0x[a-fA-F0-9]{40}$";
+                if (!Pattern.compile(walletRegex).matcher(walletAddress).matches()) {
+                    showStatus("Invalid Ethereum address format");
+                    return;
+                }
+            }
+            
+            // Validate GitHub username if provided
+            if (!githubUsername.isEmpty()) {
+                // GitHub username validation (alphanumeric with hyphens, no consecutive hyphens)
+                String githubRegex = "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$";
+                if (!Pattern.compile(githubRegex).matcher(githubUsername).matches()) {
+                    showStatus("Invalid GitHub username format");
                     return;
                 }
             }
 
+            // Update the user with validated data
+            currentUser.setName(name);
+            currentUser.setEmail(email);
+            currentUser.setWalletAddress(walletAddress.isEmpty() ? null : walletAddress);
+            currentUser.setGithubUsername(githubUsername.isEmpty() ? null : githubUsername);
+            
             // Process and save profile picture if one was selected
             if (selectedProfilePicFile != null) {
                 try {
@@ -237,7 +278,7 @@ public class EditProfileController {
                     Files.copy(selectedProfilePicFile.toPath(), targetPath, StandardCopyOption.REPLACE_EXISTING);
 
                     // Save the relative path to be stored in database
-                    updatedUser.setProfilePicture("/uploads/" + fileName);
+                    currentUser.setProfilePicture("/uploads/" + fileName);
                 } catch (IOException e) {
                     showStatus("Error saving profile picture: " + e.getMessage());
                     e.printStackTrace();
@@ -250,7 +291,12 @@ public class EditProfileController {
             currentUser.setEmail(updatedUser.getEmail());
             currentUser.setWalletAddress(updatedUser.getWalletAddress());
             currentUser.setGithubUsername(updatedUser.getGithubUsername());
-            currentUser.setPassword(updatedUser.getPassword());
+            
+            // Only update password if it was changed
+            if (passwordChanged) {
+                currentUser.setPassword(updatedUser.getPassword());
+            }
+            
             if (updatedUser.getProfilePicture() != null) {
                 currentUser.setProfilePicture(updatedUser.getProfilePicture());
             }

@@ -1,21 +1,29 @@
 package org.esprit.services;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.esprit.models.Artwork;
 import org.esprit.models.TradeOffer;
 import org.esprit.models.User;
-import org.esprit.models.Artwork;
 import org.esprit.utils.DatabaseConnection;
 
 public class TradeOfferService implements IService<TradeOffer> {
     private final Connection connection;
     private final UserService userService;
+    private final ArtworkService artworkService;
 
     public TradeOfferService() {
         connection = DatabaseConnection.getInstance().getConnection();
         userService = new UserService();
+        artworkService = new ArtworkService();
     }
 
     @Override
@@ -191,10 +199,10 @@ public class TradeOfferService implements IService<TradeOffer> {
         User receiver = userService.getOne(rs.getInt("receiver_name"));
         tradeOffer.setReceiverName(receiver);
         
-        Artwork offeredItem = getArtworkById(rs.getInt("offered_item"));
+        Artwork offeredItem = artworkService.getOne(rs.getInt("offered_item"));
         tradeOffer.setOfferedItem(offeredItem);
         
-        Artwork receivedItem = getArtworkById(rs.getInt("received_item"));
+        Artwork receivedItem = artworkService.getOne(rs.getInt("received_item"));
         tradeOffer.setReceivedItem(receivedItem);
         
         tradeOffer.setDescription(rs.getString("description"));
@@ -204,8 +212,27 @@ public class TradeOfferService implements IService<TradeOffer> {
         return tradeOffer;
     }
     
-    // Mock method to retrieve an artwork by ID
     private Artwork getArtworkById(int id) {
-        return new Artwork(id, 0, 1, 0, "Mock Artwork Title", "Mock Description", 0.0, "MockImage.jpg", LocalDateTime.now(), LocalDateTime.now());
+        try {
+            return artworkService.getOne(id);
+        } catch (Exception e) {
+            System.err.println("Error getting artwork with ID " + id + ": " + e.getMessage());
+            e.printStackTrace();
+            
+            // As a fallback, create a minimal valid artwork (price at least 0.01)
+            Artwork fallbackArtwork = new Artwork();
+            fallbackArtwork.setId(id);
+            fallbackArtwork.setTitle("Artwork #" + id);
+            fallbackArtwork.setDescription("This artwork information could not be loaded properly.");
+            fallbackArtwork.setPrice(0.01); // Set a valid minimum price
+            fallbackArtwork.setImageName("placeholder.jpg");
+            fallbackArtwork.setCreatorId(1);
+            fallbackArtwork.setOwnerId(1);
+            fallbackArtwork.setCategoryId(1);
+            fallbackArtwork.setCreatedAt(LocalDateTime.now());
+            fallbackArtwork.setUpdatedAt(LocalDateTime.now());
+            
+            return fallbackArtwork;
+        }
     }
 }
