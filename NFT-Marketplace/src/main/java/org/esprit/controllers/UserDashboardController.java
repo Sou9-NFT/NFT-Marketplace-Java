@@ -13,6 +13,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class UserDashboardController {
@@ -42,15 +43,16 @@ public class UserDashboardController {
     private Button notificationsButton;
     
     @FXML
-    private Button blogButton;
-  
+    private Button betSessionButton;
+    
     @FXML
-    private Button tradeOffersButton;
+    private StackPane contentArea;
     
     private User currentUser;
     
     public void initialize() {
         // Initialize the controller
+        // We might want to set a default view here
     }
     
     public void setCurrentUser(User user) {
@@ -89,7 +91,7 @@ public class UserDashboardController {
             ProfileController controller = loader.getController();
             controller.setUser(currentUser);
             
-            navigateToView(event, profileView, "NFT Marketplace - User Profile");
+            loadContentInPlace(profileView, "User Profile");
         } catch (IOException e) {
             showAlert("Error", "Could not load profile: " + e.getMessage());
         }
@@ -123,7 +125,7 @@ public class UserDashboardController {
             RaffleListController controller = loader.getController();
             controller.setUser(currentUser);
             
-            navigateToView(event, raffleView, "NFT Marketplace - Raffles");
+            loadContentInPlace(raffleView, "Raffles");
         } catch (IOException e) {
             System.err.println("Error loading RaffleList.fxml: " + e.getMessage());
             e.printStackTrace();
@@ -140,7 +142,7 @@ public class UserDashboardController {
             ArtworkManagementController controller = loader.getController();
             controller.setCurrentUser(currentUser);
             
-            navigateToView(event, artworkView, "NFT Marketplace - Artwork Management");
+            loadContentInPlace(artworkView, "Artwork Management");
         } catch (IOException e) {
             showAlert("Error", "Could not load artwork management: " + e.getMessage());
         }
@@ -157,12 +159,12 @@ public class UserDashboardController {
                 Object controller = loader.getController();
                 tryToSetUser(controller);
                 
-                navigateToView(event, marketplaceView, "NFT Marketplace - Marketplace");
+                loadContentInPlace(marketplaceView, "Marketplace");
             } catch (IOException e) {
                 showAlert("Error", "Could not load marketplace: " + e.getMessage());
             }
         } else {
-            showComingSoonView(event, "Marketplace");
+            showComingSoonInPlace("Marketplace");
         }
     }
     
@@ -177,15 +179,15 @@ public class UserDashboardController {
                 Object controller = loader.getController();
                 tryToSetUser(controller);
                 
-                navigateToView(event, walletView, "NFT Marketplace - Wallet");
+                loadContentInPlace(walletView, "Wallet");
             } catch (IOException e) {
                 showAlert("Error", "Could not load wallet: " + e.getMessage());
             }
         } else {
-            showComingSoonView(event, "Wallet");
+            showComingSoonInPlace("Wallet");
         }
     }
-    
+
     @FXML
     private void handleNotificationsButton(ActionEvent event) {
         if (getClass().getResource("/fxml/Notifications.fxml") != null) {
@@ -197,30 +199,16 @@ public class UserDashboardController {
                 Object controller = loader.getController();
                 tryToSetUser(controller);
                 
-                navigateToView(event, notificationsView, "NFT Marketplace - Notifications");
+                loadContentInPlace(notificationsView, "Notifications");
             } catch (IOException e) {
                 showAlert("Error", "Could not load notifications: " + e.getMessage());
             }
         } else {
-            showComingSoonView(event, "Notifications");
+            showComingSoonInPlace("Notifications");
         }
     }
     
     @FXML
-    private void handleBlogButton(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Blog.fxml"));
-            Parent blogView = loader.load();
-            
-            BlogController controller = loader.getController();
-            controller.setCurrentUser(currentUser);
-            
-            navigateToView(event, blogView, "NFT Marketplace - Blog");
-        } catch (IOException e) {
-            showAlert("Error", "Could not load blog: " + e.getMessage());
-        }
-    }
-      @FXML
     private void handleBetSessionButton(ActionEvent event) {
         try {
             // Changed to load MyBetSessions.fxml instead of BetSession.fxml
@@ -231,25 +219,7 @@ public class UserDashboardController {
             Object controller = loader.getController();
             tryToSetUser(controller);
             
-            navigateToView(event, betSessionView, "NFT Marketplace - My Bet Sessions");
-        } catch (IOException e) {
-            // Print stack trace to terminal
-            e.printStackTrace();
-            showAlert("Error", "Could not load my bet sessions: " + e.getMessage());
-        }
-    }
-    
-    @FXML
-    private void handleTradeOffers(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeOfferList.fxml"));
-            Parent tradeOffersView = loader.load();
-            
-            // Set the current user in the trade offers controller
-            TradeOfferListController controller = loader.getController();
-            controller.setUser(currentUser);
-            
-            navigateToView(event, tradeOffersView, "NFT Marketplace - Trade Offers");
+            loadContentInPlace(betSessionView, "Bet Sessions");
         } catch (IOException e) {
             showAlert("Error", "Could not load trade offers: " + e.getMessage());
         }
@@ -278,17 +248,33 @@ public class UserDashboardController {
         }
     }
     
-    private void showComingSoonView(ActionEvent event, String featureName) {
+    /**
+     * Loads content into the contentArea StackPane with proper transition
+     * @param view The view to load
+     * @param title The title/section name to set
+     */
+    private void loadContentInPlace(Parent view, String title) {
+        // Clear existing content and set new content
+        contentArea.getChildren().clear();
+        contentArea.getChildren().add(view);
+        
+        // Update the window title to reflect the current section
+        Stage stage = (Stage) contentArea.getScene().getWindow();
+        stage.setTitle("Sou9 NFT - " + title);
+    }
+    
+    /**
+     * Shows the "Coming Soon" view inside the contentArea
+     */
+    private void showComingSoonInPlace(String featureName) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ComingSoon.fxml"));
             
-            // If ComingSoon.fxml doesn't exist, create a simple view
-            Parent comingSoonView;
             if (loader.getLocation() == null) {
-                // Show an alert instead of navigating
+                // Show an alert if the FXML doesn't exist
                 showAlert("Coming Soon", featureName + " feature is coming soon!");
             } else {
-                comingSoonView = loader.load();
+                Parent comingSoonView = loader.load();
                 
                 // If there's a ComingSoonController, set the feature name
                 if (loader.getController() != null) {
@@ -300,13 +286,14 @@ public class UserDashboardController {
                     }
                 }
                 
-                navigateToView(event, comingSoonView, "NFT Marketplace - Coming Soon");
+                loadContentInPlace(comingSoonView, "Coming Soon: " + featureName);
             }
         } catch (IOException e) {
             showAlert("Coming Soon", featureName + " feature is coming soon!");
         }
     }
     
+    // This method is now only used for complete page transitions like logout
     private void navigateToView(ActionEvent event, Parent view, String title) {
         Scene currentScene = ((Node) event.getSource()).getScene();
         Stage stage = (Stage) currentScene.getWindow();

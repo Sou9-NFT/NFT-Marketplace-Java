@@ -68,7 +68,7 @@
 
 /* Action Button Styles - Distinct colors for better visibility */
 .add-button {
-  -fx-background-color: #4CAF50;
+  -fx-background-color: #4e16b3;
   -fx-text-fill: white;
   -fx-font-weight: bold;
   -fx-padding: 10 20;
@@ -81,7 +81,7 @@
 }
 
 .update-button {
-  -fx-background-color: #2196F3;
+  -fx-background-color: #2196f3;
   -fx-text-fill: white;
   -fx-font-weight: bold;
   -fx-padding: 10 20;
@@ -94,7 +94,7 @@
 }
 
 .delete-button {
-  -fx-background-color: #F44336;
+  -fx-background-color: #f44336;
   -fx-text-fill: white;
   -fx-font-weight: bold;
   -fx-padding: 10 20;
