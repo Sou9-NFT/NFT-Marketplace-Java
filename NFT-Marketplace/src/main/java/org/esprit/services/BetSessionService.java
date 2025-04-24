@@ -55,9 +55,8 @@ public class BetSessionService {
             }
         }
     }
-    
-    public void updateBetSession(BetSession betSession) throws SQLException {
-        String query = "UPDATE bet_session SET author_id = ?, artwork_id = ?, start_time = ?, end_time = ?, initial_price = ?, current_price = ?, status = ? WHERE id = ?";
+      public void updateBetSession(BetSession betSession) throws SQLException {
+        String query = "UPDATE bet_session SET author_id = ?, artwork_id = ?, start_time = ?, end_time = ?, initial_price = ?, current_price = ?, status = ?, number_of_bids = ? WHERE id = ?";
         
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, betSession.getAuthor().getId());
@@ -67,7 +66,8 @@ public class BetSessionService {
             ps.setDouble(5, betSession.getInitialPrice());
             ps.setDouble(6, betSession.getCurrentPrice());
             ps.setString(7, betSession.getStatus());
-            ps.setInt(8, betSession.getId());
+            ps.setInt(8, betSession.getNumberOfBids());
+            ps.setInt(9, betSession.getId());
             
             int affectedRows = ps.executeUpdate();
             
@@ -192,10 +192,12 @@ public class BetSessionService {
         if (endTimeTimestamp != null) {
             betSession.setEndTime(endTimeTimestamp.toLocalDateTime());
         }
-        
-        betSession.setInitialPrice(rs.getDouble("initial_price"));
+          betSession.setInitialPrice(rs.getDouble("initial_price"));
         betSession.setCurrentPrice(rs.getDouble("current_price"));
         betSession.setStatus(rs.getString("status"));
+        
+        // Retrieve the number_of_bids field
+        betSession.setNumberOfBids(rs.getInt("number_of_bids"));
         
         return betSession;
     }
