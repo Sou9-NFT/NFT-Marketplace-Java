@@ -37,6 +37,15 @@ public class EditProfileController {
 
     @FXML
     private TextField githubField;
+    
+    @FXML
+    private TextField currentPassword;
+    
+    @FXML
+    private TextField newPassword;
+    
+    @FXML
+    private TextField confirmPassword;
 
     @FXML
     private Label statusLabel;
@@ -45,7 +54,7 @@ public class EditProfileController {
     private ImageView profileImageView;
 
     private User currentUser;
-    private UserService userService;
+    private final UserService userService;
     private File selectedProfilePicFile;
 
     public EditProfileController() {
@@ -175,21 +184,21 @@ public class EditProfileController {
             
             // Password handling - special case that requires controller-level validation
             boolean passwordChanged = false;
-            if (!newPassword.isEmpty()) {
+            if (!newPassword.getText().isEmpty()) {
                 // Verify current password
-                if (!currentUser.getPassword().equals(currentPassword)) {
+                if (!currentUser.getPassword().equals(currentPassword.getText())) {
                     showStatus("Current password is incorrect.");
                     return;
                 }
 
                 // Check if new passwords match
-                if (!newPassword.equals(confirmPassword)) {
+                if (!newPassword.getText().equals(confirmPassword.getText())) {
                     showStatus("New passwords do not match.");
                     return;
                 }
 
                 // Set the new password for validation
-                updatedUser.setPassword(newPassword);
+                updatedUser.setPassword(newPassword.getText());
                 passwordChanged = true;
             } else {
                 // Skip password validation by setting a placeholder
@@ -225,7 +234,7 @@ public class EditProfileController {
             }
             
             // Validate wallet address if provided
-            if (walletAddress != null && !walletAddress.isEmpty()) {
+            if (!walletAddress.isEmpty()) {
                 // Ethereum address format: 0x followed by 40 hex characters
                 String walletRegex = "^0x[a-fA-F0-9]{40}$";
                 if (!Pattern.compile(walletRegex).matcher(walletAddress).matches()) {
@@ -235,7 +244,7 @@ public class EditProfileController {
             }
             
             // Validate GitHub username if provided
-            if (githubUsername != null && !githubUsername.isEmpty()) {
+            if (!githubUsername.isEmpty()) {
                 // GitHub username validation (alphanumeric with hyphens, no consecutive hyphens)
                 String githubRegex = "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$";
                 if (!Pattern.compile(githubRegex).matcher(githubUsername).matches()) {
