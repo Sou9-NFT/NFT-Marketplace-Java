@@ -53,10 +53,14 @@ public class BidService {
                     throw new SQLException("Creating bid failed, no ID obtained.");
                 }
             }
-            
-            // Update the current price in the bet session
+              // Update the current price and increment the number of bids in the bet session
             BetSession session = bid.getBetSession();
             session.setCurrentPrice(bid.getBidValue());
+            
+            // Increment the number of bids
+            int currentBids = session.getNumberOfBids();
+            session.setNumberOfBids(currentBids + 1);
+            
             betSessionService.updateBetSession(session);
         }
     }
