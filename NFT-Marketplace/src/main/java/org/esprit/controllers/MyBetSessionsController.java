@@ -59,28 +59,6 @@ public class MyBetSessionsController implements Initializable {
     @FXML
     private TableColumn<BetSession, Void> marketplaceActionsColumn;
     
-    // Tab 1: Browse Bet Sessions - Recent bids table
-    @FXML
-    private TableView<BidRecord> recentBidsTableView;
-    
-    @FXML
-    private TableColumn<BidRecord, String> bidArtworkColumn;
-    
-    @FXML
-    private TableColumn<BidRecord, String> bidSellerColumn;
-    
-    @FXML
-    private TableColumn<BidRecord, String> bidTimeColumn;
-    
-    @FXML
-    private TableColumn<BidRecord, String> bidAmountColumn;
-    
-    @FXML
-    private TableColumn<BidRecord, String> bidStatusColumn;
-    
-    @FXML
-    private TableColumn<BidRecord, Void> bidActionsColumn;
-    
     // Tab 2: My Bet Sessions - Active table
     @FXML
     private TableView<BetSession> activeBetsTableView;
@@ -153,11 +131,13 @@ public class MyBetSessionsController implements Initializable {
     
     private BetSessionService betSessionService;
     private User currentUser;
+    private ArtworkService artworkService;
 
     /**
      * Sets the current user for this controller and refreshes the bet sessions
      * @param user The current user
-     */    public void setCurrentUser(User user) {
+     */
+    public void setCurrentUser(User user) {
         this.currentUser = user;
         // Reload all data when user is set
         loadAllData();
@@ -168,23 +148,44 @@ public class MyBetSessionsController implements Initializable {
      */
     private void loadAllData() {
         loadMarketplaceBetSessions();
-        loadRecentBids();
         loadMyBetSessions();
     }
-      private ArtworkService artworkService;
     
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize services
         betSessionService = new BetSessionService();
         artworkService = new ArtworkService();
-        
-        // Configure TAB 1: Marketplace table columns
+          // Configure TAB 1: Marketplace table columns
         marketplaceArtworkColumn.setCellValueFactory(cellData -> {
             Artwork artwork = cellData.getValue().getArtwork();
             return artwork != null ? 
                    new SimpleStringProperty(artwork.getTitle()) : 
                    new SimpleStringProperty("N/A");
+        });
+        
+        // Use simple text display for marketplace artwork column (no images)
+        marketplaceArtworkColumn.setCellFactory(column -> new javafx.scene.control.TableCell<BetSession, String>() {
+            @Override
+            protected void updateItem(String title, boolean empty) {
+                super.updateItem(title, empty);
+                
+                if (empty || title == null) {
+                    setText(null);
+                } else {
+                    setText(title);
+                    
+                    // Add mystery mode indicator if applicable
+                    BetSession session = getTableView().getItems().get(getIndex());
+                    if (session.isMysteriousMode()) {
+                        setStyle("-fx-font-weight: bold; -fx-text-fill: #8e44ad;");
+                        setText(title + " 🔮");  // Add mystery emoji
+                    } else {
+                        setStyle("-fx-font-weight: normal;");
+                        setText(title);
+                    }
+                }
+            }
         });
         
         marketplaceSellerColumn.setCellValueFactory(cellData -> {
@@ -203,32 +204,6 @@ public class MyBetSessionsController implements Initializable {
         
         marketplaceCurrentPriceColumn.setCellValueFactory(cellData -> 
             new SimpleStringProperty(String.format("%.2f", cellData.getValue().getCurrentPrice())));
-            
-        // Configure TAB 1: Recent bids table columns
-        bidArtworkColumn.setCellValueFactory(cellData -> {
-            BetSession session = cellData.getValue().getBetSession();
-            Artwork artwork = session != null ? session.getArtwork() : null;
-            return artwork != null ? 
-                   new SimpleStringProperty(artwork.getTitle()) : 
-                   new SimpleStringProperty("N/A");
-        });
-        
-        bidSellerColumn.setCellValueFactory(cellData -> {
-            BetSession session = cellData.getValue().getBetSession();
-            User seller = session != null ? session.getAuthor() : null;
-            return seller != null ? 
-                   new SimpleStringProperty(seller.getName()) : 
-                   new SimpleStringProperty("Unknown");
-        });
-        
-        bidTimeColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(formatDateTime(cellData.getValue().getBidTime())));
-            
-        bidAmountColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(String.format("%.2f", cellData.getValue().getBidAmount())));
-            
-        bidStatusColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getStatus()));
             
         // Configure TAB 2: My active bet sessions table columns
         activeArtworkColumn.setCellValueFactory(cellData -> {
@@ -294,7 +269,8 @@ public class MyBetSessionsController implements Initializable {
             loadAllData();
         }
     }
-      /**
+    
+    /**
      * Loads all active marketplace bet sessions (not created by current user)
      */
     private void loadMarketplaceBetSessions() {
@@ -316,37 +292,6 @@ public class MyBetSessionsController implements Initializable {
             }
         } else {
             marketplaceBetsTableView.setItems(FXCollections.observableArrayList());
-        }
-    }
-    
-    /**
-     * Loads recent bids made by the current user
-     * Note: This is a placeholder implementation - in a real system, 
-     * you would have a BidService to track user bids
-     */
-    private void loadRecentBids() {
-        // This would be replaced with actual bid history from database
-        // For now, we're creating some sample data
-        if (currentUser != null) {
-            try {
-                // In a real implementation, you would:
-                // 1. Get bid history for current user from database
-                // 2. Convert to BidRecord objects
-                // 3. Populate the table
-                
-                // For now, we'll just show an empty table
-                recentBidsTableView.setItems(FXCollections.observableArrayList());
-            } catch (Exception e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Database Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Error loading bid history: " + e.getMessage());
-                alert.showAndWait();
-                
-                recentBidsTableView.setItems(FXCollections.observableArrayList());
-            }
-        } else {
-            recentBidsTableView.setItems(FXCollections.observableArrayList());
         }
     }
     
@@ -395,70 +340,286 @@ public class MyBetSessionsController implements Initializable {
     /**
      * Shows bet session details in a dialog
      * @param session The selected bet session
-     */
-    private void showBetSessionDetails(BetSession session) {
+     */    private void showBetSessionDetails(BetSession session) {
         // Create a new dialog
         Stage dialog = new Stage();
         dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
         dialog.setTitle("Bet Session Details");
+        dialog.setMinWidth(700);
+        dialog.setMinHeight(500);
 
-        // Create layout with all the details
-        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
-        grid.setPadding(new javafx.geometry.Insets(20, 20, 20, 20));
-        grid.setHgap(10);
-        grid.setVgap(10);
+        // Create a two-column layout with image on left, details on right
+        javafx.scene.layout.HBox mainLayout = new javafx.scene.layout.HBox(20);
+        mainLayout.setPadding(new javafx.geometry.Insets(20));
+        mainLayout.setAlignment(javafx.geometry.Pos.CENTER);
 
-        int row = 0;
-        // Display artwork image if available
+        // Left side - Image panel
+        javafx.scene.layout.VBox imagePanel = new javafx.scene.layout.VBox(10);
+        imagePanel.setAlignment(javafx.geometry.Pos.CENTER);
+        imagePanel.setPadding(new javafx.geometry.Insets(0, 10, 0, 0));
+        imagePanel.setMinWidth(300);        // Display artwork image if available
         javafx.scene.image.ImageView artworkImageView = new javafx.scene.image.ImageView();
-        artworkImageView.setFitHeight(180);
+        artworkImageView.setFitHeight(250);
+        artworkImageView.setFitWidth(250);
         artworkImageView.setPreserveRatio(true);
-        if (session.getArtwork() != null && session.getArtwork().getImageName() != null) {
-            String imagePath = "src/main/resources/uploads/" + session.getArtwork().getImageName();
-            java.io.File imageFile = new java.io.File(imagePath);
-            if (imageFile.exists()) {
-                javafx.scene.image.Image image = new javafx.scene.image.Image(imageFile.toURI().toString());
-                artworkImageView.setImage(image);
+          // Add a border and drop shadow to the image
+        javafx.scene.layout.StackPane imageContainer = new javafx.scene.layout.StackPane();
+        imageContainer.setStyle("-fx-border-color: #cccccc; -fx-border-width: 1px; -fx-padding: 5px; -fx-background-color: white;");
+        imageContainer.setEffect(new javafx.scene.effect.DropShadow(10, javafx.scene.paint.Color.rgb(0, 0, 0, 0.2)));
+        imageContainer.getChildren().add(artworkImageView);
+
+        // Create a counter for number of bids
+        javafx.scene.control.Label bidCountLabel = new javafx.scene.control.Label(
+            "Current bids: " + session.getNumberOfBids() + "/10");
+        bidCountLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #555555;");
+
+        // Add image and bid counter to the image panel
+        imagePanel.getChildren().addAll(imageContainer, bidCountLabel);
+        
+        // Ensure image panel has a fixed size and background so it's visible
+        imagePanel.setMinSize(300, 300);
+        imagePanel.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-width: 1px;");
+        
+        // Make sure image is displayed by adjusting settings
+        artworkImageView.setCache(true);
+        artworkImageView.setSmooth(true);
+        imageContainer.setMinSize(250, 250);
+        imageContainer.setPrefSize(250, 250);if (session.getArtwork() != null && session.getArtwork().getImageName() != null) {
+            // Try multiple possible paths for the image
+            String imageName = session.getArtwork().getImageName();
+            System.out.println("Trying to load image: " + imageName);
+            
+            // Path 1: Direct path in src/main/resources
+            String imagePath1 = "src/main/resources/uploads/" + imageName;
+            // Path 2: Runtime classpath path
+            String imagePath2 = "/uploads/" + imageName;
+            // Path 3: Absolute path to target directory
+            String imagePath3 = "target/classes/uploads/" + imageName;
+            
+            java.io.File imageFile1 = new java.io.File(imagePath1);
+            boolean loaded = false;
+            
+            // Try first path (direct file access)
+            if (imageFile1.exists()) {
+                System.out.println("Image found at: " + imagePath1);
+                try {
+                    javafx.scene.image.Image image = new javafx.scene.image.Image(imageFile1.toURI().toString());
+                    artworkImageView.setImage(image);
+                    loaded = true;
+                    System.out.println("Image loaded successfully from path 1");
+                } catch (Exception e) {
+                    System.err.println("Error loading image from path 1: " + e.getMessage());
+                }
+            }
+            
+            // Try second path (resource stream)
+            if (!loaded) {
+                try {
+                    java.net.URL resourceUrl = getClass().getResource(imagePath2);
+                    if (resourceUrl != null) {
+                        javafx.scene.image.Image image = new javafx.scene.image.Image(resourceUrl.toString());
+                        artworkImageView.setImage(image);
+                        loaded = true;
+                        System.out.println("Image loaded successfully from path 2");
+                    } else {
+                        System.out.println("Resource not found at: " + imagePath2);
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error loading image from path 2: " + e.getMessage());
+                }
+            }
+            
+            // Try third path (target directory)
+            if (!loaded) {
+                java.io.File imageFile3 = new java.io.File(imagePath3);
+                if (imageFile3.exists()) {
+                    System.out.println("Image found at: " + imagePath3);
+                    try {
+                        javafx.scene.image.Image image = new javafx.scene.image.Image(imageFile3.toURI().toString());
+                        artworkImageView.setImage(image);
+                        loaded = true;
+                        System.out.println("Image loaded successfully from path 3");
+                    } catch (Exception e) {
+                        System.err.println("Error loading image from path 3: " + e.getMessage());
+                    }
+                }
+            }
+            
+            // If the image was loaded successfully, apply effects if needed
+            if (loaded) {
+                // Apply blur effect for mystery mode items
+                if (session.isMysteriousMode()) {
+                    int numberOfBids = session.getNumberOfBids();
+                    if (numberOfBids < 10) {
+                        // Calculate blur amount - higher at 0 bids, lower as bids increase
+                        double blurAmount = 10.0 - numberOfBids;
+                        // Scale to reasonable range
+                        blurAmount = Math.max(blurAmount * 2.0, 1.0);
+                        // Apply blur effect
+                        javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(blurAmount);
+                        artworkImageView.setEffect(blur);
+                        
+                        // Add mystery mode indicator label
+                        javafx.scene.control.Label mysteryLabel = new javafx.scene.control.Label("Mystery Mode - Bids: " + numberOfBids + "/10");
+                        mysteryLabel.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: white; -fx-padding: 5px; -fx-font-weight: bold;");
+                        imageContainer.getChildren().add(mysteryLabel);
+                    }
+                }
+            } else {
+                // If image wasn't loaded from any path, try to load a default image
+                System.out.println("Attempting to load default image");
+                try {
+                    java.net.URL defaultImageUrl = getClass().getResource("/assets/default/artwork-placeholder.png");
+                    if (defaultImageUrl != null) {
+                        javafx.scene.image.Image defaultImage = new javafx.scene.image.Image(defaultImageUrl.toString());
+                        artworkImageView.setImage(defaultImage);
+                        System.out.println("Default image loaded successfully");
+                    } else {
+                        System.out.println("Default image resource not found");
+                    }
+                } catch (Exception e) {
+                    System.err.println("Error loading default image: " + e.getMessage());
+                }
             }
         }
-        grid.add(artworkImageView, 0, row, 2, 1);
-        row++;
 
-        // Remove any display of session.getId() or BetSession ID from the dialog
-        // Only show user-friendly fields (author, artwork, dates, prices, status, etc.)
-        grid.add(new javafx.scene.control.Label("Author:"), 0, row);
-        grid.add(new javafx.scene.control.Label(session.getAuthor() != null ? session.getAuthor().getName() : "N/A"), 1, row++);
-        grid.add(new javafx.scene.control.Label("Artwork:"), 0, row);
-        grid.add(new javafx.scene.control.Label(session.getArtwork() != null ? session.getArtwork().getTitle() : "N/A"), 1, row++);
-        grid.add(new javafx.scene.control.Label("Created at:"), 0, row);
-        grid.add(new javafx.scene.control.Label(session.getCreatedAt() != null ? session.getCreatedAt().toString() : "N/A"), 1, row++);
-        grid.add(new javafx.scene.control.Label("Start time:"), 0, row);
-        grid.add(new javafx.scene.control.Label(session.getStartTime() != null ? session.getStartTime().toString() : "N/A"), 1, row++);
-        grid.add(new javafx.scene.control.Label("End time:"), 0, row);
-        grid.add(new javafx.scene.control.Label(session.getEndTime() != null ? session.getEndTime().toString() : "N/A"), 1, row++);
-        grid.add(new javafx.scene.control.Label("Initial price:"), 0, row);
-        grid.add(new javafx.scene.control.Label(String.format("%.2f", session.getInitialPrice())), 1, row++);
-        grid.add(new javafx.scene.control.Label("Current price:"), 0, row);
-        grid.add(new javafx.scene.control.Label(String.format("%.2f", session.getCurrentPrice())), 1, row++);
-        grid.add(new javafx.scene.control.Label("Status:"), 0, row);
-        grid.add(new javafx.scene.control.Label(session.getStatus()), 1, row++);
-        // Show if NFT is in Mystery Mode
-        grid.add(new javafx.scene.control.Label("Mystery Mode:"), 0, row);
-        grid.add(new javafx.scene.control.Label(session.isMysteriousMode() ? "Yes" : "No"), 1, row++);
+        // Right side - Details panel
+        javafx.scene.layout.VBox detailsPanel = new javafx.scene.layout.VBox(15);
+        detailsPanel.setPadding(new javafx.geometry.Insets(10));
+        detailsPanel.setAlignment(javafx.geometry.Pos.TOP_LEFT);
+        detailsPanel.setMinWidth(350);
+        
+        // Style for header labels
+        String headerStyle = "-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333;";
+        
+        // Artwork title as header
+        javafx.scene.control.Label titleLabel = new javafx.scene.control.Label(
+            session.getArtwork() != null ? session.getArtwork().getTitle() : "Unknown Artwork");
+        titleLabel.setStyle(headerStyle + "-fx-font-size: 20px;");
+        titleLabel.setWrapText(true);
+        
+        // Basic info section
+        javafx.scene.layout.GridPane basicInfoGrid = createStyledInfoGrid();
+        int row = 0;
+          // Add basic info fields
+        addField(basicInfoGrid, "Creator:", session.getAuthor() != null ? session.getAuthor().getName() : "N/A", row++);
+        addField(basicInfoGrid, "Status:", capitalizeFirstLetter(session.getStatus()), row++);
+        addField(basicInfoGrid, "Mystery Mode:", session.isMysteriousMode() ? "Activated" : "Disabled", row++);
+        
+        // Price info section with header
+        javafx.scene.control.Label priceHeaderLabel = new javafx.scene.control.Label("Price Information");
+        priceHeaderLabel.setStyle(headerStyle);
+        
+        javafx.scene.layout.GridPane priceInfoGrid = createStyledInfoGrid();
+        row = 0;
+          // Add price info fields
+        addField(priceInfoGrid, "Initial price:", String.format("%.2f Dannous", session.getInitialPrice()), row++);
+        addField(priceInfoGrid, "Current price:", String.format("%.2f Dannous", session.getCurrentPrice()), row++);
+        
+        // Description section with header
+        javafx.scene.control.Label descHeaderLabel = new javafx.scene.control.Label("Description");
+        descHeaderLabel.setStyle(headerStyle);
+        
+        // Create description content
+        javafx.scene.control.Label descriptionLabel = new javafx.scene.control.Label();
+        descriptionLabel.setWrapText(true);
+        descriptionLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
+        descriptionLabel.setMaxWidth(350);
+        
+        // Check if we should display description section
+        boolean showDescription = true;
+        
+        if (session.isMysteriousMode()) {
+            // In mystery mode, only show description if generated description exists
+            if (session.getGeneratedDescription() != null && !session.getGeneratedDescription().isEmpty()) {
+                descriptionLabel.setText(session.getGeneratedDescription());
+            } else {
+                // Don't show description section at all for mystery mode items with no generated description
+                showDescription = false;
+            }
+        } else if (session.getArtwork() != null && session.getArtwork().getDescription() != null) {
+            // Show the original artwork description for non-mystery mode
+            descriptionLabel.setText(session.getArtwork().getDescription());
+        } else {
+            descriptionLabel.setText("No description available.");
+        }
+        
+        // Create a styled container for the description
+        javafx.scene.layout.VBox descriptionContainer = new javafx.scene.layout.VBox(5);
+        descriptionContainer.getChildren().add(descriptionLabel);
+        descriptionContainer.setStyle("-fx-background-color: #f8f8f8; -fx-padding: 10px; -fx-background-radius: 5px;");
 
-        // Add close button
+        // Add all sections to the details panel
+        detailsPanel.getChildren().add(titleLabel);
+        detailsPanel.getChildren().add(basicInfoGrid);
+        detailsPanel.getChildren().add(priceHeaderLabel);
+        detailsPanel.getChildren().add(priceInfoGrid);
+        
+        // Only add description to the panel if we should show it
+        if (showDescription) {
+            detailsPanel.getChildren().add(descHeaderLabel);
+            detailsPanel.getChildren().add(descriptionContainer);
+        }
+
+        // Add close button with styling
         javafx.scene.control.Button closeButton = new javafx.scene.control.Button("Close");
+        closeButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20 10 20;");
         closeButton.setOnAction(e -> dialog.close());
-
-        // Create root layout
-        javafx.scene.layout.VBox root = new javafx.scene.layout.VBox(20, grid, closeButton);
-        root.setPadding(new javafx.geometry.Insets(10));
+        
+        // Create a container for the button
+        javafx.scene.layout.HBox buttonBox = new javafx.scene.layout.HBox();
+        buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
+        buttonBox.setPadding(new javafx.geometry.Insets(20, 0, 0, 0));
+        buttonBox.getChildren().add(closeButton);
+        
+        // Add image panel and details panel to the main layout
+        mainLayout.getChildren().addAll(imagePanel, detailsPanel);
+        
+        // Create root layout with main content and button at bottom
+        javafx.scene.layout.VBox root = new javafx.scene.layout.VBox(20);
+        root.getChildren().addAll(mainLayout, buttonBox);
         root.setAlignment(javafx.geometry.Pos.CENTER);
+        root.setStyle("-fx-background-color: white;");
 
         // Set the scene
         Scene scene = new Scene(root);
         dialog.setScene(scene);
         dialog.showAndWait();
+    }
+    
+    /**
+     * Helper method to create a styled grid for information display
+     */
+    private javafx.scene.layout.GridPane createStyledInfoGrid() {
+        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
+        grid.setPadding(new javafx.geometry.Insets(5));
+        grid.setHgap(15);
+        grid.setVgap(10);
+        return grid;
+    }
+    
+    /**
+     * Helper method to add a field to a grid with proper styling
+     */
+    private void addField(javafx.scene.layout.GridPane grid, String labelText, String value, int row) {
+        javafx.scene.control.Label label = new javafx.scene.control.Label(labelText);
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: #555555;");
+        
+        javafx.scene.control.Label valueLabel = new javafx.scene.control.Label(value);
+        valueLabel.setStyle("-fx-text-fill: #333333;");
+        
+        grid.add(label, 0, row);
+        grid.add(valueLabel, 1, row);
+    }
+    
+    /**
+     * Helper method to capitalize the first letter of a string
+     */
+    private String capitalizeFirstLetter(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
     }
     
     /**
@@ -889,7 +1050,8 @@ public class MyBetSessionsController implements Initializable {
         dialog.setScene(scene);
         dialog.showAndWait();
     }
-      /**
+    
+    /**
      * Shows an alert dialog with the given type, title, and message
      */
     private void showAlert(Alert.AlertType type, String title, String message) {
@@ -899,10 +1061,10 @@ public class MyBetSessionsController implements Initializable {
         alert.setContentText(message);
         alert.showAndWait();
     }
-      /**
+    
+    /**
      * Sets up action columns with buttons for all tables
-     */
-    private void setupActionColumns() {
+     */    private void setupActionColumns() {
         // Setup marketplace bets action column (Tab 1)
         marketplaceActionsColumn.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
             private final javafx.scene.control.Button viewButton = new javafx.scene.control.Button("View");
@@ -945,25 +1107,6 @@ public class MyBetSessionsController implements Initializable {
             }
         });
         
-        // Setup recent bids action column (Tab 1)
-        bidActionsColumn.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
-            private final javafx.scene.control.Button viewButton = new javafx.scene.control.Button("View Details");
-            
-            {
-                // Configure view button
-                viewButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px;");
-                viewButton.setOnAction(event -> {
-                    BidRecord bid = getTableView().getItems().get(getIndex());
-                    showBetSessionDetails(bid.getBetSession());
-                });
-            }
-            
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : viewButton);
-            }
-        });
         
         // Setup active bets action column (Tab 2 - My Active Bet Sessions)
         activeActionsColumn.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
@@ -1028,7 +1171,7 @@ public class MyBetSessionsController implements Initializable {
         });
     }
 
-        private boolean canUserPlaceBid(User user, double bidAmount) {
+    private boolean canUserPlaceBid(User user, double bidAmount) {
         if (user == null || user.getBalance() == null) {
             Alert alert = new Alert(AlertType.ERROR, "User or balance not found.");
             alert.showAndWait();

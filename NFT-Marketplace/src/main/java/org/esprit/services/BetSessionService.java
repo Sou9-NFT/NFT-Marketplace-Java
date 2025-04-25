@@ -26,9 +26,20 @@ public class BetSessionService {
         userService = new UserService();
         artworkService = new ArtworkService();
     }
-    
-    public void addBetSession(BetSession betSession) throws SQLException {
-        String query = "INSERT INTO bet_session (author_id, artwork_id, created_at, start_time, end_time, initial_price, current_price, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+      public void addBetSession(BetSession betSession) throws SQLException {
+        // If mysterious mode is enabled, generate a description using Gemini API
+        if (betSession.isMysteriousMode() && (betSession.getGeneratedDescription() == null || betSession.getGeneratedDescription().isEmpty())) {
+            try {
+                String generatedDescription = org.esprit.utils.GeminiApi.generateMysteriousDescription(betSession.getArtwork());
+                betSession.setGeneratedDescription(generatedDescription);
+            } catch (Exception e) {
+                System.err.println("Error generating mysterious description: " + e.getMessage());
+                // Set a fallback description if API call fails
+                betSession.setGeneratedDescription("This mysterious artwork awaits discovery by the highest bidder.");
+            }
+        }
+        
+        String query = "INSERT INTO bet_session (author_id, artwork_id, created_at, start_time, end_time, initial_price, current_price, status, mysterious_mode, generated_description, number_of_bids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         try (PreparedStatement ps = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             ps.setInt(1, betSession.getAuthor().getId());
@@ -39,6 +50,9 @@ public class BetSessionService {
             ps.setDouble(6, betSession.getInitialPrice());
             ps.setDouble(7, betSession.getCurrentPrice());
             ps.setString(8, betSession.getStatus());
+            ps.setBoolean(9, betSession.isMysteriousMode());
+            ps.setString(10, betSession.getGeneratedDescription());
+            ps.setInt(11, betSession.getNumberOfBids());
             
             int affectedRows = ps.executeUpdate();
             
@@ -54,9 +68,21 @@ public class BetSessionService {
                 }
             }
         }
-    }
-      public void updateBetSession(BetSession betSession) throws SQLException {
-        String query = "UPDATE bet_session SET author_id = ?, artwork_id = ?, start_time = ?, end_time = ?, initial_price = ?, current_price = ?, status = ?, number_of_bids = ? WHERE id = ?";
+    }    public void updateBetSession(BetSession betSession) throws SQLException {
+        // If mysterious mode is enabled but no description exists, generate one
+        if (betSession.isMysteriousMode() && (betSession.getGeneratedDescription() == null || betSession.getGeneratedDescription().isEmpty())) {
+            try {
+                String generatedDescription = org.esprit.utils.GeminiApi.generateMysteriousDescription(betSession.getArtwork());
+                betSession.setGeneratedDescription(generatedDescription);
+            } catch (Exception e) {
+                System.err.println("Error generating mysterious description: " + e.getMessage());
+                betSession.setGeneratedDescription("This mysterious artwork awaits discovery by the highest bidder.");
+            }
+        }
+
+        String query = "UPDATE bet_session SET author_id = ?, artwork_id = ?, start_time = ?, end_time = ?, " +
+                       "initial_price = ?, current_price = ?, status = ?, number_of_bids = ?, " + 
+                       "mysterious_mode = ?, generated_description = ? WHERE id = ?";
         
         try (PreparedStatement ps = connection.prepareStatement(query)) {
             ps.setInt(1, betSession.getAuthor().getId());
@@ -67,7 +93,9 @@ public class BetSessionService {
             ps.setDouble(6, betSession.getCurrentPrice());
             ps.setString(7, betSession.getStatus());
             ps.setInt(8, betSession.getNumberOfBids());
-            ps.setInt(9, betSession.getId());
+            ps.setBoolean(9, betSession.isMysteriousMode());
+            ps.setString(10, betSession.getGeneratedDescription());
+            ps.setInt(11, betSession.getId());
             
             int affectedRows = ps.executeUpdate();
             
@@ -191,10 +219,18 @@ public class BetSessionService {
         Timestamp endTimeTimestamp = rs.getTimestamp("end_time");
         if (endTimeTimestamp != null) {
             betSession.setEndTime(endTimeTimestamp.toLocalDateTime());
-        }
-          betSession.setInitialPrice(rs.getDouble("initial_price"));
+        }        betSession.setInitialPrice(rs.getDouble("initial_price"));
         betSession.setCurrentPrice(rs.getDouble("current_price"));
         betSession.setStatus(rs.getString("status"));
+        
+        // Load mysterious mode flag
+        betSession.setMysteriousMode(rs.getBoolean("mysterious_mode"));
+        
+        // Load generated description
+        String generatedDescription = rs.getString("generated_description");
+        if (generatedDescription != null) {
+            betSession.setGeneratedDescription(generatedDescription);
+        }
         
         // Retrieve the number_of_bids field
         betSession.setNumberOfBids(rs.getInt("number_of_bids"));
