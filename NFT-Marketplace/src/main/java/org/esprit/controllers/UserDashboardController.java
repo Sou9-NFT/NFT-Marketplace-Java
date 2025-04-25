@@ -226,15 +226,14 @@ public class UserDashboardController {
             showAlert("Error", "Could not load trade offers: " + e.getMessage());
         }
     }
-    
-    @FXML
+      @FXML
     private void handleBlogsButton(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Blog.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BlogList.fxml"));
             Parent blogView = loader.load();
             
-            // Pass the current user to the blog controller
-            BlogController controller = loader.getController();
+            // Pass the current user to the blog list controller
+            BlogListController controller = loader.getController();
             controller.setCurrentUser(currentUser);
             
             loadContentInPlace(blogView, "Blogs");

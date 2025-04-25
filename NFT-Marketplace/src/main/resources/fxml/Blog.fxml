@@ -6,6 +6,7 @@
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.effect.*?>
+<?import java.lang.String?>
 <AnchorPane 
     xmlns="http://javafx.com/javafx" 
     xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.BlogController" 
@@ -38,15 +39,31 @@
                     <HBox alignment="CENTER_LEFT" spacing="10">
                         <TextField fx:id="searchField" promptText="Search blogs..." styleClass="search-field" HBox.hgrow="ALWAYS"/>
                     </HBox>
-                    <ListView fx:id="blogListView" VBox.vgrow="ALWAYS" styleClass="blog-list-view"/>
+                    <ListView fx:id="blogListView" VBox.vgrow="ALWAYS">
+                        <styleClass>
+                            <String fx:value="blog-list-view"/>
+                            <String fx:value="edge-to-edge"/>
+                        </styleClass>
+                    </ListView>
                 </VBox>
-                
-                <!-- Blog Details Section -->
+                  <!-- Blog Details Section -->
                 <ScrollPane fitToWidth="true" styleClass="blog-details-scroll-pane">
                     <VBox spacing="20" styleClass="blog-details-section">
                         <padding>
                             <Insets top="20" right="30" bottom="20" left="30"/>
                         </padding>
+                        <!-- Author Info Section -->
+                        <HBox spacing="15" alignment="CENTER_LEFT" styleClass="author-section">
+                            <ImageView fx:id="authorProfilePicture" fitHeight="50" fitWidth="50" styleClass="profile-picture">
+                                <effect>
+                                    <DropShadow radius="5" spread="0.1"/>
+                                </effect>
+                            </ImageView>
+                            <VBox>
+                                <Label fx:id="authorNameLabel" styleClass="author-name"/>
+                                <Label fx:id="postDateLabel" styleClass="post-date"/>
+                            </VBox>
+                        </HBox>
                         <VBox styleClass="form-section">
                             <Label text="Title" styleClass="form-label"/>
                             <TextField fx:id="titleField" styleClass="form-field"/>
@@ -67,12 +84,30 @@
                                 <ComboBox fx:id="languageComboBox" styleClass="language-combo"/>
                                 <Button fx:id="translateButton" text="Translate" onAction="#handleTranslate" styleClass="secondary-button"/>
                             </HBox>
-                        </VBox>
-                        <!-- Comments Section -->
+                        </VBox>                        <!-- Comments Section -->
                         <VBox spacing="10" styleClass="comments-section">
                             <Label text="Comments" styleClass="section-header"/>
-                            <TextArea fx:id="commentTextArea" promptText="Write a comment..." wrapText="true" prefRowCount="3"/>
-                            <Button fx:id="addCommentButton" text="Add Comment" onAction="#handleAddComment" styleClass="primary-button"/>
+                            <!-- New Comment Input Section -->
+                            <HBox spacing="10" alignment="TOP_LEFT">
+                                <ImageView fx:id="currentUserProfilePicture" fitHeight="40" fitWidth="40" styleClass="profile-picture">
+                                    <effect>
+                                        <DropShadow radius="3" spread="0.1"/>
+                                    </effect>
+                                </ImageView>
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <ImageView fx:id="currentUserProfilePicture" fitHeight="40" fitWidth="40" styleClass="profile-picture">
+                                    <effect>
+                                        <DropShadow radius="5" spread="0.1"/>
+                                    </effect>
+                                </ImageView>
+                                <VBox spacing="5" HBox.hgrow="ALWAYS">
+                                    <TextArea fx:id="commentTextArea" promptText="Write a comment..." wrapText="true" prefRowCount="3"/>
+                                    <Button fx:id="addCommentButton" text="Add Comment" onAction="#handleAddComment" styleClass="primary-button"/>
+                                </VBox>
+                            </HBox>
+                                </VBox>
+                            </HBox>
+                            <!-- Comments List with Custom Cell Factory -->
                             <ListView fx:id="commentsListView" VBox.vgrow="ALWAYS" styleClass="comments-list"/>
                         </VBox>
                         <!-- Action Buttons -->
