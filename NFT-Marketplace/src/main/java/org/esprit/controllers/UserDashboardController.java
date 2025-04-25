@@ -41,9 +41,11 @@ public class UserDashboardController {
     
     @FXML
     private Button notificationsButton;
+      @FXML
+    private Button betSessionButton;
     
     @FXML
-    private Button betSessionButton;
+    private Button blogsButton;
     
     @FXML
     private StackPane contentArea;
@@ -222,6 +224,22 @@ public class UserDashboardController {
             loadContentInPlace(betSessionView, "Bet Sessions");
         } catch (IOException e) {
             showAlert("Error", "Could not load trade offers: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleBlogsButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Blog.fxml"));
+            Parent blogView = loader.load();
+            
+            // Pass the current user to the blog controller
+            BlogController controller = loader.getController();
+            controller.setCurrentUser(currentUser);
+            
+            loadContentInPlace(blogView, "Blogs");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load blogs: " + e.getMessage());
         }
     }
     
