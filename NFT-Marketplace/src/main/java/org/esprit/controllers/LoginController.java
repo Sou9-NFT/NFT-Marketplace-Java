@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -34,6 +35,9 @@ public class LoginController {
     
     @FXML
     private Label passwordErrorLabel;
+    
+    @FXML
+    private Button githubLoginButton;
     
     private UserService userService;
     
@@ -100,6 +104,28 @@ public class LoginController {
         }
     }
     
+    /**
+     * Handle GitHub OAuth login button click
+     * This method will redirect the user to the GitHub OAuth authorization page
+     */
+    @FXML
+    private void handleGitHubLogin(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/GitHubOAuth.fxml"));
+            Parent oauthView = loader.load();
+            
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            
+            stage.setScene(new Scene(oauthView, 800, 600));
+            stage.setTitle("NFT Marketplace - GitHub Authentication");
+            stage.show();
+        } catch (IOException e) {
+            showError("Error initiating GitHub login: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
     private void navigateToAdminDashboard(ActionEvent event, User user) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminDashboard.fxml"));
@@ -156,6 +182,24 @@ public class LoginController {
             stage.show();
         } catch (IOException e) {
             showError("Error loading register page: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void switchToForgotPassword(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ForgotPassword.fxml"));
+            Parent forgotPasswordView = loader.load();
+            
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            
+            stage.setScene(new Scene(forgotPasswordView, 600, 400));
+            stage.setTitle("NFT Marketplace - Forgot Password");
+            stage.show();
+        } catch (IOException e) {
+            showError("Error loading forgot password page: " + e.getMessage());
             e.printStackTrace();
         }
     }

@@ -3,21 +3,32 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <BorderPane 
 	xmlns="http://javafx.com/javafx/8.0.171" 
-	xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.esprit.controllers.UserDashboardController">
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.esprit.controllers.UserDashboardController" stylesheets="@../styles/main.css">
 	<top>
-		<HBox alignment="CENTER_LEFT" style="-fx-background-color: #1e3c72;" BorderPane.alignment="CENTER">
-			<padding>
-				<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-			</padding>
-			<children>
-				<Label text="NFT Marketplace - User Dashboard" textFill="WHITE">
-					<font>
-						<Font name="System Bold" size="18.0" />
-					</font>
-				</Label>
-				<Pane HBox.hgrow="ALWAYS" />
+		<VBox>
+			<HBox alignment="CENTER_LEFT" style="-fx-background-color: #1e3c72;" spacing="15" BorderPane.alignment="CENTER">
+				<padding>
+					<Insets bottom="10" left="15" right="15" top="10" />
+				</padding>
+				<!-- Logo and business name -->
+				<ImageView fitHeight="40" fitWidth="40" preserveRatio="true">
+					<Image url="@../kit/icon.png"/>
+				</ImageView>
+				<Label text="Sou9 NFT" textFill="WHITE" style="-fx-font-weight: bold; -fx-font-size: 18px;"/>
+				<!-- Navigation buttons -->
+				<Button fx:id="profileButton" text="My Profile" onAction="#handleProfileButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="rafflesButton" text="Raffles" onAction="#handleRafflesButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="artworksButton" text="Artworks" onAction="#handleArtworksButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="marketplaceButton" text="Marketplace" onAction="#handleMarketplaceButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="walletButton" text="My Wallet" onAction="#handleWalletButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="notificationsButton" text="Notifications" onAction="#handleNotificationsButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="betSessionButton" text="Bet Sessions" onAction="#handleBetSessionButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<!-- User info and logout -->
+				<Region HBox.hgrow="ALWAYS" />
 				<Label fx:id="userNameLabel" text="Welcome, User" textFill="WHITE">
 					<font>
 						<Font size="14.0" />
@@ -28,8 +39,8 @@
 						<Insets left="15.0" />
 					</HBox.margin>
 				</Button>
-			</children>
-		</HBox>
+			</HBox>
+		</VBox>
 	</top>
 	<center>
 		<VBox alignment="CENTER" spacing="20.0" BorderPane.alignment="CENTER">
@@ -42,69 +53,22 @@
 						<Font name="System Bold" size="24.0" />
 					</font>
 				</Label>
-				<Label text="Select a section to navigate" textAlignment="CENTER">
+				<Label text="Select any option from the navigation bar above" textAlignment="CENTER">
 					<font>
 						<Font size="14.0" />
 					</font>
 				</Label>
-				<GridPane alignment="CENTER" hgap="20.0" vgap="20.0">
-					<columnConstraints>
-						<ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
-						<ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
-					</columnConstraints>					<rowConstraints>
-						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
-					</rowConstraints>
-					<children>
-						<Button fx:id="profileButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleProfileButton" styleClass="dashboard-button" text="My Profile">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button fx:id="rafflesButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleRafflesButton" styleClass="dashboard-button" text="Raffles" GridPane.columnIndex="1">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button fx:id="artworksButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleArtworksButton" styleClass="dashboard-button" text="Artworks" GridPane.rowIndex="1">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button fx:id="marketplaceButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleMarketplaceButton" styleClass="dashboard-button" text="Marketplace" GridPane.columnIndex="1" GridPane.rowIndex="1">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button fx:id="blogButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleBlogButton" styleClass="dashboard-button" text="Blog" GridPane.columnIndex="2" GridPane.rowIndex="1">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button fx:id="walletButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleWalletButton" styleClass="dashboard-button" text="My Wallet" GridPane.rowIndex="2">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>						<Button fx:id="notificationsButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleNotificationsButton" styleClass="dashboard-button" text="Notifications" GridPane.columnIndex="1" GridPane.rowIndex="2">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button fx:id="betSessionButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleBetSessionButton" styleClass="dashboard-button" text="Bet Sessions" GridPane.rowIndex="3">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button fx:id="tradeOffersButton" maxWidth="Infinity" maxHeight="Infinity" mnemonicParsing="false" onAction="#handleTradeOffers" styleClass="dashboard-button" text="Trade Offers" GridPane.columnIndex="1" GridPane.rowIndex="3">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-					</children>
-				</GridPane>
+				<!-- Placeholder for dynamic content -->
+				<StackPane fx:id="contentArea" VBox.vgrow="ALWAYS" />
 			</children>
 		</VBox>
 	</center>
+	<bottom>
+		<HBox alignment="CENTER" style="-fx-background-color: #f0f0f0; -fx-border-color: #e0e0e0; -fx-border-width: 1 0 0 0;">
+			<padding>
+				<Insets top="3" right="10" bottom="3" left="10"/>
+			</padding>
+			<Label text="Made with ❤️ by Artitechs 2025" style="-fx-font-size: 8px; -fx-text-fill: #666666;"/>
+		</HBox>
+	</bottom>
 </BorderPane>

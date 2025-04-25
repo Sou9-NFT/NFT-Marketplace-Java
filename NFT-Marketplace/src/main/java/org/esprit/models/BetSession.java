@@ -25,9 +25,24 @@ public class BetSession {
     private final ObjectProperty<LocalDateTime> endTime = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDateTime> startTime = new SimpleObjectProperty<>();
     private final DoubleProperty initialPrice = new SimpleDoubleProperty();
-    private final DoubleProperty currentPrice = new SimpleDoubleProperty();
-    private final StringProperty status = new SimpleStringProperty("pending");
+    private final DoubleProperty currentPrice = new SimpleDoubleProperty();    private final StringProperty status = new SimpleStringProperty("pending");
     private final BooleanProperty mysteriousMode = new SimpleBooleanProperty(false);
+    private final StringProperty generatedDescription = new SimpleStringProperty("");
+
+    // Add numberOfBids property
+    private final IntegerProperty numberOfBids = new SimpleIntegerProperty(0);
+
+    public int getNumberOfBids() {
+        return numberOfBids.get();
+    }
+
+    public void setNumberOfBids(int numberOfBids) {
+        this.numberOfBids.set(numberOfBids);
+    }
+
+    public IntegerProperty numberOfBidsProperty() {
+        return numberOfBids;
+    }
 
     // Constructor
     public BetSession() {
@@ -205,10 +220,20 @@ public class BetSession {
 
     public void setMysteriousMode(boolean mysteriousMode) {
         this.mysteriousMode.set(mysteriousMode);
-    }
-
-    public BooleanProperty mysteriousModeProperty() {
+    }    public BooleanProperty mysteriousModeProperty() {
         return mysteriousMode;
+    }
+    
+    public String getGeneratedDescription() {
+        return generatedDescription.get();
+    }
+    
+    public void setGeneratedDescription(String generatedDescription) {
+        this.generatedDescription.set(generatedDescription);
+    }
+    
+    public StringProperty generatedDescriptionProperty() {
+        return generatedDescription;
     }
 
     // Update status based on time
