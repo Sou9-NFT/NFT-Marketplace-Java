@@ -3,6 +3,8 @@ package org.esprit.controllers;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -51,6 +53,7 @@ public class ChatbotController {
     private GeminiChatbot geminiChatbot;
     private TypingIndicator typingIndicator;
     private boolean chatVisible = false;
+    private boolean animationInProgress = false;
     
     @FXML
     public void initialize() {
@@ -73,7 +76,12 @@ public class ChatbotController {
         Text chatIcon = new Text("🤖");
         chatIcon.setStyle("-fx-font-size: 20px;");
         toggleChatButton.setGraphic(chatIcon);
-        toggleChatButton.setPickOnBounds(true); // Make sure the button can be clicked
+        
+        // Ensure the container doesn't block mouse events
+        chatbotContainer.setPickOnBounds(false);
+        
+        // But the toggle button itself should always capture clicks
+        toggleChatButton.setPickOnBounds(true);
         
         // Setup event handlers
         setupEventHandlers();
@@ -85,18 +93,34 @@ public class ChatbotController {
     }
     
     private void setupEventHandlers() {
+        // Handle toggle button directly with mouse click
+        toggleChatButton.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                System.out.println("Toggle button clicked!");
+                toggleChatPanel();
+                event.consume();
+            }
+        });
+        
         // Send button click handler
-        sendButton.setOnAction(this::handleSendMessage);
+        sendButton.setOnAction(event -> {
+            handleSendMessageManually();
+            event.consume();
+        });
         
         // Enter key in message input
-        messageInput.setOnAction(this::handleSendMessage);
+        messageInput.setOnAction(event -> {
+            handleSendMessageManually();
+            event.consume();
+        });
         
-        // Toggle chat visibility
-        toggleChatButton.setOnAction(event -> toggleChatVisibility());
-        
-        // Minimize button (same as toggle button for hiding)
+        // Minimize button click handler
         if (minimizeButton != null) {
-            minimizeButton.setOnAction(event -> toggleChatVisibility());
+            minimizeButton.setOnAction(event -> {
+                toggleChatPanel();
+                event.consume();
+            });
         }
         
         // Auto-scroll when new messages are added
@@ -104,27 +128,23 @@ public class ChatbotController {
             chatScrollPane.setVvalue(1.0);
         });
         
-        // Ensure the button never becomes mouse transparent
-        toggleChatButton.setMouseTransparent(false);
-        
-        // For the chat panel, we want to consume events to prevent them from leaking to parent
-        chatPanel.addEventFilter(MouseEvent.ANY, event -> {
-            event.consume();
-        });
-        
-        // Make sure chatbot container doesn't interfere with parent scrolling
-        chatbotContainer.setPickOnBounds(false);
-    }
-    
-    /**
-     * Setup event propagation to prevent chat components from blocking parent scrolling
-     */
-    private void setupEventPropagation() {
-        // This method is no longer needed since we're handling it in setupEventHandlers
+        // Ensure chat panel events don't propagate
+        chatPanel.addEventFilter(MouseEvent.ANY, Event::consume);
     }
     
     @FXML
     private void handleSendMessage(ActionEvent event) {
+        processSendMessage();
+        if (event != null) {
+            event.consume();
+        }
+    }
+    
+    private void handleSendMessageManually() {
+        processSendMessage();
+    }
+    
+    private void processSendMessage() {
         String message = messageInput.getText().trim();
         if (message.isEmpty()) {
             return;
@@ -151,29 +171,46 @@ public class ChatbotController {
         });
     }
     
-    private void toggleChatVisibility() {
-        chatVisible = !chatVisible;
+    private void toggleChatPanel() {
+        System.out.println("Toggle chat panel called. Current state: " + 
+                           (chatVisible ? "visible" : "hidden") +
+                           ", Animation in progress: " + animationInProgress);
         
-        if (chatVisible) {
-            // Show chat panel with animation
+        if (animationInProgress) {
+            return; // Prevent multiple clicks during animation
+        }
+        
+        animationInProgress = true;
+        
+        if (!chatVisible) {
+            // Show chat panel
             chatPanel.setVisible(true);
             chatPanel.setManaged(true);
+            chatPanel.setOpacity(0);
             
             FadeTransition fadeIn = new FadeTransition(Duration.millis(300), chatPanel);
             fadeIn.setFromValue(0);
             fadeIn.setToValue(1);
+            fadeIn.setOnFinished(e -> {
+                chatVisible = true;
+                animationInProgress = false;
+                System.out.println("Fade in complete. Chat is now visible.");
+                
+                // Focus on input field
+                Platform.runLater(() -> messageInput.requestFocus());
+            });
             fadeIn.play();
-            
-            // Focus on input field
-            Platform.runLater(() -> messageInput.requestFocus());
         } else {
-            // Hide chat panel with animation
+            // Hide chat panel
             FadeTransition fadeOut = new FadeTransition(Duration.millis(300), chatPanel);
             fadeOut.setFromValue(1);
             fadeOut.setToValue(0);
             fadeOut.setOnFinished(e -> {
                 chatPanel.setVisible(false);
                 chatPanel.setManaged(false);
+                chatVisible = false;
+                animationInProgress = false;
+                System.out.println("Fade out complete. Chat is now hidden.");
             });
             fadeOut.play();
         }

@@ -7,11 +7,12 @@
 <?import javafx.scene.shape.Circle?>
 
 <StackPane fx:id="chatbotContainer" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.ChatbotController" 
-           pickOnBounds="false">
+           pickOnBounds="true">
     <children>
-        <!-- Chat Toggle Button with robot icon -->
-        <Button fx:id="toggleChatButton" styleClass="chat-toggle-button" 
-                StackPane.alignment="TOP_RIGHT" pickOnBounds="true" focusTraversable="false">
+        <!-- Chat Toggle Button with robot icon - Positioned to be always clickable -->
+        <Button fx:id="toggleChatButton" styleClass="chat-toggle-button"
+                StackPane.alignment="TOP_RIGHT" focusTraversable="false"
+                mnemonicParsing="false">
             <StackPane.margin>
                 <Insets top="20.0" right="20.0" />
             </StackPane.margin>
@@ -33,7 +34,8 @@
                     <Text text="Powered by Gemini AI" styleClass="chat-header-subtitle"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <Button fx:id="minimizeButton" styleClass="chat-minimize-button" text="−" />
+                <Button fx:id="minimizeButton" styleClass="chat-minimize-button" text="−"
+                        focusTraversable="false" mnemonicParsing="false"/>
             </HBox>
             
             <!-- Chat Messages Area with improved scrolling -->
@@ -45,7 +47,8 @@
             <HBox spacing="10" alignment="CENTER" VBox.vgrow="NEVER" styleClass="chat-input-container">
                 <TextField fx:id="messageInput" promptText="Ask about raffles, NFTs, or marketplace..." 
                            HBox.hgrow="ALWAYS" styleClass="chat-input" />
-                <Button fx:id="sendButton" styleClass="chat-send-button">
+                <Button fx:id="sendButton" styleClass="chat-send-button"
+                        focusTraversable="false" mnemonicParsing="false">
                     <graphic>
                         <Text text="➤" styleClass="send-icon"/>
                     </graphic>

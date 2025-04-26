@@ -39,17 +39,26 @@
 }
 
 .chat-minimize-button {
-    -fx-background-color: transparent;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
     -fx-text-fill: white;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
-    -fx-padding: 1 6;
-    -fx-background-radius: 50%;
+    -fx-padding: 2px 8px;
+    -fx-background-radius: 4px;
+    -fx-min-width: 28px;
+    -fx-min-height: 28px;
+    -fx-max-width: 28px;
+    -fx-max-height: 28px;
+    -fx-border-radius: 4px;
 }
 
 .chat-minimize-button:hover {
-    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-background-color: rgba(255, 255, 255, 0.25);
+}
+
+.chat-minimize-button:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.4);
 }
 
 .chat-area {
@@ -117,11 +126,17 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 2);
     -fx-padding: 0;
     -fx-content-display: graphic-only;
+    -fx-border-width: 0;
 }
 
 .chat-send-button:hover {
     -fx-background-color: #45a049;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 5, 0, 0, 3);
+}
+
+.chat-send-button:pressed {
+    -fx-background-color: #2e7d32;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.5), 3, 0, 0, 1);
 }
 
 .send-icon {
@@ -130,25 +145,35 @@
 }
 
 .chat-toggle-button {
-    -fx-background-color: #4528dc;
+    -fx-background-color: #4caf50;
     -fx-background-radius: 50%;
     -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-min-width: 50px;
-    -fx-min-height: 50px;
-    -fx-max-width: 50px;
-    -fx-max-height: 50px;
+    -fx-min-width: 56px;
+    -fx-min-height: 56px;
+    -fx-max-width: 56px;
+    -fx-max-height: 56px;
     -fx-cursor: hand;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.4), 8, 0, 0, 2);
-    -fx-opacity: 0.9;
+    -fx-opacity: 1.0;
     -fx-padding: 0;
     -fx-content-display: graphic-only;
+    -fx-border-width: 0;
+    -fx-focus-traversable: false;
 }
 
 .chat-toggle-button:hover {
-    -fx-background-color: #4e16b3;
+    -fx-background-color: #43a047;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 10, 0, 0, 3);
-    -fx-opacity: 1.0;
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.chat-toggle-button:pressed {
+    -fx-background-color: #388e3c;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 2);
+    -fx-scale-x: 0.95;
+    -fx-scale-y: 0.95;
 }
 
 /* Message styling */

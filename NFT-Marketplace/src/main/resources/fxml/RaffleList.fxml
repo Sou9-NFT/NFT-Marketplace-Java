@@ -61,10 +61,10 @@
         </VBox>
     </center>
     
-    <!-- Chatbot positioned in a way that doesn't interfere with scrolling -->
+    <!-- Chatbot component in its own dedicated container -->
     <right>
-        <StackPane pickOnBounds="false">
+        <Pane>
             <fx:include source="ChatbotComponent.fxml" />
-        </StackPane>
+        </Pane>
     </right>
 </BorderPane>
