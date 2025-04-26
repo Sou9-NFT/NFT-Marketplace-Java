@@ -15,6 +15,7 @@ import org.esprit.models.User;
 import org.esprit.services.ArtworkService;
 import org.esprit.services.BetSessionService;
 import org.esprit.services.BidService;
+import org.esprit.utils.CryptoService;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -132,6 +133,7 @@ public class MyBetSessionsController implements Initializable {
     private BetSessionService betSessionService;
     private User currentUser;
     private ArtworkService artworkService;
+    private CryptoService cryptoService;
 
     /**
      * Sets the current user for this controller and refreshes the bet sessions
@@ -150,13 +152,14 @@ public class MyBetSessionsController implements Initializable {
         loadMarketplaceBetSessions();
         loadMyBetSessions();
     }
-    
-    @Override
+      @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize services
         betSessionService = new BetSessionService();
         artworkService = new ArtworkService();
-          // Configure TAB 1: Marketplace table columns
+        cryptoService = new CryptoService();
+        
+        // Configure TAB 1: Marketplace table columns
         marketplaceArtworkColumn.setCellValueFactory(cellData -> {
             Artwork artwork = cellData.getValue().getArtwork();
             return artwork != null ? 
@@ -505,16 +508,24 @@ public class MyBetSessionsController implements Initializable {
         addField(basicInfoGrid, "Creator:", session.getAuthor() != null ? session.getAuthor().getName() : "N/A", row++);
         addField(basicInfoGrid, "Status:", capitalizeFirstLetter(session.getStatus()), row++);
         addField(basicInfoGrid, "Mystery Mode:", session.isMysteriousMode() ? "Activated" : "Disabled", row++);
-        
-        // Price info section with header
+          // Price info section with header
         javafx.scene.control.Label priceHeaderLabel = new javafx.scene.control.Label("Price Information");
         priceHeaderLabel.setStyle(headerStyle);
         
-        javafx.scene.layout.GridPane priceInfoGrid = createStyledInfoGrid();
-        row = 0;
-          // Add price info fields
-        addField(priceInfoGrid, "Initial price:", String.format("%.2f Dannous", session.getInitialPrice()), row++);
-        addField(priceInfoGrid, "Current price:", String.format("%.2f Dannous", session.getCurrentPrice()), row++);
+        javafx.scene.layout.GridPane priceInfoGrid = createStyledInfoGrid();        row = 0;
+        
+        // Fetch ETH price (only once for both price displays)
+        double ethPrice = cryptoService.fetchEthereumPrice();
+          // Add price info fields with both Dannous and ETH equivalent
+        double initialPriceInDannous = session.getInitialPrice();
+        double currentPriceInDannous = session.getCurrentPrice();
+        
+        // Use the service to format prices with ETH equivalent
+        String initialPriceText = cryptoService.formatPriceWithEth(initialPriceInDannous);
+        String currentPriceText = cryptoService.formatPriceWithEth(currentPriceInDannous);
+        
+        addField(priceInfoGrid, "Initial price:", initialPriceText, row++);
+        addField(priceInfoGrid, "Current price:", currentPriceText, row++);
         
         // Description section with header
         javafx.scene.control.Label descHeaderLabel = new javafx.scene.control.Label("Description");
@@ -637,19 +648,44 @@ public class MyBetSessionsController implements Initializable {
         grid.setPadding(new javafx.geometry.Insets(20, 20, 20, 20));
         grid.setHgap(10);
         grid.setVgap(10);
-        
-        // Show current information
-        grid.add(new javafx.scene.control.Label("Artwork:"), 0, 0);
+          // Show current information        grid.add(new javafx.scene.control.Label("Artwork:"), 0, 0);
         grid.add(new javafx.scene.control.Label(session.getArtwork() != null ? session.getArtwork().getTitle() : "N/A"), 1, 0);
+          // Fetch ETH price for display
+        double ethPrice = cryptoService.fetchEthereumPrice();
+        double currentPriceInDannous = session.getCurrentPrice();
+        
+        // Use the service to format price with ETH equivalent
+        String currentPriceText = cryptoService.formatPriceWithEth(currentPriceInDannous);
         
         grid.add(new javafx.scene.control.Label("Current price:"), 0, 1);
-        grid.add(new javafx.scene.control.Label(String.format("%.2f", session.getCurrentPrice())), 1, 1);
-        
-        // Add bid input field
-        grid.add(new javafx.scene.control.Label("Your bid:"), 0, 2);
+        grid.add(new javafx.scene.control.Label(currentPriceText), 1, 1);
+          // Add bid input field
+        grid.add(new javafx.scene.control.Label("Your bid (Dannous):"), 0, 2);
         javafx.scene.control.TextField bidField = new javafx.scene.control.TextField();
         bidField.setPromptText("Enter amount higher than current price");
         grid.add(bidField, 1, 2);
+        
+        // Add ETH equivalent display
+        javafx.scene.control.Label ethEquivalentLabel = new javafx.scene.control.Label("");
+        ethEquivalentLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555555;");        grid.add(new javafx.scene.control.Label("ETH Equivalent:"), 0, 3);
+        grid.add(ethEquivalentLabel, 1, 3);
+        
+        // Add final copy of ethPrice for lambda
+        final double displayEthPrice = ethPrice;
+        // Update ETH equivalent on bid amount change
+        bidField.textProperty().addListener((obs, oldValue, newValue) -> {
+            try {
+                double bidAmount = Double.parseDouble(newValue);
+                if (displayEthPrice > 0) {
+                    double ethEquivalent = cryptoService.convertDannousToEth(bidAmount);
+                    ethEquivalentLabel.setText(String.format("≈ %.8f ETH", ethEquivalent));
+                } else {
+                    ethEquivalentLabel.setText("ETH conversion unavailable");
+                }
+            } catch (NumberFormatException e) {
+                ethEquivalentLabel.setText("");
+            }
+        });
         
         // Add buttons
         javafx.scene.control.Button submitButton = new javafx.scene.control.Button("Submit Bid");
@@ -1169,9 +1205,7 @@ public class MyBetSessionsController implements Initializable {
                 setGraphic(empty ? null : viewButton);
             }
         });
-    }
-
-    private boolean canUserPlaceBid(User user, double bidAmount) {
+    }    private boolean canUserPlaceBid(User user, double bidAmount) {
         if (user == null || user.getBalance() == null) {
             Alert alert = new Alert(AlertType.ERROR, "User or balance not found.");
             alert.showAndWait();
