@@ -32,6 +32,7 @@
         <Button fx:id="participateButton" text="Participate" onAction="#handleParticipate"/>
         <Button fx:id="manageButton" text="Manage" onAction="#handleManage"/>
         <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete"/>
+        <Button fx:id="downloadPdfButton" text="Download PDF" onAction="#handleDownloadPdf"/>
         <Button text="Close" onAction="#handleClose"/>
     </HBox>
 </VBox>

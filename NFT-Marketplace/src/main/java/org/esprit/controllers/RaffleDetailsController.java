@@ -12,6 +12,7 @@ import org.esprit.models.Participant;
 import org.esprit.models.Raffle;
 import org.esprit.models.User;
 import org.esprit.services.*;
+import org.esprit.utils.PdfGenerator;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -24,6 +25,7 @@ import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.scene.layout.VBox;
 import javafx.scene.canvas.Canvas;
+import java.awt.Desktop;
 
 public class RaffleDetailsController {
     @FXML private ImageView artworkImageView;
@@ -39,6 +41,7 @@ public class RaffleDetailsController {
     @FXML private Button participateButton;
     @FXML private Button manageButton;
     @FXML private Button deleteButton;
+    @FXML private Button downloadPdfButton;
 
     private Raffle raffle;
     private User currentUser;
@@ -370,66 +373,30 @@ public class RaffleDetailsController {
     }
 
     private void updateButtons() {
-        if (currentUser != null) {
-            // Ensure raffle has a creator
-            if (raffle.getCreator() == null) {
-                // Create a temporary creator for this raffle
-                User tempCreator = new User();
-                tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
-                tempCreator.setName("Unknown Creator");
-                raffle.setCreator(tempCreator);
-            }
-            
-            // Check if current user is the creator
-            boolean isCreator = currentUser.getId() == raffle.getCreator().getId();
-            
-            // Check if the raffle is active for participate button
-            boolean isActive = raffle.getStatus().equals("active");
-            boolean isParticipant = raffle.getParticipants().stream()
+        // Show/hide buttons based on permissions
+        boolean isCreator = currentUser != null && raffle.getCreator() != null && 
+                           currentUser.getId() == raffle.getCreator().getId();
+        boolean isActive = raffle.getStatus().equals("active");
+        
+        // Manage & Delete only for creator
+        manageButton.setVisible(isCreator);
+        deleteButton.setVisible(isCreator);
+        
+        // Participate only for non-creators and active raffles
+        if (isActive && currentUser != null && !isCreator) {
+            // Check if user has already participated
+            boolean alreadyParticipated = raffle.getParticipants().stream()
                 .anyMatch(p -> p.getId() == currentUser.getId());
             
-            // Update participate button - creators can't participate in their own raffles
-            participateButton.setDisable(isCreator || isParticipant || !isActive);
-            
-            // Update text to explain why button is disabled
-            String buttonText;
-            if (isCreator) {
-                buttonText = "Can't Join Your Own Raffle";
-            } else if (isParticipant) {
-                buttonText = "Already Participating";
-            } else if (!isActive) {
-                buttonText = "Raffle " + raffle.getStatus();
-            } else {
-                buttonText = "Participate";
-            }
-            participateButton.setText(buttonText);
-            
-            // Always show participate button
-            participateButton.setVisible(true);
-            participateButton.setManaged(true);
-            
-            // Only show manage and delete buttons to the creator
-            manageButton.setVisible(isCreator);
-            deleteButton.setVisible(isCreator);
-            manageButton.setManaged(isCreator);
-            deleteButton.setManaged(isCreator);
-            
-            // Debug info
-            System.out.println("Buttons visibility updated:");
-            System.out.println("Is creator: " + isCreator);
-            System.out.println("Participate button visible: " + participateButton.isVisible());
-            System.out.println("Manage button visible: " + manageButton.isVisible());
-            System.out.println("Delete button visible: " + deleteButton.isVisible());
+            participateButton.setVisible(!alreadyParticipated);
+            participateButton.setText(alreadyParticipated ? "Already Joined" : "Participate");
+            participateButton.setDisable(alreadyParticipated);
         } else {
-            // If not logged in, hide all action buttons
             participateButton.setVisible(false);
-            manageButton.setVisible(false);
-            deleteButton.setVisible(false);
-            
-            participateButton.setManaged(false);
-            manageButton.setManaged(false);
-            deleteButton.setManaged(false);
         }
+        
+        // Download PDF button is always visible for all users
+        downloadPdfButton.setVisible(true);
     }
 
     @FXML
@@ -644,6 +611,59 @@ public class RaffleDetailsController {
         this.currentUser = user;
         if (raffle != null) {
             updateButtons();
+        }
+    }
+
+    /**
+     * Handles the download PDF button action.
+     * Generates a PDF report for the current raffle and opens it.
+     */
+    @FXML
+    private void handleDownloadPdf() {
+        try {
+            Artwork artwork = null;
+            try {
+                artwork = artworkService.getOne(raffle.getArtworkId());
+            } catch (Exception e) {
+                System.err.println("Error loading artwork for PDF: " + e.getMessage());
+            }
+            
+            // Generate the PDF
+            String pdfPath = PdfGenerator.generateRaffleReport(raffle, artwork, currentUser);
+            
+            // Try to open the PDF with the default system viewer
+            File pdfFile = new File(pdfPath);
+            if (pdfFile.exists() && Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().open(pdfFile);
+                    
+                    // Show success message
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("PDF Generated");
+                    alert.setHeaderText(null);
+                    alert.setContentText("PDF report has been generated and opened. You can save it to your preferred location.");
+                    alert.showAndWait();
+                } catch (Exception e) {
+                    System.err.println("Error opening PDF: " + e.getMessage());
+                    
+                    // If we can't open it automatically, tell the user where it is
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("PDF Generated");
+                    alert.setHeaderText(null);
+                    alert.setContentText("PDF report has been generated at: " + pdfPath + "\n\nPlease open it manually to view and save it.");
+                    alert.showAndWait();
+                }
+            } else {
+                // If Desktop is not supported, just show the file location
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("PDF Generated");
+                alert.setHeaderText(null);
+                alert.setContentText("PDF report has been generated at: " + pdfPath);
+                alert.showAndWait();
+            }
+        } catch (Exception e) {
+            showError("Error generating PDF: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
