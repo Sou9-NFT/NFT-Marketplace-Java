@@ -19,8 +19,8 @@
 					<Image url="@../kit/icon.png"/>
 				</ImageView>
 				<Label text="Sou9 NFT" textFill="WHITE" style="-fx-font-weight: bold; -fx-font-size: 18px;"/>
-				<!-- Navigation buttons -->
-				<Button fx:id="profileButton" text="My Profile" onAction="#handleProfileButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<!-- Navigation buttons -->				<Button fx:id="profileButton" text="My Profile" onAction="#handleProfileButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="blogsButton" text="Blogs" onAction="#handleBlogsButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="rafflesButton" text="Raffles" onAction="#handleRafflesButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="artworksButton" text="Artworks" onAction="#handleArtworksButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="marketplaceButton" text="Marketplace" onAction="#handleMarketplaceButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
