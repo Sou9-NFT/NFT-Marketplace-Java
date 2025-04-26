@@ -164,3 +164,27 @@
     font-size: 14px;
     -fx-wrap-text: true;
 }
+
+.comment-delete-button {
+    -fx-background-color: transparent;
+    background-color: transparent;
+    -fx-text-fill: #636e72;
+    color: #636e72;
+    -fx-font-size: 16;
+    font-size: 16px;
+    -fx-font-weight: bold;
+    font-weight: bold;
+    -fx-padding: 2 8;
+    padding: 2px 8px;
+    -fx-cursor: hand;
+    cursor: pointer;
+    -fx-border-radius: 4;
+    border-radius: 4px;
+}
+
+.comment-delete-button:hover {
+    -fx-background-color: #ff7675;
+    background-color: #ff7675;
+    -fx-text-fill: white;
+    color: white;
+}

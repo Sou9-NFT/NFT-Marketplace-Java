@@ -6,11 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="fcec73b1-e0db-46ed-82d5-5664b449271f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogDetailController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogDetailController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/CreateBlogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/CreateBlogController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/BlogDetail.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/BlogDetail.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/CreateBlog.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/CreateBlog.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/models/Comment.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/models/Comment.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/styles/blog.css" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/styles/blog.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -203,7 +200,7 @@
       <workItem from="1745617638423" duration="1616000" />
       <workItem from="1745666541129" duration="141000" />
       <workItem from="1745667073775" duration="1288000" />
-      <workItem from="1745668610365" duration="8672000" />
+      <workItem from="1745668610365" duration="10176000" />
     </task>
     <servers />
   </component>

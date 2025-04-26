@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -24,6 +25,7 @@ import org.esprit.services.TranslationService;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
+
 
 public class BlogDetailController implements Initializable {
     @FXML private ImageView authorProfilePicture;
@@ -147,19 +149,19 @@ public class BlogDetailController implements Initializable {
             updateCurrentUserProfilePicture();
         }
     }    private void setupCommentsList() {
-        commentsListView.setCellFactory(lv -> new ListCell<Comment>() {
-            private VBox container;
+        commentsListView.setCellFactory(lv -> new ListCell<Comment>() {            private VBox container;
             private Label nameLabel;
             private Label dateLabel;
             private Text contentText;
             private ImageView profilePic;
+            private Button deleteButton;
 
             {
                 container = new VBox(5);
                 container.getStyleClass().add("comment-container");
                 
-                HBox header = new HBox(10);
-                header.getStyleClass().add("comment-header");
+                HBox header = new HBox(10);                header.getStyleClass().add("comment-header");
+                header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
                 
                 profilePic = new ImageView();
                 profilePic.setFitHeight(32);
@@ -169,12 +171,20 @@ public class BlogDetailController implements Initializable {
                 VBox userInfo = new VBox(2);
                 nameLabel = new Label();
                 nameLabel.getStyleClass().add("comment-author");
-                
-                dateLabel = new Label();
+                  dateLabel = new Label();
                 dateLabel.getStyleClass().add("comment-date");
+                
+                deleteButton = new Button("×");
+                deleteButton.getStyleClass().addAll("delete-button", "comment-delete-button");
+                deleteButton.setVisible(false); // Initially hidden
                 
                 userInfo.getChildren().addAll(nameLabel, dateLabel);
                 header.getChildren().addAll(profilePic, userInfo);
+                
+                // Add delete button with spring to push it to the right
+                Region spacer = new Region();
+                HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+                header.getChildren().addAll(spacer, deleteButton);
                 
                 contentText = new Text();
                 contentText.getStyleClass().add("comment-content");
@@ -191,8 +201,7 @@ public class BlogDetailController implements Initializable {
                     setText(null);
                     setGraphic(null);                } else {
                     nameLabel.setText(comment.getUser().getName());
-                    dateLabel.setText(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")));
-                    contentText.setText(comment.getContent());
+                    dateLabel.setText(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")));                    contentText.setText(comment.getContent());
                     
                     // Load user profile picture
                     String profilePicPath = UPLOAD_DIR + "user_" + comment.getUser().getId() + "_icon.png";
@@ -202,7 +211,29 @@ public class BlogDetailController implements Initializable {
                     } catch (Exception e) {
                         profilePic.setImage(new Image(getClass().getResourceAsStream("/assets/default/profile.png")));
                     }
-                      setGraphic(container);
+                      // Show delete button only for comment author
+                    deleteButton.setVisible(currentUser != null && currentUser.getId() == comment.getUser().getId());
+                    
+                    // Configure delete button action
+                    deleteButton.setOnAction(e -> {
+                        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+                        confirmDialog.setTitle("Delete Comment");
+                        confirmDialog.setHeaderText(null);
+                        confirmDialog.setContentText("Are you sure you want to delete this comment?");
+                        
+                        confirmDialog.showAndWait().ifPresent(response -> {
+                            if (response == ButtonType.OK) {                                try {
+                                    commentService.delete(comment);
+                                    refreshComments();
+                                } catch (Exception ex) {
+                                    showAlert(Alert.AlertType.ERROR, "Error", 
+                                        "Failed to delete comment: " + ex.getMessage());
+                                }
+                            }
+                        });
+                    });
+                    
+                    setGraphic(container);
                 }
             }
         });
