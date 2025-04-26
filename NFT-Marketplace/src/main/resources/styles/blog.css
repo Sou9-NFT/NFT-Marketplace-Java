@@ -97,3 +97,70 @@
     -fx-border-color: #4528dc;
     border-color: #4528dc;
 }
+
+/* Comments List Styles */
+.comments-list {
+    -fx-background-color: transparent;
+    background-color: transparent;
+    -fx-padding: 10;
+    padding: 10px;
+    -fx-background-insets: 0;
+    background-insets: 0;
+}
+
+.comments-list .list-cell {
+    -fx-background-color: transparent;
+    background-color: transparent;
+    -fx-padding: 5;
+    padding: 5px;
+}
+
+.comment-container {
+    -fx-background-color: #f8f9fa;
+    background-color: #f8f9fa;
+    -fx-padding: 15;
+    padding: 15px;
+    -fx-spacing: 8;
+    -fx-background-radius: 8;
+    border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 4, 0, 0, 1);
+}
+
+.comment-container:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 8, 0, 0, 2);
+}
+
+.comment-header {
+    -fx-spacing: 10;
+    -fx-alignment: center-left;
+}
+
+.comment-profile-pic {
+    -fx-background-radius: 16;
+    background-radius: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
+}
+
+.comment-author {
+    -fx-font-weight: bold;
+    font-weight: bold;
+    -fx-text-fill: #2d3436;
+    color: #2d3436;
+    -fx-font-size: 14;
+    font-size: 14px;
+}
+
+.comment-date {
+    -fx-text-fill: #636e72;
+    color: #636e72;
+    -fx-font-size: 12;
+    font-size: 12px;
+}
+
+.comment-content {
+    -fx-text-fill: #2d3436;
+    color: #2d3436;
+    -fx-font-size: 14;
+    font-size: 14px;
+    -fx-wrap-text: true;
+}

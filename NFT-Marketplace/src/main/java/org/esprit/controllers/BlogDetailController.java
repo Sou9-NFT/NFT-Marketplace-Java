@@ -8,8 +8,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.geometry.Insets;
 import javafx.collections.FXCollections;
 import java.time.format.DateTimeFormatter;
 import org.esprit.models.Blog;
@@ -17,6 +20,7 @@ import org.esprit.models.User;
 import org.esprit.models.Comment;
 import org.esprit.services.BlogService;
 import org.esprit.services.CommentService;
+import org.esprit.services.TranslationService;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -27,22 +31,71 @@ public class BlogDetailController implements Initializable {
     @FXML private Label postDateLabel;
     @FXML private Text blogTitleText;
     @FXML private ImageView blogImage;
-    @FXML private Text blogContentText;
-    @FXML private ImageView currentUserProfilePicture;
+    @FXML private Text blogContentText;    @FXML private ImageView currentUserProfilePicture;
     @FXML private TextArea commentTextArea;
     @FXML private ListView<Comment> commentsListView;
+    @FXML private ComboBox<String> languageComboBox;
     
     private BlogService blogService;
     private CommentService commentService;
+    private TranslationService translationService;
     private Blog currentBlog;
     private User currentUser;
     private final String UPLOAD_DIR = "src/main/resources/uploads/";
-    
-    @Override
+      @Override
     public void initialize(URL url, ResourceBundle rb) {
         blogService = new BlogService();
         commentService = new CommentService();
+        translationService = new TranslationService();
         setupCommentsList();
+        setupLanguageComboBox();
+    }
+    
+    private void setupLanguageComboBox() {
+        languageComboBox.setItems(FXCollections.observableArrayList(
+            "French", "Spanish", "German", "Italian", "Arabic"
+        ));
+    }
+    
+    @FXML
+    private void handleTranslate() {
+        if (currentBlog == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "No blog post selected");
+            return;
+        }
+
+        String selectedLanguage = languageComboBox.getValue();
+        if (selectedLanguage == null || selectedLanguage.isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Warning", "Please select a language first!");
+            return;
+        }
+
+        try {
+            String targetLangCode = translationService.getLanguageCode(selectedLanguage);
+            
+            // Translate title
+            String translatedTitle = translationService.translate(
+                currentBlog.getTitle(), targetLangCode, "en"
+            );
+            if (translatedTitle != null) {
+                blogTitleText.setText(translatedTitle);
+            }
+            
+            // Translate content
+            String translatedContent = translationService.translate(
+                currentBlog.getContent(), targetLangCode, "en"
+            );
+            if (translatedContent != null) {
+                blogContentText.setText(translatedContent);
+            }
+            
+            showAlert(Alert.AlertType.INFORMATION, "Success", 
+                "Blog has been translated to " + selectedLanguage);
+            
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Translation Error", 
+                "Failed to translate the blog: " + e.getMessage());
+        }
     }
     
     public void setBlog(Blog blog) {
@@ -93,19 +146,63 @@ public class BlogDetailController implements Initializable {
             // Load current user profile picture
             updateCurrentUserProfilePicture();
         }
-    }
-    
-    private void setupCommentsList() {
+    }    private void setupCommentsList() {
         commentsListView.setCellFactory(lv -> new ListCell<Comment>() {
+            private VBox container;
+            private Label nameLabel;
+            private Label dateLabel;
+            private Text contentText;
+            private ImageView profilePic;
+
+            {
+                container = new VBox(5);
+                container.getStyleClass().add("comment-container");
+                
+                HBox header = new HBox(10);
+                header.getStyleClass().add("comment-header");
+                
+                profilePic = new ImageView();
+                profilePic.setFitHeight(32);
+                profilePic.setFitWidth(32);
+                profilePic.getStyleClass().add("comment-profile-pic");
+                
+                VBox userInfo = new VBox(2);
+                nameLabel = new Label();
+                nameLabel.getStyleClass().add("comment-author");
+                
+                dateLabel = new Label();
+                dateLabel.getStyleClass().add("comment-date");
+                
+                userInfo.getChildren().addAll(nameLabel, dateLabel);
+                header.getChildren().addAll(profilePic, userInfo);
+                
+                contentText = new Text();
+                contentText.getStyleClass().add("comment-content");
+                contentText.wrappingWidthProperty().bind(widthProperty().subtract(50));
+                
+                container.getChildren().addAll(header, contentText);
+                container.setPadding(new Insets(10));
+            }
+
             @Override
             protected void updateItem(Comment comment, boolean empty) {
                 super.updateItem(comment, empty);
                 if (empty || comment == null) {
                     setText(null);
-                    setGraphic(null);
-                } else {
-                    // Create comment view...
-                    // (Comment cell factory implementation)
+                    setGraphic(null);                } else {
+                    nameLabel.setText(comment.getUser().getName());
+                    dateLabel.setText(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")));
+                    contentText.setText(comment.getContent());
+                    
+                    // Load user profile picture
+                    String profilePicPath = UPLOAD_DIR + "user_" + comment.getUser().getId() + "_icon.png";
+                    try {
+                        Image image = new Image(new File(profilePicPath).toURI().toString());
+                        profilePic.setImage(image);
+                    } catch (Exception e) {
+                        profilePic.setImage(new Image(getClass().getResourceAsStream("/assets/default/profile.png")));
+                    }
+                      setGraphic(container);
                 }
             }
         });
@@ -179,11 +276,12 @@ public class BlogDetailController implements Initializable {
         this.currentUser = user;
         updateCurrentUserProfilePicture();
     }
-    
-    private void showAlert(Alert.AlertType type, String title, String content) {
+      private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
+        alert.setHeaderText(null); // No header text for cleaner look
         alert.setContentText(content);
         alert.showAndWait();
     }
 }
+

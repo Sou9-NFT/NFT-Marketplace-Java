@@ -44,10 +44,18 @@
 
                 <!-- Blog Image -->
                 <ImageView fx:id="blogImage" fitWidth="800" preserveRatio="true"
-                           styleClass="blog-detail-image"/>
-
-                <!-- Blog Content -->
+                           styleClass="blog-detail-image"/>                <!-- Blog Content -->
                 <Text fx:id="blogContentText" styleClass="blog-detail-content"/>
+
+                <!-- Translation Section -->
+                <VBox spacing="10" styleClass="translation-section">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <ComboBox fx:id="languageComboBox" promptText="Select language" 
+                                 styleClass="language-combo"/>
+                        <Button fx:id="translateButton" text="Translate" 
+                                onAction="#handleTranslate" styleClass="secondary-button"/>
+                    </HBox>
+                </VBox>
 
                 <!-- Comments Section -->
                 <VBox spacing="15" styleClass="comments-section">

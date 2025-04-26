@@ -54,6 +54,8 @@ import javafx.scene.Node;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.shape.Circle;
+import org.esprit.services.TranslationService;
+
 import java.io.File;
 
 public class BlogController implements Initializable {
@@ -75,10 +77,9 @@ public class BlogController implements Initializable {
     @FXML private TextArea commentTextArea;
     @FXML private Button addCommentButton;
     @FXML private ListView<Comment> commentsListView;
-    @FXML private ImageView currentUserProfilePicture;
-
-    private BlogService blogService;
+    @FXML private ImageView currentUserProfilePicture;    private BlogService blogService;
     private CommentService commentService;
+    private TranslationService translationService;
     private Blog currentBlog;
     private User currentUser;
     private boolean isAdminMode = false;
@@ -99,10 +100,10 @@ public class BlogController implements Initializable {
             blogTableView.setVisible(isAdmin);
         }
         refreshBlogList();
-    }    @Override
-    public void initialize(URL url, ResourceBundle rb) {
+    }    @Override    public void initialize(URL url, ResourceBundle rb) {
         blogService = new BlogService();
         commentService = new CommentService();
+        translationService = new TranslationService();
         languageComboBox.setItems(languages);
 
         // Setup blog list view with profile pictures
@@ -504,9 +505,7 @@ public class BlogController implements Initializable {
                         "Unexpected error while uploading image: " + e.getMessage());
             }
         }
-    }
-
-    @FXML
+    }    @FXML
     private void handleTranslate() {
         String selectedLanguage = languageComboBox.getValue();
         if (selectedLanguage == null || selectedLanguage.isEmpty()) {
@@ -514,10 +513,36 @@ public class BlogController implements Initializable {
             return;
         }
 
-        // TODO: Implement translation logic here
-        // This would typically involve calling a translation service
-        showAlert(Alert.AlertType.INFORMATION, "Information",
-                "Translation feature will be implemented soon!");
+        if (currentBlog == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "No blog selected for translation!");
+            return;
+        }
+
+        try {
+            String targetLangCode = translationService.getLanguageCode(selectedLanguage);
+            
+            // Translate title
+            String translatedTitle = translationService.translate(currentBlog.getTitle(), targetLangCode, "en");
+            if (translatedTitle != null) {
+                titleField.setText(translatedTitle);
+            }
+            
+            // Translate content
+            String translatedContent = translationService.translate(currentBlog.getContent(), targetLangCode, "en");
+            if (translatedContent != null) {
+                contentArea.setText(translatedContent);
+            }
+            
+            // Store the translation language in the blog
+            currentBlog.setTranslationLanguage(selectedLanguage);
+            
+            showAlert(Alert.AlertType.INFORMATION, "Success", 
+                    "Blog has been translated to " + selectedLanguage + " successfully!");
+            
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Translation Error", 
+                    "Failed to translate the blog: " + e.getMessage());
+        }
     }
 
     @FXML
