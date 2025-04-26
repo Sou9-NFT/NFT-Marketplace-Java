@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="fcec73b1-e0db-46ed-82d5-5664b449271f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,6 +56,8 @@
     "Application.TestCrudParticipant.executor": "Run",
     "Application.TestCrudRaffle.executor": "Run",
     "Application.TestCrudUser.executor": "Run",
+    "Maven.NFT-Marketplace [--version].executor": "Run",
+    "Maven.NFT-Marketplace [clean,compile].executor": "Run",
     "Maven.NFT-Marketplace [clean].executor": "Run",
     "Maven.NFT-Marketplace [javafx:run].executor": "Run",
     "Maven.NFT-Marketplace [org.openjfx:javafx-maven-plugin:0.0.8:run].executor": "Run",
@@ -75,8 +78,9 @@
 }]]></component>
   <component name="RunAnythingCache">
     <option name="myCommands">
-      <command value="mvn clean compile" />
+      <command value="mvn --version" />
       <command value="mvn clean" />
+      <command value="mvn clean compile" />
       <command value="mvn javafx:run" />
     </option>
   </component>
@@ -188,6 +192,8 @@
       <workItem from="1744568453169" duration="12825000" />
       <workItem from="1744573347267" duration="3797000" />
       <workItem from="1745221743705" duration="2611000" />
+      <workItem from="1745659594078" duration="386000" />
+      <workItem from="1745660132935" duration="1123000" />
     </task>
     <servers />
   </component>

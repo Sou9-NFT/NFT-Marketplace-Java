@@ -87,8 +87,6 @@
                     <compilerArgs>
                         <arg>--enable-preview</arg>
                     </compilerArgs>
-                    <fork>true</fork>
-                    <executable>C:\Users\sanal\.jdks\corretto-22.0.2\bin\javac.exe</executable>
                 </configuration>
             </plugin>
             <plugin>
@@ -97,7 +95,6 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>${mainClass}</mainClass>
-                    <executable>C:\Users\sanal\.jdks\corretto-22.0.2\bin\java.exe</executable>
                     <options>
                         <option>--enable-preview</option>
                         <option>--add-modules</option>
