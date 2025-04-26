@@ -5,54 +5,66 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
 
-<VBox spacing="20" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.RaffleListController">
-    <!-- Header Bar -->
-    <HBox alignment="CENTER_LEFT" style="-fx-background-color: #1e3c72;" spacing="10">
-        <padding>
-            <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-        </padding>
-        <children>
-            <Label text="NFT Marketplace - Raffles" textFill="WHITE">
-                <font>
-                    <Font name="System Bold" size="18.0" />
-                </font>
-            </Label>
-            <Region HBox.hgrow="ALWAYS" />
-            <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" 
-                    style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 3;" 
-                    text="Back">
-                <HBox.margin>
-                    <Insets left="15.0" />
-                </HBox.margin>
-            </Button>
-        </children>
-    </HBox>
-
-    <padding>
-        <Insets top="0" right="20" bottom="20" left="20"/>
-    </padding>
-
-    <!-- Header -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <Label text="Raffles" styleClass="title-label"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Create New Raffle" onAction="#handleCreateRaffle" styleClass="primary-button"/>
-    </HBox>
-
-    <!-- Search and Filter -->
-    <HBox spacing="10" alignment="CENTER_LEFT">
-        <TextField fx:id="searchField" promptText="Search raffles..." prefWidth="300"/>
-        <ComboBox fx:id="statusFilter" promptText="Filter by status"/>
-    </HBox>
-
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.RaffleListController">
     <!-- Main Content -->
-    <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" styleClass="edge-to-edge">
-        <GridPane fx:id="rafflesGrid" hgap="20" vgap="20">
-            <padding>
-                <Insets top="10" right="10" bottom="10" left="10"/>
-            </padding>
-        </GridPane>
-    </ScrollPane>
+    <center>
+        <VBox spacing="20">
+            <!-- Header Bar -->
+            <HBox alignment="CENTER_LEFT" style="-fx-background-color: #1e3c72;" spacing="10">
+                <padding>
+                    <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                </padding>
+                <children>
+                    <Label text="NFT Marketplace - Raffles" textFill="WHITE">
+                        <font>
+                            <Font name="System Bold" size="18.0" />
+                        </font>
+                    </Label>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" 
+                            style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 3;" 
+                            text="Back">
+                        <HBox.margin>
+                            <Insets left="15.0" />
+                        </HBox.margin>
+                    </Button>
+                </children>
+            </HBox>
 
-    <Label fx:id="statusLabel" styleClass="status-label" visible="false"/>
-</VBox>
+            <padding>
+                <Insets top="0" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Header -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Raffles" styleClass="title-label"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button text="Create New Raffle" onAction="#handleCreateRaffle" styleClass="primary-button"/>
+            </HBox>
+
+            <!-- Search and Filter -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <TextField fx:id="searchField" promptText="Search raffles..." prefWidth="300"/>
+                <ComboBox fx:id="statusFilter" promptText="Filter by status"/>
+            </HBox>
+
+            <!-- Main Content -->
+            <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" styleClass="edge-to-edge" fx:id="mainScrollPane">
+                <GridPane fx:id="rafflesGrid" hgap="20" vgap="20">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
+                </GridPane>
+            </ScrollPane>
+
+            <Label fx:id="statusLabel" styleClass="status-label" visible="false"/>
+        </VBox>
+    </center>
+    
+    <!-- Chatbot positioned in a way that doesn't interfere with scrolling -->
+    <right>
+        <StackPane pickOnBounds="false">
+            <fx:include source="ChatbotComponent.fxml" />
+        </StackPane>
+    </right>
+</BorderPane>
