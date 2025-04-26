@@ -47,6 +47,7 @@
 			<Button maxWidth="Infinity" text="System Logs" onAction="#handleSystemLogs" styleClass="sidebar-button" />
 			<Button maxWidth="Infinity" text="Bet Sessions" onAction="#handleBetSessions" styleClass="sidebar-button" />
 			<Button maxWidth="Infinity" text="Artworks" onAction="#handleManageArtworks" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Trade Disputes" onAction="#handleTradeDisputes" styleClass="sidebar-button" />
 		</VBox>
 	</left>
 	<center>

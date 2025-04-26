@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.EditTradeDisputeStatusController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Update Trade Dispute Status" style="-fx-font-size: 24px;"/>
+
+    <GridPane vgap="10" hgap="10">
+        <Label text="Current Status:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label fx:id="currentStatusLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="New Status:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="statusComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Cancel" onAction="#handleCancel"/>
+        <Button text="Update" onAction="#handleUpdate" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+    </HBox>
+</VBox> 
