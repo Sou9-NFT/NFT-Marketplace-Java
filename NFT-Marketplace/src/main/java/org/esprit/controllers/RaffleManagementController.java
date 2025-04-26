@@ -272,24 +272,18 @@ public class RaffleManagementController {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filterRaffles());
     }
 
-    private void loadRaffles() {
+    public void loadRaffles() {
         try {
             List<Raffle> raffles = raffleService.getAllRaffles();
             
             // Ensure each raffle has a creator object
             for (Raffle raffle : raffles) {
-                // If the raffle has no creator, set the current user as creator
-                // This is a temporary fix to prevent NullPointerException
                 if (raffle.getCreator() == null) {
-                    // Enable loading mode to prevent validation during this temporary fix
                     raffle.setLoadingFromDatabase(true);
-                    
                     User tempCreator = new User();
                     tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
                     tempCreator.setName("Unknown Creator");
                     raffle.setCreator(tempCreator);
-                    
-                    // Disable loading mode after setting the property
                     raffle.setLoadingFromDatabase(false);
                 }
             }
@@ -300,7 +294,6 @@ public class RaffleManagementController {
             System.err.println("Error loading raffles: " + e.getMessage());
             e.printStackTrace();
             AlertUtils.showError("Error", "Could not load raffles: " + e.getMessage());
-            // Create empty list if there was an error to avoid NPE
             raffleList = FXCollections.observableArrayList();
             raffleTable.setItems(raffleList);
         }
@@ -453,6 +446,7 @@ public class RaffleManagementController {
             RaffleDetailsController controller = loader.getController();
             controller.setRaffle(raffle);
             controller.setCurrentUser(currentUser);
+            controller.setParentController(this); // Set this controller as parent
             
             Stage stage = new Stage();
             Scene scene = new Scene(detailsView);
