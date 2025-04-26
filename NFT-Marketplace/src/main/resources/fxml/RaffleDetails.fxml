@@ -2,80 +2,37 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.web.WebView?>
 <?import javafx.scene.image.ImageView?>
-<?import javafx.scene.text.Font?>
+<?import javafx.scene.image.Image?>
+<?import javafx.geometry.Insets?>
 
-<VBox spacing="10" alignment="CENTER" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.RaffleDetailsController">
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.esprit.controllers.RaffleDetailsController"
+      spacing="10" styleClass="raffle-details">
+    
     <padding>
-        <Insets top="15" right="20" bottom="15" left="20"/>
+        <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
-    <Label text="Raffle Details" styleClass="title-label"/>
+    <Label fx:id="titleLabel" styleClass="title"/>
+    <TextArea fx:id="descriptionArea" wrapText="true" editable="false"/>
+    <Label fx:id="creatorLabel"/>
+    <Label fx:id="startDateLabel"/>
+    <Label fx:id="endDateLabel"/>
+    <Label fx:id="statusLabel"/>
+    <Label fx:id="artworkIdLabel"/>
+    <Label fx:id="winnerLabel" visible="false"/>
     
-    <ImageView fx:id="artworkImageView" fitWidth="250" fitHeight="150" preserveRatio="true"/>
+    <ImageView fx:id="artworkImageView" fitWidth="300" fitHeight="200" preserveRatio="true"/>
     
-    <GridPane hgap="10" vgap="5">
-        <columnConstraints>
-            <ColumnConstraints hgrow="NEVER" minWidth="100" />
-            <ColumnConstraints hgrow="ALWAYS" />
-        </columnConstraints>
-        
-        <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0" styleClass="detail-label"/>
-        <Label fx:id="titleLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-        
-        <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0" styleClass="detail-label"/>
-        <TextArea fx:id="descriptionArea" 
-                  wrapText="true" 
-                  editable="false"
-                  prefRowCount="2"
-                  maxHeight="60"
-                  GridPane.rowIndex="1" 
-                  GridPane.columnIndex="1"/>
-        
-        <Label text="Creator:" GridPane.rowIndex="2" GridPane.columnIndex="0" styleClass="detail-label"/>
-        <Label fx:id="creatorLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-        
-        <Label text="Start Date:" GridPane.rowIndex="3" GridPane.columnIndex="0" styleClass="detail-label"/>
-        <Label fx:id="startDateLabel" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-        
-        <Label text="End Date:" GridPane.rowIndex="4" GridPane.columnIndex="0" styleClass="detail-label"/>
-        <Label fx:id="endDateLabel" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-        
-        <Label text="Status:" GridPane.rowIndex="5" GridPane.columnIndex="0" styleClass="detail-label"/>
-        <Label fx:id="statusLabel" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-        
-        <Label text="Artwork:" GridPane.rowIndex="6" GridPane.columnIndex="0" styleClass="detail-label"/>
-        <Label fx:id="artworkIdLabel" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-
-        <Label fx:id="winnerLabel" 
-               styleClass="winner-label"
-               visible="false"
-               GridPane.rowIndex="7" 
-               GridPane.columnSpan="2"
-               GridPane.halignment="CENTER"/>
-    </GridPane>
-    
-    <VBox spacing="5" alignment="CENTER_LEFT">
-        <Label text="Participants:" styleClass="subtitle-label"/>
-        <ListView fx:id="participantsListView" prefHeight="100"/>
-    </VBox>
+    <ListView fx:id="participantsListView" prefHeight="100"/>
     
     <HBox spacing="10" alignment="CENTER">
-        <Button fx:id="participateButton" 
-                text="Participate" 
-                onAction="#handleParticipate"
-                styleClass="primary-button"/>
-        <Button fx:id="manageButton"
-                text="Manage Raffle"
-                onAction="#handleManage"
-                styleClass="secondary-button"/>
-        <Button fx:id="deleteButton"
-                text="Delete Raffle"
-                onAction="#handleDelete"
-                styleClass="delete-button"/>
-        <Button text="Close" 
-                onAction="#handleClose"
-                styleClass="secondary-button"/>
+        <Button fx:id="participateButton" text="Participate" onAction="#handleParticipate"/>
+        <Button fx:id="manageButton" text="Manage" onAction="#handleManage"/>
+        <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete"/>
+        <Button fx:id="downloadPdfButton" text="Download PDF" onAction="#handleDownloadPdf"/>
+        <Button text="Close" onAction="#handleClose"/>
     </HBox>
 </VBox>

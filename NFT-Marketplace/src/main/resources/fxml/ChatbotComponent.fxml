@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.shape.Circle?>
+
+<StackPane fx:id="chatbotContainer" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.ChatbotController" 
+           pickOnBounds="true">
+    <children>
+        <!-- Chat Toggle Button with robot icon - Positioned to be always clickable -->
+        <Button fx:id="toggleChatButton" styleClass="chat-toggle-button"
+                StackPane.alignment="TOP_RIGHT" focusTraversable="false"
+                mnemonicParsing="false">
+            <StackPane.margin>
+                <Insets top="20.0" right="20.0" />
+            </StackPane.margin>
+        </Button>
+        
+        <!-- Chat Panel with enhanced styling -->
+        <VBox fx:id="chatPanel" styleClass="chatbot-container" maxWidth="350" maxHeight="450"
+              StackPane.alignment="TOP_RIGHT">
+            <StackPane.margin>
+                <Insets top="80.0" right="20.0" />
+            </StackPane.margin>
+            
+            <!-- Enhanced Chat Header with icon -->
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="chat-header-container">
+                <Circle radius="14" styleClass="chat-header-icon-bg"/>
+                <Text text="💎" styleClass="chat-header-icon"/>
+                <VBox spacing="2">
+                    <Text text="NFT Assistant" styleClass="chat-header-title"/>
+                    <Text text="Powered by Gemini AI" styleClass="chat-header-subtitle"/>
+                </VBox>
+                <Region HBox.hgrow="ALWAYS" />
+                <Button fx:id="minimizeButton" styleClass="chat-minimize-button" text="−"
+                        focusTraversable="false" mnemonicParsing="false"/>
+            </HBox>
+            
+            <!-- Chat Messages Area with improved scrolling -->
+            <ScrollPane fx:id="chatScrollPane" styleClass="chat-area" VBox.vgrow="ALWAYS" fitToWidth="true">
+                <VBox fx:id="chatMessagesBox" />
+            </ScrollPane>
+            
+            <!-- Input Area with send icon instead of text -->
+            <HBox spacing="10" alignment="CENTER" VBox.vgrow="NEVER" styleClass="chat-input-container">
+                <TextField fx:id="messageInput" promptText="Ask about raffles, NFTs, or marketplace..." 
+                           HBox.hgrow="ALWAYS" styleClass="chat-input" />
+                <Button fx:id="sendButton" styleClass="chat-send-button"
+                        focusTraversable="false" mnemonicParsing="false">
+                    <graphic>
+                        <Text text="➤" styleClass="send-icon"/>
+                    </graphic>
+                </Button>
+            </HBox>
+        </VBox>
+    </children>
+</StackPane> 
