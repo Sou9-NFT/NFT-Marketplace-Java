@@ -39,7 +39,6 @@ public class BlogService implements IService<Blog> {
             
             stmt.executeUpdate();
             
-            // Set the generated ID back to the blog object
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     blog.setId(generatedKeys.getInt(1));
@@ -82,7 +81,7 @@ public class BlogService implements IService<Blog> {
     @Override
     public List<Blog> getAll() throws Exception {
         List<Blog> blogs = new ArrayList<>();
-        String sql = "SELECT * FROM blog";
+        String sql = "SELECT * FROM blog ORDER BY date DESC";
         
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -118,10 +117,32 @@ public class BlogService implements IService<Blog> {
     
     public List<Blog> getByUser(User user) throws Exception {
         List<Blog> blogs = new ArrayList<>();
-        String sql = "SELECT * FROM blog WHERE user_id = ?";
+        String sql = "SELECT * FROM blog WHERE user_id = ? ORDER BY date DESC";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, user.getId());
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    blogs.add(mapResultSetToBlog(rs));
+                }
+            }
+        }
+        
+        return blogs;
+    }
+
+    public List<Blog> search(String searchText) throws Exception {
+        List<Blog> blogs = new ArrayList<>();
+        String sql = "SELECT * FROM blog WHERE LOWER(title) LIKE ? OR LOWER(content) LIKE ? " +
+                    "OR EXISTS (SELECT 1 FROM user WHERE id = blog.user_id AND LOWER(name) LIKE ?) " +
+                    "ORDER BY date DESC";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            String searchPattern = "%" + searchText.toLowerCase() + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -150,7 +171,9 @@ public class BlogService implements IService<Blog> {
         blog.setUser(user);
         
         return blog;
-    }    public List<Blog> readAll() throws Exception {
+    }
+
+    public List<Blog> readAll() throws Exception {
         return getAll();
     }
 }
