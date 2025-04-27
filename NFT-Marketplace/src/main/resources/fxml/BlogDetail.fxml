@@ -1,83 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.image.ImageView?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.effect.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.esprit.controllers.BlogDetailController"
-            styleClass="root-pane" stylesheets="@../styles/main.css">
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.esprit.controllers.BlogDetailController">
 
-    <ScrollPane fitToWidth="true" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
-                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-        <VBox spacing="20" styleClass="blog-detail-container">
-            <!-- Header with back button -->
-            <HBox spacing="20" alignment="CENTER_LEFT" styleClass="header-section">
-                <padding>
-                    <Insets top="20" right="30" bottom="20" left="30"/>
-                </padding>
-                <Button fx:id="backButton" text="← Back to Blogs"
-                        onAction="#handleBack" styleClass="secondary-button"/>
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS">
+    <content>
+        <VBox spacing="10">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <!-- Blog header section -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <ImageView fx:id="authorProfilePicture" fitHeight="50" fitWidth="50" />
+                <VBox>
+                    <Label fx:id="authorNameLabel" style="-fx-font-weight: bold"/>
+                    <Label fx:id="postDateLabel" style="-fx-text-fill: #666"/>
+                </VBox>
             </HBox>
 
-            <!-- Blog Content -->
-            <VBox spacing="20" styleClass="blog-content-section">
-                <padding>
-                    <Insets left="30" right="30" bottom="30"/>
-                </padding>
+            <!-- Blog content section -->
+            <Text fx:id="blogTitleText" style="-fx-font-size: 24; -fx-font-weight: bold"/>
+            <ImageView fx:id="blogImage" fitWidth="600" preserveRatio="true"/>
+            <Text fx:id="blogContentText" wrappingWidth="600"/>
 
-                <!-- Author Info -->
-                <HBox spacing="15" alignment="CENTER_LEFT" styleClass="author-section">
-                    <ImageView fx:id="authorProfilePicture" fitHeight="50" fitWidth="50"
-                               styleClass="profile-picture"/>
-                    <VBox spacing="2">
-                        <Label fx:id="authorNameLabel" styleClass="author-name"/>
-                        <Label fx:id="postDateLabel" styleClass="post-date"/>
+            <!-- Translation section -->
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <ComboBox fx:id="languageComboBox" promptText="Select Language"/>
+                <Button text="Translate" onAction="#handleTranslate"/>
+            </HBox>
+
+            <!-- Comments section -->
+            <TitledPane text="Comments" expanded="true">
+                <VBox spacing="10">
+                    <!-- Add comment section -->
+                    <VBox spacing="5">
+                        <TextArea fx:id="commentTextArea" promptText="Write a comment..." prefRowCount="3"/>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <TextField fx:id="gifSearchField" promptText="Search for a GIF..." HBox.hgrow="ALWAYS"/>
+                            <Button text="Search GIFs" onAction="#handleGifSearch"/>
+                            <Button text="Post Comment" onAction="#handleAddComment"/>
+                        </HBox>
+                        <!-- GIF preview section -->
+                        <FlowPane fx:id="gifPreviewPane" hgap="10" vgap="10" prefWrapLength="600"/>
+                        <ImageView fx:id="selectedGifPreview" fitWidth="200" preserveRatio="true" visible="false"/>
+                        <Button fx:id="clearGifButton" text="Clear GIF" visible="false" onAction="#handleClearGif"/>
                     </VBox>
-                </HBox>
 
-                <!-- Blog Title -->
-                <Text fx:id="blogTitleText" styleClass="blog-detail-title"/>
-
-                <!-- Blog Image -->
-                <ImageView fx:id="blogImage" fitWidth="800" preserveRatio="true"
-                           styleClass="blog-detail-image"/>                <!-- Blog Content -->
-                <Text fx:id="blogContentText" styleClass="blog-detail-content"/>
-
-                <!-- Translation Section -->
-                <VBox spacing="10" styleClass="translation-section">
-                    <HBox spacing="10" alignment="CENTER_LEFT">
-                        <ComboBox fx:id="languageComboBox" promptText="Select language" 
-                                 styleClass="language-combo"/>
-                        <Button fx:id="translateButton" text="Translate" 
-                                onAction="#handleTranslate" styleClass="secondary-button"/>
-                    </HBox>
+                    <!-- Comments list -->            <ListView fx:id="commentsListView" VBox.vgrow="ALWAYS" prefHeight="300"/>
                 </VBox>
-
-                <!-- Comments Section -->
-                <VBox spacing="15" styleClass="comments-section">
-                    <Label text="Comments" styleClass="section-header"/>
-
-                    <!-- New Comment -->
-                    <HBox spacing="10" alignment="TOP_LEFT">
-                        <ImageView fx:id="currentUserProfilePicture" fitHeight="40"
-                                   fitWidth="40" styleClass="profile-picture"/>
-                        <VBox spacing="5" HBox.hgrow="ALWAYS">
-                            <TextArea fx:id="commentTextArea" promptText="Write a comment..."
-                                      wrapText="true" prefRowCount="3"/>
-                            <Button fx:id="addCommentButton" text="Add Comment"
-                                    onAction="#handleAddComment" styleClass="primary-button"/>
-                        </VBox>
-                    </HBox>
-
-                    <!-- Comments List -->
-                    <ListView fx:id="commentsListView" VBox.vgrow="ALWAYS"
-                              styleClass="comments-list"/>
-                </VBox>
-            </VBox>
+            </TitledPane>
         </VBox>
+    </content>
     </ScrollPane>
-</AnchorPane>
+</VBox>

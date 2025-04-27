@@ -11,6 +11,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
@@ -21,10 +22,13 @@ import org.esprit.models.User;
 import org.esprit.models.Comment;
 import org.esprit.services.BlogService;
 import org.esprit.services.CommentService;
+import org.esprit.utils.GiphyService;
 import org.esprit.utils.TranslationService;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 
 public class BlogDetailController implements Initializable {
@@ -33,21 +37,31 @@ public class BlogDetailController implements Initializable {
     @FXML private Label postDateLabel;
     @FXML private Text blogTitleText;
     @FXML private ImageView blogImage;
-    @FXML private Text blogContentText;    @FXML private ImageView currentUserProfilePicture;
+    @FXML private Text blogContentText;    
+    @FXML private ImageView currentUserProfilePicture;
     @FXML private TextArea commentTextArea;
     @FXML private ListView<Comment> commentsListView;
     @FXML private ComboBox<String> languageComboBox;
+    @FXML private TextField gifSearchField;
+    @FXML private FlowPane gifPreviewPane;
+    @FXML private ImageView selectedGifPreview;
+    @FXML private Button clearGifButton;
     
     private BlogService blogService;
     private CommentService commentService;
     private TranslationService translationService;
+    private GiphyService giphyService;
     private Blog currentBlog;
     private User currentUser;
+    private String selectedGifUrl;
     private final String UPLOAD_DIR = "src/main/resources/uploads/";
-      @Override
-    public void initialize(URL url, ResourceBundle rb) {        blogService = new BlogService();
+    
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+        blogService = new BlogService();
         commentService = new CommentService();
         translationService = TranslationService.getInstance();
+        giphyService = GiphyService.getInstance();
         setupCommentsList();
         setupLanguageComboBox();
     }
@@ -147,8 +161,11 @@ public class BlogDetailController implements Initializable {
             // Load current user profile picture
             updateCurrentUserProfilePicture();
         }
-    }    private void setupCommentsList() {
-        commentsListView.setCellFactory(lv -> new ListCell<Comment>() {            private VBox container;
+    }    
+    
+    private void setupCommentsList() {
+        commentsListView.setCellFactory(lv -> new ListCell<Comment>() {            
+            private VBox container;
             private Label nameLabel;
             private Label dateLabel;
             private Text contentText;
@@ -159,7 +176,8 @@ public class BlogDetailController implements Initializable {
                 container = new VBox(5);
                 container.getStyleClass().add("comment-container");
                 
-                HBox header = new HBox(10);                header.getStyleClass().add("comment-header");
+                HBox header = new HBox(10);                
+                header.getStyleClass().add("comment-header");
                 header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
                 
                 profilePic = new ImageView();
@@ -170,7 +188,8 @@ public class BlogDetailController implements Initializable {
                 VBox userInfo = new VBox(2);
                 nameLabel = new Label();
                 nameLabel.getStyleClass().add("comment-author");
-                  dateLabel = new Label();
+                
+                dateLabel = new Label();
                 dateLabel.getStyleClass().add("comment-date");
                 
                 deleteButton = new Button("×");
@@ -195,12 +214,45 @@ public class BlogDetailController implements Initializable {
 
             @Override
             protected void updateItem(Comment comment, boolean empty) {
-                super.updateItem(comment, empty);
-                if (empty || comment == null) {
+                super.updateItem(comment, empty);                if (empty || comment == null) {
                     setText(null);
-                    setGraphic(null);                } else {
+                    setGraphic(null);                
+                } else {
+                    // Reset the container's children to just the header
+                    container.getChildren().clear();
+                    
+                    // Recreate and set up the header
+                    HBox header = new HBox(10);
+                    header.getStyleClass().add("comment-header");
+                    header.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                    
+                    // Set up user info
                     nameLabel.setText(comment.getUser().getName());
-                    dateLabel.setText(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")));                    contentText.setText(comment.getContent());
+                    dateLabel.setText(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")));
+                    
+                    VBox userInfo = new VBox(2);
+                    userInfo.getChildren().addAll(nameLabel, dateLabel);
+                    
+                    // Set up delete button and spacer
+                    Region spacer = new Region();
+                    HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+                    
+                    header.getChildren().addAll(profilePic, userInfo, spacer, deleteButton);
+                    container.getChildren().add(header);
+                    
+                    // Add content if present
+                    if (comment.getContent() != null && !comment.getContent().isEmpty()) {
+                        contentText.setText(comment.getContent());
+                        container.getChildren().add(contentText);
+                    }
+                    
+                    // Add GIF if present
+                    if (comment.getGifUrl() != null && !comment.getGifUrl().isEmpty()) {
+                        ImageView gifView = new ImageView(new Image(comment.getGifUrl()));
+                        gifView.setFitWidth(200);
+                        gifView.setPreserveRatio(true);
+                        container.getChildren().add(gifView);
+                    }
                     
                     // Load user profile picture
                     String profilePicPath = UPLOAD_DIR + "user_" + comment.getUser().getId() + "_icon.png";
@@ -210,7 +262,8 @@ public class BlogDetailController implements Initializable {
                     } catch (Exception e) {
                         profilePic.setImage(new Image(getClass().getResourceAsStream("/assets/default/profile.png")));
                     }
-                      // Show delete button only for comment author
+                    
+                    // Show delete button only for comment author
                     deleteButton.setVisible(currentUser != null && currentUser.getId() == comment.getUser().getId());
                     
                     // Configure delete button action
@@ -221,7 +274,8 @@ public class BlogDetailController implements Initializable {
                         confirmDialog.setContentText("Are you sure you want to delete this comment?");
                         
                         confirmDialog.showAndWait().ifPresent(response -> {
-                            if (response == ButtonType.OK) {                                try {
+                            if (response == ButtonType.OK) {                                
+                                try {
                                     commentService.delete(comment);
                                     refreshComments();
                                 } catch (Exception ex) {
@@ -248,8 +302,7 @@ public class BlogDetailController implements Initializable {
             }
         }
     }
-    
-    @FXML
+      @FXML
     private void handleAddComment() {
         if (currentUser == null) {
             showAlert(Alert.AlertType.ERROR, "Error", "You must be logged in to comment.");
@@ -257,15 +310,19 @@ public class BlogDetailController implements Initializable {
         }
 
         String content = commentTextArea.getText().trim();
-        if (content.isEmpty()) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Comment cannot be empty.");
+        if (content.isEmpty() && selectedGifUrl == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Comment must have text or a GIF.");
             return;
         }
 
         try {
             Comment comment = new Comment(content, currentUser, currentBlog);
+            comment.setGifUrl(selectedGifUrl);
             commentService.add(comment);
+            
+            // Clear inputs
             commentTextArea.clear();
+            handleClearGif();
             refreshComments();
         } catch (Exception e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Failed to add comment: " + e.getMessage());
@@ -306,12 +363,57 @@ public class BlogDetailController implements Initializable {
         this.currentUser = user;
         updateCurrentUserProfilePicture();
     }
-      private void showAlert(Alert.AlertType type, String title, String content) {
+    
+    private void showAlert(Alert.AlertType type, String title, String content) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setHeaderText(null); // No header text for cleaner look
         alert.setContentText(content);
         alert.showAndWait();
+    }
+    
+    @FXML
+    private void handleGifSearch() {
+        try {
+            gifPreviewPane.getChildren().clear();
+            String query = gifSearchField.getText().trim();
+            if (query.isEmpty()) {
+                return;
+            }
+
+            JSONArray gifs = giphyService.searchGifs(query);
+            for (int i = 0; i < gifs.length(); i++) {
+                JSONObject gif = gifs.getJSONObject(i);
+                String gifUrl = gif.getJSONObject("images")
+                    .getJSONObject("fixed_height_small")
+                    .getString("url");
+                
+                ImageView gifPreview = new ImageView(new Image(gifUrl));
+                gifPreview.setFitHeight(100);
+                gifPreview.setPreserveRatio(true);
+                gifPreview.setOnMouseClicked(e -> selectGif(gifUrl));
+                
+                gifPreviewPane.getChildren().add(gifPreview);
+            }
+        } catch (Exception e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to search GIFs: " + e.getMessage());
+        }
+    }
+
+    private void selectGif(String gifUrl) {
+        selectedGifUrl = gifUrl;
+        selectedGifPreview.setImage(new Image(gifUrl));
+        selectedGifPreview.setVisible(true);
+        clearGifButton.setVisible(true);
+        gifPreviewPane.getChildren().clear();
+    }
+
+    @FXML
+    private void handleClearGif() {
+        selectedGifUrl = null;
+        selectedGifPreview.setImage(null);
+        selectedGifPreview.setVisible(false);
+        clearGifButton.setVisible(false);
     }
 }
 

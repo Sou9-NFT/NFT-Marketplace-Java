@@ -6,9 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="fcec73b1-e0db-46ed-82d5-5664b449271f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogDetailController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogDetailController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sou9_nft.sql" beforeDir="false" afterPath="$PROJECT_DIR$/sou9_nft.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/models/Comment.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/models/Comment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/services/CommentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/services/CommentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/BlogDetail.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/BlogDetail.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

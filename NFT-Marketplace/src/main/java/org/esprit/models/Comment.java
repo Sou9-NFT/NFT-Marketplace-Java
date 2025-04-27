@@ -7,6 +7,7 @@ import java.util.Map;
 public class Comment {
     private Integer id;
     private String content;
+    private String gifUrl;  // URL of the selected GIF from GIPHY
     private User user;
     private Blog blog;
     private LocalDateTime createdAt;
@@ -109,10 +110,16 @@ public class Comment {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public String getGifUrl() {
+        return gifUrl;
+    }
+
+    public void setGifUrl(String gifUrl) {
+        this.gifUrl = gifUrl;
     }
 
     @Override
