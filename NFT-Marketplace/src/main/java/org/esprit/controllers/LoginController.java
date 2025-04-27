@@ -2,6 +2,7 @@ package org.esprit.controllers;
 
 import java.io.IOException;
 
+import org.esprit.components.CryptoTickerComponent;
 import org.esprit.models.User;
 import org.esprit.services.UserService;
 import org.esprit.utils.PasswordHasher;
@@ -15,7 +16,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 public class LoginController {
@@ -39,10 +42,32 @@ public class LoginController {
     @FXML
     private Button githubLoginButton;
     
+    @FXML
+    private HBox cryptoTickerContainer;
+    
+    @FXML
+    private ScrollPane cryptoTickerScroll;
+    
     private UserService userService;
+    private CryptoTickerComponent cryptoTicker;
     
     public LoginController() {
         userService = new UserService();
+    }
+    
+    public void initialize() {
+        // Initialize cryptocurrency ticker
+        cryptoTicker = new CryptoTickerComponent();
+        
+        if (cryptoTickerScroll != null) {
+            // Replace the ScrollPane content with our crypto ticker component
+            cryptoTickerScroll.setContent(cryptoTicker.getView().getContent());
+            
+            // Apply the same styling from the crypto ticker ScrollPane to our ScrollPane
+            cryptoTickerScroll.getStyleClass().addAll(cryptoTicker.getView().getStyleClass());
+            cryptoTickerScroll.setFitToWidth(true);
+            cryptoTickerScroll.setFitToHeight(true);
+        }
     }
     
     @FXML
@@ -117,11 +142,11 @@ public class LoginController {
             Scene currentScene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) currentScene.getWindow();
             
-            stage.setScene(new Scene(oauthView, 800, 600));
-            stage.setTitle("NFT Marketplace - GitHub Authentication");
+            stage.setScene(new Scene(oauthView, 600, 400));
+            stage.setTitle("NFT Marketplace - GitHub OAuth");
             stage.show();
         } catch (IOException e) {
-            showError("Error initiating GitHub login: " + e.getMessage());
+            showError("Error loading GitHub OAuth page: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -220,6 +245,16 @@ public class LoginController {
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
+        errorLabel.getStyleClass().remove("status-success");
+        errorLabel.getStyleClass().add("status-error");
+    }
+    
+    // Show success message in the main error label
+    public void showSuccess(String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+        errorLabel.getStyleClass().remove("status-error");
+        errorLabel.getStyleClass().add("status-success");
     }
     
     // Clear all error messages

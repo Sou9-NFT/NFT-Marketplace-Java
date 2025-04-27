@@ -181,28 +181,34 @@ public class EditProfileController {
             updatedUser.setBalance(currentUser.getBalance());
             updatedUser.setCreatedAt(currentUser.getCreatedAt());
             updatedUser.setProfilePicture(currentUser.getProfilePicture());
-            
+
             // Password handling - special case that requires controller-level validation
             boolean passwordChanged = false;
-            if (!newPassword.getText().isEmpty()) {
-                // Verify current password
-                if (!currentUser.getPassword().equals(currentPassword.getText())) {
-                    showStatus("Current password is incorrect.");
-                    return;
-                }
+            // Check if password fields exist in the form
+            if (newPassword != null && currentPassword != null && confirmPassword != null) {
+                if (!newPassword.getText().isEmpty()) {
+                    // Verify current password
+                    if (!currentUser.getPassword().equals(currentPassword.getText())) {
+                        showStatus("Current password is incorrect.");
+                        return;
+                    }
 
-                // Check if new passwords match
-                if (!newPassword.getText().equals(confirmPassword.getText())) {
-                    showStatus("New passwords do not match.");
-                    return;
-                }
+                    // Check if new passwords match
+                    if (!newPassword.getText().equals(confirmPassword.getText())) {
+                        showStatus("New passwords do not match.");
+                        return;
+                    }
 
-                // Set the new password for validation
-                updatedUser.setPassword(newPassword.getText());
-                passwordChanged = true;
+                    // Set the new password for validation
+                    updatedUser.setPassword(newPassword.getText());
+                    passwordChanged = true;
+                } else {
+                    // Skip password validation by setting a placeholder
+                    // We'll restore the actual password after validation
+                    updatedUser.setPassword("placeholder");
+                }
             } else {
-                // Skip password validation by setting a placeholder
-                // We'll restore the actual password after validation
+                // Password fields don't exist in this version of the form
                 updatedUser.setPassword("placeholder");
             }
 
@@ -231,16 +237,6 @@ public class EditProfileController {
             if (!Pattern.compile(emailRegex).matcher(email).matches()) {
                 showStatus("Invalid email format");
                 return;
-            }
-            
-            // Validate wallet address if provided
-            if (!walletAddress.isEmpty()) {
-                // Ethereum address format: 0x followed by 40 hex characters
-                String walletRegex = "^0x[a-fA-F0-9]{40}$";
-                if (!Pattern.compile(walletRegex).matcher(walletAddress).matches()) {
-                    showStatus("Invalid Ethereum address format");
-                    return;
-                }
             }
             
             // Validate GitHub username if provided

@@ -12,5 +12,5 @@
 	<Label fx:id="statusLabel" text="Connecting to GitHub..." styleClass="status-label" />
 	<ProgressIndicator fx:id="progressIndicator" />
 	<WebView fx:id="webView" prefHeight="500.0" prefWidth="800.0" VBox.vgrow="ALWAYS" />
-	<Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel" />
+	<Button fx:id="backButton" text="Cancel" onAction="#handleBackToLogin" />
 </VBox>
