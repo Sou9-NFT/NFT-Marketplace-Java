@@ -38,12 +38,31 @@
   -sidebar-text-color: #ecf0f1;
 }
 
+
+.bet-session-header {
+  -fx-background-color: white;
+  background-color: white;
+}
+
+.bet-session-header .title {
+  -fx-text-fill: white;
+  -fx-font-size: 28px;
+  -fx-font-weight: bold;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 0, 1);
+}
+
+.bet-session-header .subtitle {
+  -fx-text-fill: black;
+  -fx-font-size: 14px;
+  -fx-opacity: 0.9;
+} 
 /* Apply Fonts */
 .root {
   -fx-font-family: "Poppins", sans-serif;
   -fx-font-size: 14px;
   -fx-background-color: -primary-background-color;
 }
+
 
 /* Admin Dashboard Sidebar Styling */
 .sidebar {

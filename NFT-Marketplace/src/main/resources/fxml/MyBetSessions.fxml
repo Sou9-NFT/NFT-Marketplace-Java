@@ -16,9 +16,9 @@
 
 <AnchorPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.esprit.controllers.MyBetSessionsController">
    <children>
-      <BorderPane prefHeight="600.0" prefWidth="900.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <BorderPane prefHeight="600.0" prefWidth="900.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" stylesheets="@../styles/black-table.css">
          <top>
-            <HBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="900.0" style="-fx-background-color: #1E3D59;" BorderPane.alignment="CENTER">
+            <HBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="900.0" style="-fx-background-color: #1e3c72;" BorderPane.alignment="CENTER">
                <children>
                   <Label text="NFT Bet Sessions" textFill="WHITE">
                      <font>
@@ -30,19 +30,17 @@
                   </Label>
                </children>
             </HBox>
-         </top>
-         <center>
-            <TabPane prefHeight="520.0" prefWidth="900.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+         </top>         <center>
+            <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
               <tabs>
                 <Tab text="Browse Bet Sessions">
                   <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="520.0" prefWidth="900.0">
+                    <AnchorPane>
                          <children>
-                            <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="520.0" prefWidth="900.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                               <content>
-                                  <VBox prefWidth="898.0" spacing="20.0">
+                            <ScrollPane fitToHeight="true" fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">                               <content>
+                                  <VBox spacing="20.0" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
                                      <children>
-                                        <VBox prefWidth="898.0" spacing="10.0">
+                                        <VBox spacing="10.0">
                                            <children>                                              <HBox alignment="CENTER_LEFT" spacing="10.0">
                                                  <children>
                                                     <Label text="Active Marketplace Bet Sessions" wrapText="true">
@@ -61,15 +59,20 @@
                                                        </HBox.margin>
                                                     </Button>
                                                  </children>
-                                              </HBox>
-                                              <TableView fx:id="marketplaceBetsTableView" prefHeight="220.0" prefWidth="858.0">
+                                              </HBox>                                              <TableView fx:id="marketplaceBetsTableView" prefHeight="220.0">
                                                 <columns>
-                                                  <TableColumn fx:id="marketplaceArtworkColumn" prefWidth="200.0" text="Artwork" />
-                                                  <TableColumn fx:id="marketplaceSellerColumn" prefWidth="120.0" text="Seller" />
-                                                  <TableColumn fx:id="marketplaceEndTimeColumn" prefWidth="150.0" text="End Time" />
-                                                  <TableColumn fx:id="marketplaceCurrentPriceColumn" prefWidth="150.0" text="Current Price" />
-                                                  <TableColumn fx:id="marketplaceActionsColumn" prefWidth="150.0" text="Actions" />
+                                                <TableColumn fx:id="marketplaceArtworkColumn" text="Artwork" />
+                                                  <TableColumn fx:id="marketplaceSellerColumn" text="Seller" />
+                                                  <TableColumn fx:id="marketplaceEndTimeColumn" text="End Time" />
+                                                  <TableColumn fx:id="marketplaceCurrentPriceColumn" text="Current Price" />
+                                                  <TableColumn fx:id="marketplaceActionsColumn" text="Actions" />
                                                 </columns>
+                                                <columnResizePolicy>
+                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                </columnResizePolicy>                                                <style>
+                                                    -fx-table-header-background: black;
+                                                    -fx-table-cell-border-color: transparent;
+                                                </style>
                                               </TableView>
                                            </children>
                                            <padding>
@@ -86,15 +89,13 @@
                             </ScrollPane>
                          </children>
                       </AnchorPane>
-                  </content>
-                </Tab>
+                  </content>                </Tab>
                 <Tab text="My Bet Sessions">
                   <content>
-                    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="520.0" prefWidth="900.0">
+                    <AnchorPane>
                          <children>
-                            <ScrollPane fitToHeight="true" fitToWidth="true" prefHeight="520.0" prefWidth="900.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                               <content>
-                                  <VBox prefWidth="898.0" spacing="20.0">
+                            <ScrollPane fitToHeight="true" fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">                               <content>
+                                  <VBox spacing="20.0" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
                                      <children>
                                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                                            <VBox.margin>
@@ -119,16 +120,22 @@
                                                  <font>
                                                     <Font name="System Bold" size="18.0" />
                                                  </font>
-                                              </Label>
-                                              <TableView fx:id="activeBetsTableView" prefHeight="200.0" prefWidth="858.0">
+                                              </Label>                                              <TableView fx:id="activeBetsTableView" prefHeight="200.0">
                                                 <columns>
-                                                  <TableColumn fx:id="activeArtworkColumn" prefWidth="200.0" text="Artwork" />
-                                                  <TableColumn fx:id="activeStartTimeColumn" prefWidth="120.0" text="Start Time" />
-                                                  <TableColumn fx:id="activeEndTimeColumn" prefWidth="120.0" text="End Time" />
-                                                  <TableColumn fx:id="activeCurrentPriceColumn" prefWidth="120.0" text="Current Price" />
-                                                  <TableColumn fx:id="activeStatusColumn" prefWidth="100.0" text="Status" />
-                                                  <TableColumn fx:id="activeActionsColumn" prefWidth="150.0" text="Actions" />
+                                                  <TableColumn fx:id="activeArtworkColumn" text="Artwork" />
+                                                  <TableColumn fx:id="activeStartTimeColumn" text="Start Time" />
+                                                  <TableColumn fx:id="activeEndTimeColumn" text="End Time" />
+                                                  <TableColumn fx:id="activeCurrentPriceColumn" text="Current Price" />
+                                                  <TableColumn fx:id="activeStatusColumn" text="Status" />
+                                                  <TableColumn fx:id="activeActionsColumn" text="Actions" />
                                                 </columns>
+                                                <columnResizePolicy>
+                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                </columnResizePolicy>
+                                                <style>
+                                                    -fx-table-header-background: black;
+                                                    -fx-table-cell-border-color: transparent;
+                                                </style>
                                               </TableView>
                                            </children>
                                            <padding>
@@ -141,16 +148,22 @@
                                                  <font>
                                                     <Font name="System Bold" size="18.0" />
                                                  </font>
-                                              </Label>
-                                              <TableView fx:id="completedBetsTableView" prefHeight="200.0" prefWidth="858.0">
+                                              </Label>                                              <TableView fx:id="completedBetsTableView" prefHeight="200.0">
                                                  <columns>
-                                                    <TableColumn fx:id="completedArtworkColumn" prefWidth="200.0" text="Artwork" />
-                                                    <TableColumn fx:id="completedStartTimeColumn" prefWidth="120.0" text="Start Time" />
-                                                    <TableColumn fx:id="completedEndTimeColumn" prefWidth="120.0" text="End Time" />
-                                                    <TableColumn fx:id="completedFinalPriceColumn" prefWidth="120.0" text="Final Price" />
-                                                    <TableColumn fx:id="completedStatusColumn" prefWidth="100.0" text="Status" />
-                                                    <TableColumn fx:id="completedActionsColumn" prefWidth="150.0" text="Actions" />
+                                                    <TableColumn fx:id="completedArtworkColumn" text="Artwork" />
+                                                    <TableColumn fx:id="completedStartTimeColumn" text="Start Time" />
+                                                    <TableColumn fx:id="completedEndTimeColumn" text="End Time" />
+                                                    <TableColumn fx:id="completedFinalPriceColumn" text="Final Price" />
+                                                    <TableColumn fx:id="completedStatusColumn" text="Status" />
+                                                    <TableColumn fx:id="completedActionsColumn" text="Actions" />
                                                  </columns>
+                                                 <columnResizePolicy>
+                                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                 </columnResizePolicy>
+                                                 <style>
+                                                    -fx-table-header-background: black;
+                                                    -fx-table-cell-border-color: transparent;
+                                                 </style>
                                               </TableView>
                                            </children>
                                            <padding>
