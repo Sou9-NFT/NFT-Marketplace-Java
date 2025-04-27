@@ -1,0 +1,35 @@
+.gif-preview {
+    -fx-border-color: #ddd;
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+    -fx-padding: 5px;
+}
+
+.gif-preview ImageView {
+    -fx-cursor: hand;
+}
+
+.gif-preview ImageView:hover {
+    -fx-opacity: 0.8;
+}
+
+#gifSearchField {
+    -fx-pref-width: 300px;
+}
+
+#gifPreviewPane {
+    -fx-background-color: #f8f9fa;
+    -fx-padding: 10px;
+    -fx-border-color: #dee2e6;
+    -fx-border-radius: 4px;
+    -fx-max-height: 300px;
+}
+
+.delete-button {
+    -fx-background-color: #dc3545;
+    -fx-text-fill: white;
+}
+
+.delete-button:hover {
+    -fx-background-color: #c82333;
+}
