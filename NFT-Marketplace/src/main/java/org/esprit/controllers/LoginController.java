@@ -156,12 +156,18 @@ public class LoginController {
             UserDashboardController controller = loader.getController();
             controller.setCurrentUser(user);
             
-            Scene currentScene = ((Node) event.getSource()).getScene();
-            Stage stage = (Stage) currentScene.getWindow();
+            Scene currentScene = ((Node) event.getSource()).getScene();            Stage stage = (Stage) currentScene.getWindow();
             
             stage.setScene(new Scene(userDashboardView, 800, 600));
             stage.setTitle("NFT Marketplace - User Dashboard");
+            
+            // Make the stage maximized by default
+            stage.setMaximized(true);
+            
             stage.show();
+            
+            // Call the controller's method to ensure fullscreen is set
+            controller.setStageFullScreen();
         } catch (IOException e) {
             showError("Error loading user dashboard: " + e.getMessage());
             e.printStackTrace();
