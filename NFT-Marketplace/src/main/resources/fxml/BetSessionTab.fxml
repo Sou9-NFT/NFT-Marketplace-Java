@@ -11,11 +11,11 @@
             styleClass="root"
             stylesheets="@../styles/bet-session.css">
       <top>
-        <VBox styleClass="bet-session-header" alignment="CENTER" style="-fx-background-color: #1e3c72;">
+        <VBox alignment="CENTER" style="-fx-background-color: #4528dc !important;">
             <padding>
                 <Insets top="10" right="15" bottom="10" left="15" />
             </padding>
-            <Label text="BetSession Management" styleClass="title" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/> 
+            <Label text="BetSession Management" style="-fx-text-fill: white; -fx-font-size: 18px; -fx-font-weight: bold;"/> 
         </VBox>
     </top>
       <center>

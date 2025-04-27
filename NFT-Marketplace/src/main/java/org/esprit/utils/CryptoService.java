@@ -74,11 +74,11 @@ public class CryptoService {
         
         // Fetch current ETH price
         double ethPrice = fetchEthereumPrice();
-        
+            
         // Only add ETH equivalent if API fetch was successful
         if (ethPrice > 0) {
             double ethAmount = convertDannousToEth(dannousAmount);
-            priceText += String.format(" (≈ %.8f ETH)", ethAmount);
+            priceText += String.format(" (≈ %.6f ETH)", ethAmount);
         }
         
         return priceText;

@@ -667,8 +667,6 @@ public class MyBetSessionsController implements Initializable {
         
         // Add ETH equivalent display
         javafx.scene.control.Label ethEquivalentLabel = new javafx.scene.control.Label("");
-        ethEquivalentLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555555;");        grid.add(new javafx.scene.control.Label("ETH Equivalent:"), 0, 3);
-        grid.add(ethEquivalentLabel, 1, 3);
         
         // Add final copy of ethPrice for lambda
         final double displayEthPrice = ethPrice;
