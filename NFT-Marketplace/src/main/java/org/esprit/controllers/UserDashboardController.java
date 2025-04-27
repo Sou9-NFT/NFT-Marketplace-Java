@@ -22,7 +22,13 @@ public class UserDashboardController {
     private Label userNameLabel;
     
     @FXML
+    private Label userNameSidebarLabel;
+    
+    @FXML
     private Button logoutButton;
+    
+    @FXML
+    private Button logoutSidebarButton;
     
     @FXML
     private Button profileButton;
@@ -41,32 +47,110 @@ public class UserDashboardController {
     
     @FXML
     private Button notificationsButton;
-      @FXML
+    
+    @FXML
     private Button betSessionButton;
     
     @FXML
     private Button blogsButton;
     
     @FXML
+    private Button tradeOfferButton;
+    
+    @FXML
+    private Button tradeDisputeButton;
+    
+    @FXML
     private StackPane contentArea;
+    
+    @FXML
+    private Label pageTitleLabel;
     
     private User currentUser;
     
-    public void initialize() {
-        // Initialize the controller
-        // We might want to set a default view here
-    }
+    private Button lastActiveButton;
     
+    private ProfileController profileController;
+    
+    // This method is called automatically when the FXML is loaded
+    public void initialize() {
+        // Initialize the controller - set default active button
+        setActiveButton(profileButton);
+        
+        // Load profile view by default
+        loadProfileView();
+    }
+      /**
+     * Loads the profile view programmatically
+     */
+    private void loadProfileView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Profile.fxml"));
+            Parent profileView = loader.load();
+            
+            // Store the controller reference for later updates
+            profileController = loader.getController();
+            
+            // If we already have a user, set it
+            if (currentUser != null) {
+                profileController.setUser(currentUser);
+            }
+            
+            // Just add to contentArea during initialization, skip window title update
+            contentArea.getChildren().clear();
+            contentArea.getChildren().add(profileView);
+            
+            // Update page title if available
+            if (pageTitleLabel != null) {
+                pageTitleLabel.setText("User Profile");
+            }
+        } catch (IOException e) {
+            System.err.println("Could not load profile view: " + e.getMessage());
+        }
+    }    /**
+     * Sets the current user for this controller
+     * @param user The current user
+     */
     public void setCurrentUser(User user) {
         this.currentUser = user;
-        if (user != null && userNameLabel != null) {
-            userNameLabel.setText("Welcome, " + user.getName());
-        } else if (userNameLabel != null) {
+        if (user != null) {
+            String userName = user.getName();
+            
+            // Update both top bar and sidebar user labels
+            if (userNameLabel != null) {
+                userNameLabel.setText("Welcome, " + userName);
+            }
+            
+            if (userNameSidebarLabel != null) {
+                userNameSidebarLabel.setText(userName);
+            }
+            
+            // Update the profile controller if it exists
+            if (profileController != null) {
+                profileController.setUser(user);
+            }
+              // Now that the user is set, we can update the window title if the scene is ready
+            if (contentArea.getScene() != null && contentArea.getScene().getWindow() != null) {
+                Stage stage = (Stage) contentArea.getScene().getWindow();
+                stage.setTitle("Sou9 NFT - User Profile");
+                
+                // Set the stage to fullscreen
+                stage.setMaximized(true);
+            }
+        } else {
             // Default text if user is null
-            userNameLabel.setText("Welcome");
+            if (userNameLabel != null) {
+                userNameLabel.setText("Welcome");
+            }
+            if (userNameSidebarLabel != null) {
+                userNameSidebarLabel.setText("Guest");
+            }
         }
     }
     
+    /**
+     * Handle user logout
+     */
     @FXML
     private void handleLogout(ActionEvent event) {
         try {
@@ -84,6 +168,9 @@ public class UserDashboardController {
         }
     }
     
+    /**
+     * Handle profile button click
+     */
     @FXML
     private void handleProfileButton(ActionEvent event) {
         try {
@@ -94,47 +181,34 @@ public class UserDashboardController {
             controller.setUser(currentUser);
             
             loadContentInPlace(profileView, "User Profile");
+            setActiveButton(profileButton);
         } catch (IOException e) {
             showAlert("Error", "Could not load profile: " + e.getMessage());
         }
     }
     
+    /**
+     * Handle raffles button click
+     */
     @FXML
     private void handleRafflesButton(ActionEvent event) {
         try {
-            // Try using ClassLoader directly instead of getResource
-            ClassLoader classLoader = getClass().getClassLoader();
-            java.net.URL resourceUrl = classLoader.getResource("fxml/RaffleList.fxml");
-            
-            if (resourceUrl == null) {
-                System.err.println("Failed to find RaffleList.fxml resource using ClassLoader");
-                
-                // Fall back to getResource with various paths
-                resourceUrl = getClass().getResource("/fxml/RaffleList.fxml");
-                
-                if (resourceUrl == null) {
-                    System.err.println("Failed to find RaffleList.fxml with any method");
-                    showAlert("Error", "Could not load raffles: Resource not found");
-                    return;
-                }
-            }
-            
-            System.out.println("Found RaffleList.fxml at: " + resourceUrl);
-            
-            FXMLLoader loader = new FXMLLoader(resourceUrl);
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/RaffleList.fxml"));
             Parent raffleView = loader.load();
             
             RaffleListController controller = loader.getController();
             controller.setUser(currentUser);
             
             loadContentInPlace(raffleView, "Raffles");
+            setActiveButton(rafflesButton);
         } catch (IOException e) {
-            System.err.println("Error loading RaffleList.fxml: " + e.getMessage());
-            e.printStackTrace();
             showAlert("Error", "Could not load raffles: " + e.getMessage());
         }
     }
     
+    /**
+     * Handle artworks button click
+     */
     @FXML
     private void handleArtworksButton(ActionEvent event) {
         try {
@@ -145,11 +219,15 @@ public class UserDashboardController {
             controller.setCurrentUser(currentUser);
             
             loadContentInPlace(artworkView, "Artwork Management");
+            setActiveButton(artworksButton);
         } catch (IOException e) {
             showAlert("Error", "Could not load artwork management: " + e.getMessage());
         }
     }
     
+    /**
+     * Handle marketplace button click
+     */
     @FXML
     private void handleMarketplaceButton(ActionEvent event) {
         if (getClass().getResource("/fxml/Marketplace.fxml") != null) {
@@ -162,14 +240,19 @@ public class UserDashboardController {
                 tryToSetUser(controller);
                 
                 loadContentInPlace(marketplaceView, "Marketplace");
+                setActiveButton(marketplaceButton);
             } catch (IOException e) {
                 showAlert("Error", "Could not load marketplace: " + e.getMessage());
             }
         } else {
             showComingSoonInPlace("Marketplace");
+            setActiveButton(marketplaceButton);
         }
     }
     
+    /**
+     * Handle wallet button click
+     */
     @FXML
     private void handleWalletButton(ActionEvent event) {
         if (getClass().getResource("/fxml/Wallet.fxml") != null) {
@@ -182,14 +265,19 @@ public class UserDashboardController {
                 tryToSetUser(controller);
                 
                 loadContentInPlace(walletView, "Wallet");
+                setActiveButton(walletButton);
             } catch (IOException e) {
                 showAlert("Error", "Could not load wallet: " + e.getMessage());
             }
         } else {
             showComingSoonInPlace("Wallet");
+            setActiveButton(walletButton);
         }
     }
 
+    /**
+     * Handle notifications button click
+     */
     @FXML
     private void handleNotificationsButton(ActionEvent event) {
         if (getClass().getResource("/fxml/Notifications.fxml") != null) {
@@ -202,18 +290,22 @@ public class UserDashboardController {
                 tryToSetUser(controller);
                 
                 loadContentInPlace(notificationsView, "Notifications");
+                setActiveButton(notificationsButton);
             } catch (IOException e) {
                 showAlert("Error", "Could not load notifications: " + e.getMessage());
             }
         } else {
             showComingSoonInPlace("Notifications");
+            setActiveButton(notificationsButton);
         }
     }
     
+    /**
+     * Handle bet session button click
+     */
     @FXML
     private void handleBetSessionButton(ActionEvent event) {
         try {
-            // Changed to load MyBetSessions.fxml instead of BetSession.fxml
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MyBetSessions.fxml"));
             Parent betSessionView = loader.load();
             
@@ -222,11 +314,13 @@ public class UserDashboardController {
             tryToSetUser(controller);
             
             loadContentInPlace(betSessionView, "Bet Sessions");
+            setActiveButton(betSessionButton);
         } catch (IOException e) {
-            showAlert("Error", "Could not load trade offers: " + e.getMessage());
+            showAlert("Error", "Could not load bet sessions: " + e.getMessage());
         }
     }
-      @FXML
+    
+    @FXML
     private void handleBlogsButton(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BlogList.fxml"));
@@ -237,8 +331,60 @@ public class UserDashboardController {
             controller.setCurrentUser(currentUser);
             
             loadContentInPlace(blogView, "Blogs");
+            setActiveButton(blogsButton);
         } catch (IOException e) {
             showAlert("Error", "Could not load blogs: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleTradeOfferButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeOfferList.fxml"));
+            Parent tradeOfferView = loader.load();
+            
+            TradeOfferListController controller = loader.getController();
+            controller.setUser(currentUser);
+            
+            loadContentInPlace(tradeOfferView, "Trade Offers");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade offers: " + e.getMessage());
+            System.err.println("Error in handleTradeOfferButton: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleTradeDisputeButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeDisputeList.fxml"));
+            Parent tradeDisputeView = loader.load();
+            
+            TradeDisputeListController controller = loader.getController();
+            controller.setUser(currentUser);
+            
+            loadContentInPlace(tradeDisputeView, "Trade Disputes");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade disputes: " + e.getMessage());
+            System.err.println("Error in handleTradeDisputeButton: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Sets the active navigation button by highlighting it
+     * @param button The button to set as active
+     */
+    private void setActiveButton(Button button) {
+        // Remove active style from previous button if exists
+        if (lastActiveButton != null) {
+            lastActiveButton.getStyleClass().remove("sidebar-button-active");
+        }
+        
+        // Add active style to current button
+        if (button != null) {
+            button.getStyleClass().add("sidebar-button-active");
+            lastActiveButton = button;
         }
     }
     
@@ -263,9 +409,7 @@ public class UserDashboardController {
                 }
             }
         }
-    }
-    
-    /**
+    }    /**
      * Loads content into the contentArea StackPane with proper transition
      * @param view The view to load
      * @param title The title/section name to set
@@ -275,9 +419,17 @@ public class UserDashboardController {
         contentArea.getChildren().clear();
         contentArea.getChildren().add(view);
         
+        // Update the page title in the top bar
+        if (pageTitleLabel != null) {
+            pageTitleLabel.setText(title);
+        }
+        
         // Update the window title to reflect the current section
-        Stage stage = (Stage) contentArea.getScene().getWindow();
-        stage.setTitle("Sou9 NFT - " + title);
+        // Only try to update window title if scene is available
+        if (contentArea.getScene() != null && contentArea.getScene().getWindow() != null) {
+            Stage stage = (Stage) contentArea.getScene().getWindow();
+            stage.setTitle("Sou9 NFT - " + title);
+        }
     }
     
     /**
@@ -310,21 +462,30 @@ public class UserDashboardController {
         }
     }
     
-    // This method is now only used for complete page transitions like logout
-    private void navigateToView(ActionEvent event, Parent view, String title) {
-        Scene currentScene = ((Node) event.getSource()).getScene();
-        Stage stage = (Stage) currentScene.getWindow();
-        
-        stage.setScene(new Scene(view));
-        stage.setTitle(title);
-        stage.show();
-    }
-    
+    /**
+     * Show an alert dialog with a message
+     */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    /**
+     * This method is called to configure the stage after the scene is fully initialized.
+     * It sets the stage to fullscreen and applies other window-specific settings.
+     */
+    public void setStageFullScreen() {
+        if (contentArea.getScene() != null && contentArea.getScene().getWindow() != null) {
+            Stage stage = (Stage) contentArea.getScene().getWindow();
+            
+            // Set to maximized (takes full screen but keeps taskbar visible)
+            stage.setMaximized(true);
+            
+            // Alternative: true fullscreen (hides taskbar)
+            // stage.setFullScreen(true);
+        }
     }
 }

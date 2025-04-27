@@ -19,7 +19,8 @@
 					<Image url="@../kit/icon.png"/>
 				</ImageView>
 				<Label text="Sou9 NFT" textFill="WHITE" style="-fx-font-weight: bold; -fx-font-size: 18px;"/>
-				<!-- Navigation buttons -->				<Button fx:id="profileButton" text="My Profile" onAction="#handleProfileButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<!-- Navigation buttons -->
+				<Button fx:id="profileButton" text="My Profile" onAction="#handleProfileButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="blogsButton" text="Blogs" onAction="#handleBlogsButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="rafflesButton" text="Raffles" onAction="#handleRafflesButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="artworksButton" text="Artworks" onAction="#handleArtworksButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
@@ -27,6 +28,8 @@
 				<Button fx:id="walletButton" text="My Wallet" onAction="#handleWalletButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="notificationsButton" text="Notifications" onAction="#handleNotificationsButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="betSessionButton" text="Bet Sessions" onAction="#handleBetSessionButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="tradeOfferButton" text="Trade Offer" onAction="#handleTradeOfferButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="tradeDisputeButton" text="Trade Dispute" onAction="#handleTradeDisputeButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<!-- User info and logout -->
 				<Region HBox.hgrow="ALWAYS" />
 				<Label fx:id="userNameLabel" text="Welcome, User" textFill="WHITE">
@@ -41,26 +44,13 @@
 				</Button>
 			</HBox>
 		</VBox>
-	</top>
-	<center>
-		<VBox alignment="CENTER" spacing="20.0" BorderPane.alignment="CENTER">
+	</top>	<center>
+		<VBox alignment="CENTER" BorderPane.alignment="CENTER">
 			<padding>
-				<Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+				<Insets bottom="0.0" left="0.0" right="0.0" top="0.0" />
 			</padding>
-			<children>
-				<Label text="Welcome to NFT Marketplace" textAlignment="CENTER">
-					<font>
-						<Font name="System Bold" size="24.0" />
-					</font>
-				</Label>
-				<Label text="Select any option from the navigation bar above" textAlignment="CENTER">
-					<font>
-						<Font size="14.0" />
-					</font>
-				</Label>
-				<!-- Placeholder for dynamic content -->
-				<StackPane fx:id="contentArea" VBox.vgrow="ALWAYS" />
-			</children>
+			<!-- Placeholder for dynamic content -->
+			<StackPane fx:id="contentArea" VBox.vgrow="ALWAYS" />
 		</VBox>
 	</center>
 	<bottom>

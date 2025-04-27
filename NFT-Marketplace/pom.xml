@@ -81,8 +81,14 @@
     </dependencies>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <!-- 
+        **************** IMPORTANT NOTICE ****************
+        DO NOT CHANGE JAVA VERSION! THIS PROJECT REQUIRES JAVA 17!
+        Changing this version will break compatibility and functionality.
+        All team members must use Java 17 for development and deployment.
+        ************************************************** 
+        -->
+        <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21.0.2</javafx.version>
         <mainClass>org.esprit.main.NftMarketplaceApplication</mainClass>
@@ -95,11 +101,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <compilerArgs>
-                        <arg>--enable-preview</arg>
-                    </compilerArgs>
+                    <release>${maven.compiler.release}</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -109,7 +111,6 @@
                 <configuration>
                     <mainClass>${mainClass}</mainClass>
                     <options>
-                        <option>--enable-preview</option>
                         <option>--add-modules</option>
                         <option>javafx.controls,javafx.fxml</option>
                     </options>

@@ -1,12 +1,39 @@
 /* BetSession Enhanced Styles */
 
+/* Basic Styles - For standalone usage without main.css */
+.root {
+  -fx-font-family: "Poppins", sans-serif;
+  -fx-font-size: 14px;
+  -fx-background-color: #f9f9f9;
+}
+
+/* Button Base Styles */
+.button {
+  -fx-background-radius: 4px;
+  -fx-cursor: hand;
+  -fx-padding: 8px 12px;
+  -fx-font-size: 13px;
+}
+
+.button:hover {
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 5, 0, 0, 0);
+}
+
+/* Container */
+.container {
+  -fx-background-color: white;
+  -fx-background-radius: 8px;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 8, 0, 0, 1);
+}
+
 /* Header Styles */
 .bet-session-header {
-  -fx-background-color: linear-gradient(135deg, #4528dc 10%, #57048a);
+  -fx-background-color: white;
+  background-color: white;
 }
 
 .bet-session-header .title {
-  -fx-text-fill: #4528dc;
+  -fx-text-fill: white;
   -fx-font-size: 28px;
   -fx-font-weight: bold;
   -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 0, 1);
