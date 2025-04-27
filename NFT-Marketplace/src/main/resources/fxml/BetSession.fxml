@@ -8,9 +8,9 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.esprit.controllers.BetSessionController"
             prefWidth="800" prefHeight="600"
-            stylesheets="@../styles/main.css, @../styles/bet-session.css">
+            stylesheets="@../styles/main.css, @../styles/bet-session.css, @../styles/black-table.css">
     <top>
-        <VBox spacing="10" styleClass="bet-session-header">
+        <VBox spacing="10" styleClass="">
             <padding>
                 <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>
@@ -24,22 +24,27 @@
         </VBox>
     </top>
     <center>
-        <VBox spacing="10">
-            <padding>
+        <VBox spacing="10">            <padding>
                 <Insets top="10" right="20" bottom="10" left="20"/>
             </padding>
-            <TableView fx:id="tableView" styleClass="bet-session-table">
+            <TableView fx:id="tableView" styleClass="table-view">
                 <columns>
                     <TableColumn fx:id="authorColumn" text="Author" prefWidth="100"/>
                     <TableColumn fx:id="artworkColumn" text="Artwork" prefWidth="100"/>
                     <TableColumn fx:id="createdAtColumn" text="Created At" prefWidth="120"/>
                     <TableColumn fx:id="startTimeColumn" text="Start Time" prefWidth="120"/>
-                    <TableColumn fx:id="endTimeColumn" text="End Time" prefWidth="120"/>
-                    <TableColumn fx:id="initialPriceColumn" text="Initial Price" prefWidth="100"/>
+                    <TableColumn fx:id="endTimeColumn" text="End Time" prefWidth="120"/>                    <TableColumn fx:id="initialPriceColumn" text="Initial Price" prefWidth="100"/>
                     <TableColumn fx:id="currentPriceColumn" text="Current Price" prefWidth="100"/>
                     <TableColumn fx:id="statusColumn" text="Status" prefWidth="80"/>
                     <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="120"/>
                 </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+                <style>
+                    -fx-table-header-background: black;
+                    -fx-table-cell-border-color: transparent;
+                </style>
             </TableView>
         </VBox>
     </center>

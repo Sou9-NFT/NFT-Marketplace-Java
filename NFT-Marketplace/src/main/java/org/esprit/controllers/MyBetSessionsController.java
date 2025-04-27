@@ -152,8 +152,9 @@ public class MyBetSessionsController implements Initializable {
     private void loadAllData() {
         loadMarketplaceBetSessions();
         loadMyBetSessions();
-    }
-      @Override
+    }    private java.util.Timer countdownTimer;
+
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize services
         betSessionService = new BetSessionService();
@@ -222,14 +223,13 @@ public class MyBetSessionsController implements Initializable {
                    new SimpleStringProperty(formatDateTime(time)) : 
                    new SimpleStringProperty("N/A");
         });
-        
-        activeEndTimeColumn.setCellValueFactory(cellData -> {
+          activeEndTimeColumn.setCellValueFactory(cellData -> {
             LocalDateTime time = cellData.getValue().getEndTime();
             return time != null ? 
-                   new SimpleStringProperty(formatDateTime(time)) : 
+                   new SimpleStringProperty(formatCountdown(time)) : 
                    new SimpleStringProperty("N/A");
         });
-              activeCurrentPriceColumn.setCellValueFactory(cellData -> 
+            activeCurrentPriceColumn.setCellValueFactory(cellData -> 
             new SimpleStringProperty(String.format("%.2f Dannous", cellData.getValue().getCurrentPrice())));
             
         activeStatusColumn.setCellValueFactory(cellData -> 
@@ -264,11 +264,26 @@ public class MyBetSessionsController implements Initializable {
         
         // Set up action columns for all tables
         setupActionColumns();
-        
-        // Load bet session data if user is already set
+          // Load bet session data if user is already set
         if (currentUser != null) {
             loadAllData();
         }
+        
+        // Set up a timer to update the countdown every minute
+        countdownTimer = new java.util.Timer(true);
+        countdownTimer.scheduleAtFixedRate(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                // Use Platform.runLater since we're updating UI from a background thread
+                javafx.application.Platform.runLater(() -> {
+                    // Only refresh if there are items in the table
+                    if (activeBetsTableView.getItems() != null && !activeBetsTableView.getItems().isEmpty()) {
+                        // Refresh the active table to update countdowns
+                        activeBetsTableView.refresh();
+                    }
+                });
+            }
+        }, 0, 60000); // Update every minute (60000 ms)
     }
     
     /**
@@ -1265,5 +1280,52 @@ public class MyBetSessionsController implements Initializable {
                 }
             }
         });
+    }
+    
+    /**
+     * Calculates and formats a countdown to a future date
+     * @param endDateTime The future date to count down to
+     * @return A formatted string representing the countdown (e.g., "2d 5h 30m")
+     */
+    private String formatCountdown(LocalDateTime endDateTime) {
+        if (endDateTime == null) return "N/A";
+        
+        LocalDateTime now = LocalDateTime.now();
+        
+        // If the end time is in the past, return "Ended"
+        if (endDateTime.isBefore(now)) {
+            return "Ended";
+        }
+        
+        // Calculate the time between now and the end time
+        long daysBetween = java.time.Duration.between(now, endDateTime).toDays();
+        long hoursBetween = java.time.Duration.between(now, endDateTime).toHours() % 24;
+        long minutesBetween = java.time.Duration.between(now, endDateTime).toMinutes() % 60;
+        
+        // Format the countdown differently based on remaining time
+        if (daysBetween > 0) {
+            // More than a day left, show days and hours
+            return String.format("%dd %dh", daysBetween, hoursBetween);
+        } else if (hoursBetween > 0) {
+            // Less than a day but more than an hour, show hours and minutes
+            return String.format("%dh %dm", hoursBetween, minutesBetween);
+        } else if (minutesBetween > 0) {
+            // Less than an hour, show only minutes
+            return String.format("%dm", minutesBetween);
+        } else {
+            // Less than a minute left
+            return "< 1m";
+        }
+    }
+    
+    /**
+     * Stops the countdown timer when the controller is being destroyed
+     * This should be called when closing the application or switching scenes
+     */
+    public void shutdown() {
+        if (countdownTimer != null) {
+            countdownTimer.cancel();
+            countdownTimer = null;
+        }
     }
 }
