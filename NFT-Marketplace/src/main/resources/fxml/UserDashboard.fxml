@@ -27,9 +27,8 @@
 				<Button fx:id="marketplaceButton" text="Marketplace" onAction="#handleMarketplaceButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="walletButton" text="My Wallet" onAction="#handleWalletButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button fx:id="notificationsButton" text="Notifications" onAction="#handleNotificationsButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
-				<Button fx:id="betSessionButton" text="Bet Sessions" onAction="#handleBetSessionButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
-				<Button fx:id="tradeOfferButton" text="Trade Offer" onAction="#handleTradeOfferButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
-				<Button fx:id="tradeDisputeButton" text="Trade Dispute" onAction="#handleTradeDisputeButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="betSessionButton" text="Bet Sessions" onAction="#handleBetSessionButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>				<Button fx:id="tradeOfferButton" text="Trade Offer" onAction="#handleTradeOfferButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>				<Button fx:id="tradeDisputeButton" text="Trade Dispute" onAction="#handleTradeDisputeButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+				<Button fx:id="tradeRequestsButton" text="Trade Requests" onAction="#handleTradeRequestButton" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<!-- User info and logout -->
 				<Region HBox.hgrow="ALWAYS" />
 				<Label fx:id="userNameLabel" text="Welcome, User" textFill="WHITE">
