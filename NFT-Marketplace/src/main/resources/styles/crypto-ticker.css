@@ -1,0 +1,167 @@
+/* Cryptocurrency Ticker Styles */
+
+/* Ticker container */
+.crypto-ticker-container {
+  -fx-background-color: linear-gradient(to right, #090a1a, #1f1f41, #090a1a);
+  -fx-padding: 12px 0;
+  -fx-border-width: 1px 0;
+  -fx-border-color: rgba(255, 255, 255, 0.1);
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 3);
+}
+
+/* Scroll pane styling */
+.crypto-ticker-scroll {
+  -fx-background-color: transparent;
+  -fx-background: transparent;
+  -fx-border-color: transparent;
+}
+
+.crypto-ticker-scroll > .viewport {
+  -fx-background-color: transparent;
+}
+
+.crypto-ticker-scroll .scroll-bar:horizontal,
+.crypto-ticker-scroll .scroll-bar:vertical {
+  -fx-opacity: 0;
+}
+
+/* Main ticker container */
+.crypto-ticker {
+  -fx-background-color: transparent;
+  -fx-padding: 0 20px;
+  -fx-spacing: 35px;
+  -fx-alignment: center-left;
+}
+
+/* Individual crypto item styling - with glass morphism effect */
+.crypto-item {
+  -fx-background-color: rgba(255, 255, 255, 0.08);
+  -fx-background-radius: 12px;
+  -fx-padding: 10px 16px;
+  -fx-spacing: 12px;
+  -fx-alignment: center;
+  -fx-border-color: rgba(255, 255, 255, 0.15);
+  -fx-border-radius: 12px;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 5, 0, 0, 1);
+  -fx-cursor: hand;
+  -fx-min-height: 50px;
+}
+
+.crypto-item:hover {
+  -fx-background-color: rgba(255, 255, 255, 0.15);
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 3);
+  -fx-scale-x: 1.03;
+  -fx-scale-y: 1.03;
+  -fx-border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Crypto symbol */
+.crypto-symbol {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-weight: bold;
+  -fx-font-size: 14px;
+  -fx-text-fill: white;
+}
+
+/* Crypto name */
+.crypto-name {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-size: 12px;
+  -fx-text-fill: rgba(255, 255, 255, 0.7);
+}
+
+/* Crypto icon */
+.crypto-icon {
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 0, 1);
+}
+
+.crypto-icon-bg {
+  -fx-background-color: rgba(255, 255, 255, 0.15);
+  -fx-background-radius: 50%;
+  -fx-min-width: 32px;
+  -fx-min-height: 32px;
+  -fx-max-width: 32px;
+  -fx-max-height: 32px;
+  -fx-padding: 4px;
+  -fx-alignment: center;
+}
+
+/* Fallback for missing icons */
+.crypto-symbol-fallback {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-weight: bold;
+  -fx-font-size: 14px;
+  -fx-text-fill: white;
+  -fx-alignment: center;
+}
+
+/* Price styling */
+.crypto-price {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-size: 15px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #f8f9fa;
+  -fx-padding: 0 8px 0 0;
+}
+
+/* Change percentage styling */
+.crypto-change-up {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-size: 13px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #16c784;
+  -fx-background-color: rgba(22, 199, 132, 0.1);
+  -fx-background-radius: 6px;
+  -fx-padding: 4px 10px;
+  -fx-border-color: rgba(22, 199, 132, 0.3);
+  -fx-border-radius: 6px;
+  -fx-graphic-text-gap: 5;
+}
+
+.crypto-change-down {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-size: 13px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #ea3943;
+  -fx-background-color: rgba(234, 57, 67, 0.1);
+  -fx-background-radius: 6px;
+  -fx-padding: 4px 10px;
+  -fx-border-color: rgba(234, 57, 67, 0.3);
+  -fx-border-radius: 6px;
+  -fx-graphic-text-gap: 5;
+}
+
+.crypto-change-neutral {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-size: 13px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #7d8395;
+  -fx-background-color: rgba(125, 131, 149, 0.1);
+  -fx-background-radius: 6px;
+  -fx-padding: 4px 10px;
+  -fx-border-color: rgba(125, 131, 149, 0.3);
+  -fx-border-radius: 6px;
+}
+
+/* Arrow icons for price changes */
+.crypto-change-arrow {
+  -fx-opacity: 0.9;
+}
+
+/* Loading message */
+.crypto-loading {
+  -fx-font-family: "Jost", sans-serif;
+  -fx-font-size: 14px;
+  -fx-text-fill: white;
+  -fx-padding: 8px;
+  /* Pulsating animation */
+  -fx-text-fill: linear-gradient(to right, white, #4528dc);
+}
+
+/* Separator between crypto items */
+.crypto-separator {
+  -fx-background-color: rgba(255, 255, 255, 0.2);
+  -fx-pref-width: 1px;
+  -fx-pref-height: 20px;
+  -fx-opacity: 0.5;
+}
