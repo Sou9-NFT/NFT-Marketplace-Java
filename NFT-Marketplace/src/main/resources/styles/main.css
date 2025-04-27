@@ -101,7 +101,7 @@
 
 /* Content Area Styling */
 .section-title {
-  -fx-fill: -primary-color;
+  fill: -primary-color;
   -fx-font-size: 24px;
   -fx-font-weight: bold;
 }
