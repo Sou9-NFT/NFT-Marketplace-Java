@@ -30,6 +30,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 
 public class RaffleListController {
     
@@ -60,8 +61,32 @@ public class RaffleListController {
         searchField.textProperty().addListener((observable, oldValue, newValue) -> refreshRaffles());
         statusFilter.valueProperty().addListener((observable, oldValue, newValue) -> refreshRaffles());
 
+        // Add sceneProperty listener to load chatbot stylesheet after scene is set
+        rafflesGrid.sceneProperty().addListener((observable, oldScene, newScene) -> {
+            if (newScene != null) {
+                Platform.runLater(() -> {
+                    loadChatbotStylesheet(newScene);
+                });
+            }
+        });
+
         // Initial load of raffles
         refreshRaffles();
+    }
+
+    /**
+     * Loads the chatbot stylesheet when the scene is available
+     */
+    private void loadChatbotStylesheet(Scene scene) {
+        try {
+            String chatbotStylesheet = getClass().getResource("/styles/chatbot.css").toExternalForm();
+            if (!scene.getStylesheets().contains(chatbotStylesheet)) {
+                scene.getStylesheets().add(chatbotStylesheet);
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading chatbot stylesheet: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     public void setUser(User user) {

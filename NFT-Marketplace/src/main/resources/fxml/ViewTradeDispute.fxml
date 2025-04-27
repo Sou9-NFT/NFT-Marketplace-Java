@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.ViewTradeDisputeController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Trade Dispute Details" style="-fx-font-size: 24px;"/>
+
+    <GridPane vgap="10" hgap="10">
+        <Label text="Reporter:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label fx:id="reporterLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Trade ID:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <Label fx:id="tradeIdLabel" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Offered Item:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <Label fx:id="offeredItemLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Received Item:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <Label fx:id="receivedItemLabel" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Reason:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextArea fx:id="reasonTextArea" wrapText="true" prefRowCount="3" 
+                 editable="false" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <Label text="Status:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <Label fx:id="statusLabel" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+        <Label text="Date:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+        <Label fx:id="dateLabel" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+        <Label text="Evidence:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+        <ImageView fx:id="evidenceImageView" fitWidth="200" fitHeight="200" 
+                  preserveRatio="true" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Close" onAction="#handleClose"/>
+    </HBox>
+</VBox> 

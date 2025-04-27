@@ -4,108 +4,86 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <BorderPane 
 	xmlns="http://javafx.com/javafx" 
-	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.AdminDashboardController" prefWidth="900" prefHeight="600" styleClass="root" stylesheets="@../styles/main.css">
+	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.AdminDashboardController" prefWidth="1000" prefHeight="700" styleClass="root" stylesheets="@../styles/main.css">
 	<top>
 		<VBox styleClass="header" alignment="CENTER" spacing="10">
 			<padding>
-				<Insets top="20" right="20" bottom="20" left="20"/>
+				<Insets top="15" right="20" bottom="15" left="20"/>
 			</padding>
-			<Text text="NFT Marketplace" styleClass="title"/>
-			<Label text="Admin Dashboard" styleClass="header-text"/>
-			<HBox alignment="CENTER_RIGHT" spacing="15">
+			<HBox alignment="CENTER_LEFT" spacing="15">
+				<Text text="NFT Marketplace" styleClass="title"/>
+				<Region HBox.hgrow="ALWAYS" />
 				<Label fx:id="adminNameLabel" text="Welcome, Admin" styleClass="user-welcome"/>
+				<Button text="View Profile" onAction="#handleViewProfile" styleClass="button-secondary" />
 				<Button text="Logout" onAction="#handleLogout" styleClass="button-secondary" />
 			</HBox>
 		</VBox>
 	</top>
+	<left>
+		<!-- Sidebar Navigation -->
+		<VBox styleClass="sidebar" minWidth="200" prefWidth="220" spacing="5" alignment="TOP_CENTER">
+			<padding>
+				<Insets top="20" right="10" bottom="20" left="10"/>
+			</padding>
+			<Label text="Admin Dashboard" styleClass="sidebar-title">
+				<font>
+					<Font name="System Bold" size="16.0" />
+				</font>
+			</Label>
+			<Separator />
+			<Button maxWidth="Infinity" text="Users" onAction="#handleManageUsers" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Categories" onAction="#handleManageCategories" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Blog" onAction="#handleManageBlog" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Raffles" onAction="#handleManageRaffles" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Transactions" onAction="#handleManageTransactions" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Analytics" onAction="#handleAnalytics" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Settings" onAction="#handleSettings" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Reports" onAction="#handleReports" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="System Logs" onAction="#handleSystemLogs" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Bet Sessions" onAction="#handleBetSessions" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Artworks" onAction="#handleManageArtworks" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Trade Disputes" onAction="#handleTradeDisputes" styleClass="sidebar-button" />
+		</VBox>
+	</left>
 	<center>
 		<StackPane>
-			<!-- Main Dashboard Grid -->
-			<VBox alignment="CENTER" spacing="20" styleClass="dashboard-container">
+			<!-- Dashboard Welcome Screen (Default View) -->
+			<VBox fx:id="welcomeScreen" alignment="CENTER" spacing="20">
 				<padding>
-					<Insets top="20" right="20" bottom="20" left="20"/>
+					<Insets top="30" right="30" bottom="30" left="30"/>
 				</padding>
-				<Label text="Administration Panels" styleClass="section-title">
+				<Text text="Welcome to Admin Dashboard" styleClass="welcome-title">
 					<font>
-						<Font name="System Bold" size="24.0" />
+						<Font name="System Bold" size="26.0" />
 					</font>
-				</Label>
-				<GridPane alignment="CENTER" hgap="20" vgap="20">
-					<columnConstraints>
-						<ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
-						<ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
-						<ColumnConstraints hgrow="SOMETIMES" minWidth="150.0" prefWidth="200.0" />
-					</columnConstraints>
-					<rowConstraints>
-						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="100.0" prefHeight="120.0" vgrow="SOMETIMES" />
-					</rowConstraints>
-					<children>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Users" onAction="#handleManageUsers" styleClass="dashboard-button">
+				</Text>
+				<Text text="Select an option from the sidebar to manage your NFT Marketplace" styleClass="welcome-subtitle">
+					<font>
+						<Font size="16.0" />
+					</font>
+				</Text>
+			</VBox>
+			<!-- User Management Content Area -->
+			<ScrollPane fx:id="userManagementSection" visible="false" managed="false" fitToWidth="true" fitToHeight="true">
+				<VBox spacing="15">
+					<padding>
+						<Insets top="20" right="20" bottom="20" left="20"/>
+					</padding>
+					<HBox alignment="CENTER_LEFT" spacing="10">
+						<Text text="User Management" styleClass="section-title">
 							<font>
-								<Font size="16.0" />
+								<Font name="System Bold" size="20.0" />
 							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Categories" onAction="#handleManageCategories" styleClass="dashboard-button" GridPane.columnIndex="1">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Blog" onAction="#handleManageBlog" styleClass="dashboard-button" GridPane.columnIndex="2">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Raffles" onAction="#handleManageRaffles" styleClass="dashboard-button" GridPane.rowIndex="1">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Transactions" onAction="#handleManageTransactions" styleClass="dashboard-button" GridPane.columnIndex="1" GridPane.rowIndex="1">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Analytics" onAction="#handleAnalytics" styleClass="dashboard-button" GridPane.columnIndex="2" GridPane.rowIndex="1">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Settings" onAction="#handleSettings" styleClass="dashboard-button" GridPane.rowIndex="2">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Reports" onAction="#handleReports" styleClass="dashboard-button" GridPane.columnIndex="1" GridPane.rowIndex="2">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="System Logs" onAction="#handleSystemLogs" styleClass="dashboard-button" GridPane.columnIndex="2" GridPane.rowIndex="2">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Bet Sessions" onAction="#handleBetSessions" styleClass="dashboard-button" GridPane.rowIndex="3">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-						<Button maxWidth="Infinity" maxHeight="Infinity" text="Artworks" onAction="#handleManageArtworks" styleClass="dashboard-button" GridPane.columnIndex="1" GridPane.rowIndex="3">
-							<font>
-								<Font size="16.0" />
-							</font>
-						</Button>
-					</children>
-				</GridPane>
-				<!-- User Management Table Section -->
-				<VBox fx:id="userManagementSection" spacing="10" visible="false" managed="false">
+						</Text>
+					</HBox>
 					<HBox spacing="10" alignment="CENTER_LEFT">
 						<TextField fx:id="searchField" promptText="Search by name or email" HBox.hgrow="ALWAYS" />
+						<Button text="Search" onAction="#handleSearch" />
 						<Button text="Clear" onAction="#handleClearSearch" />
 						<Button text="Add User" onAction="#handleAddUser" styleClass="button-primary" />
 					</HBox>
@@ -121,17 +99,69 @@
 						</columns>
 					</TableView>
 				</VBox>
-			</VBox>
-			<!-- Dynamic Content Area -->
-			<VBox fx:id="contentArea" visible="false" managed="false" styleClass="content-area">
-				<padding>
-					<Insets top="20" right="20" bottom="20" left="20"/>
-				</padding>
-			</VBox>
+			</ScrollPane>
+			<!-- Blog Management Content Area -->
+			<ScrollPane fx:id="blogManagementSection" visible="false" managed="false" fitToWidth="true" fitToHeight="true">
+				<VBox spacing="15">
+					<padding>
+						<Insets top="20" right="20" bottom="20" left="20"/>
+					</padding>
+					<HBox alignment="CENTER_LEFT" spacing="10">
+						<Text text="Blog Management" styleClass="section-title">
+							<font>
+								<Font name="System Bold" size="20.0" />
+							</font>
+						</Text>
+					</HBox>
+					<HBox spacing="10">
+						<VBox spacing="10" HBox.hgrow="ALWAYS" prefWidth="300">
+							<ListView fx:id="blogListView" VBox.vgrow="ALWAYS" prefHeight="400" />
+							<Button text="Create New Blog" onAction="#handleCreateBlog" styleClass="button-primary" maxWidth="Infinity" />
+						</VBox>
+						<VBox spacing="10" HBox.hgrow="ALWAYS" prefWidth="500">
+							<GridPane hgap="10" vgap="10">
+								<columnConstraints>
+									<ColumnConstraints hgrow="SOMETIMES" minWidth="80" prefWidth="100" />
+									<ColumnConstraints hgrow="ALWAYS" minWidth="150" prefWidth="200" />
+								</columnConstraints>
+								<rowConstraints>
+									<RowConstraints minHeight="30" prefHeight="30" vgrow="SOMETIMES" />
+									<RowConstraints minHeight="30" prefHeight="30" vgrow="SOMETIMES" />
+								</rowConstraints>
+								<Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
+								<TextField fx:id="blogTitleField" GridPane.rowIndex="0" GridPane.columnIndex="1" />
+								<Label text="Language:" GridPane.rowIndex="1" GridPane.columnIndex="0" />
+								<ComboBox fx:id="languageComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1" />
+							</GridPane>
+							<Label text="Content:" />
+							<TextArea fx:id="blogContentArea" VBox.vgrow="ALWAYS" prefHeight="200" wrapText="true" />
+							<HBox spacing="10">
+								<Button text="Upload Image" onAction="#handleChooseImage" />
+								<Region HBox.hgrow="ALWAYS" />
+								<Button text="Translate" fx:id="translateButton" onAction="#handleTranslate" />
+								<Button text="Save" fx:id="saveBlogButton" onAction="#handleSaveBlog" styleClass="button-primary" />
+								<Button text="Delete" fx:id="deleteBlogButton" onAction="#handleDeleteBlog" styleClass="button-danger" />
+							</HBox>
+							<StackPane>
+								<ImageView fx:id="blogImageView" fitHeight="150" fitWidth="250" preserveRatio="true" />
+							</StackPane>
+						</VBox>
+					</HBox>
+				</VBox>
+			</ScrollPane>
+			<!-- Dynamic Content Area for Other Features -->
+			<ScrollPane fx:id="contentArea" visible="false" managed="false" fitToWidth="true" fitToHeight="true">
+				<VBox spacing="15">
+					<padding>
+						<Insets top="20" right="20" bottom="20" left="20"/>
+					</padding>
+					<!-- Content loaded dynamically -->
+				</VBox>
+			</ScrollPane>
 		</StackPane>
 	</center>
 	<bottom>
-		<HBox styleClass="footer" alignment="CENTER" spacing="10">
+		<HBox styleClass="footer" alignment="CENTER_LEFT" spacing="10">
 			<padding>
 				<Insets top="10" right="20" bottom="10" left="20"/>
 			</padding>

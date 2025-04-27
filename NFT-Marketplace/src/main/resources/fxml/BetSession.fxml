@@ -14,6 +14,11 @@
             <padding>
                 <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>
+            <HBox alignment="CENTER_RIGHT">
+                <Button fx:id="addButton" onAction="#showAddDialog" styleClass="icon-button add-button" alignment="CENTER_RIGHT">
+                    <text>+</text>
+                </Button>
+            </HBox>
             <Label text="NFT Betting Sessions" styleClass="title"/>
             <Label text="Manage your NFT betting sessions and track their progress" styleClass="subtitle"/>
         </VBox>
@@ -25,7 +30,6 @@
             </padding>
             <TableView fx:id="tableView" styleClass="bet-session-table">
                 <columns>
-                    <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
                     <TableColumn fx:id="authorColumn" text="Author" prefWidth="100"/>
                     <TableColumn fx:id="artworkColumn" text="Artwork" prefWidth="100"/>
                     <TableColumn fx:id="createdAtColumn" text="Created At" prefWidth="120"/>
@@ -34,18 +38,9 @@
                     <TableColumn fx:id="initialPriceColumn" text="Initial Price" prefWidth="100"/>
                     <TableColumn fx:id="currentPriceColumn" text="Current Price" prefWidth="100"/>
                     <TableColumn fx:id="statusColumn" text="Status" prefWidth="80"/>
+                    <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="120"/>
                 </columns>
             </TableView>
         </VBox>
     </center>
-    <bottom>
-        <HBox spacing="15" alignment="CENTER" styleClass="bet-session-actions">
-            <padding>
-                <Insets top="15" right="20" bottom="15" left="20"/>
-            </padding>
-            <Button fx:id="addButton" text="Add New Session" onAction="#showAddDialog" styleClass="add-button"/>
-            <Button fx:id="updateButton" text="Update Session" onAction="#showUpdateDialog" styleClass="update-button"/>
-            <Button fx:id="deleteButton" text="Delete Session" onAction="#deleteSelectedBetSession" styleClass="delete-button"/>
-        </HBox>
-    </bottom>
 </BorderPane>
