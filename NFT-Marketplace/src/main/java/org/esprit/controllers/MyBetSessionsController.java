@@ -2,6 +2,7 @@ package org.esprit.controllers;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -151,8 +152,9 @@ public class MyBetSessionsController implements Initializable {
     private void loadAllData() {
         loadMarketplaceBetSessions();
         loadMyBetSessions();
-    }
-      @Override
+    }    private java.util.Timer countdownTimer;
+
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize services
         betSessionService = new BetSessionService();
@@ -204,9 +206,8 @@ public class MyBetSessionsController implements Initializable {
                    new SimpleStringProperty(formatDateTime(time)) : 
                    new SimpleStringProperty("N/A");
         });
-        
-        marketplaceCurrentPriceColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(String.format("%.2f", cellData.getValue().getCurrentPrice())));
+          marketplaceCurrentPriceColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(String.format("%.2f Dannous", cellData.getValue().getCurrentPrice())));
             
         // Configure TAB 2: My active bet sessions table columns
         activeArtworkColumn.setCellValueFactory(cellData -> {
@@ -222,16 +223,14 @@ public class MyBetSessionsController implements Initializable {
                    new SimpleStringProperty(formatDateTime(time)) : 
                    new SimpleStringProperty("N/A");
         });
-        
-        activeEndTimeColumn.setCellValueFactory(cellData -> {
+          activeEndTimeColumn.setCellValueFactory(cellData -> {
             LocalDateTime time = cellData.getValue().getEndTime();
             return time != null ? 
-                   new SimpleStringProperty(formatDateTime(time)) : 
+                   new SimpleStringProperty(formatCountdown(time)) : 
                    new SimpleStringProperty("N/A");
         });
-            
-        activeCurrentPriceColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(String.format("%.2f", cellData.getValue().getCurrentPrice())));
+            activeCurrentPriceColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(String.format("%.2f Dannous", cellData.getValue().getCurrentPrice())));
             
         activeStatusColumn.setCellValueFactory(cellData -> 
             cellData.getValue().statusProperty());
@@ -257,20 +256,34 @@ public class MyBetSessionsController implements Initializable {
                    new SimpleStringProperty(formatDateTime(time)) : 
                    new SimpleStringProperty("N/A");
         });
-            
-        completedFinalPriceColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(String.format("%.2f", cellData.getValue().getCurrentPrice())));
+              completedFinalPriceColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(String.format("%.2f Dannous", cellData.getValue().getCurrentPrice())));
             
         completedStatusColumn.setCellValueFactory(cellData -> 
             cellData.getValue().statusProperty());
         
         // Set up action columns for all tables
         setupActionColumns();
-        
-        // Load bet session data if user is already set
+          // Load bet session data if user is already set
         if (currentUser != null) {
             loadAllData();
         }
+        
+        // Set up a timer to update the countdown every minute
+        countdownTimer = new java.util.Timer(true);
+        countdownTimer.scheduleAtFixedRate(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                // Use Platform.runLater since we're updating UI from a background thread
+                javafx.application.Platform.runLater(() -> {
+                    // Only refresh if there are items in the table
+                    if (activeBetsTableView.getItems() != null && !activeBetsTableView.getItems().isEmpty()) {
+                        // Refresh the active table to update countdowns
+                        activeBetsTableView.refresh();
+                    }
+                });
+            }
+        }, 0, 60000); // Update every minute (60000 ms)
     }
     
     /**
@@ -1140,13 +1153,12 @@ public class MyBetSessionsController implements Initializable {
                 }
             }
         });
-        
-        
-        // Setup active bets action column (Tab 2 - My Active Bet Sessions)
-        activeActionsColumn.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
+            // Setup active bets action column (Tab 2 - My Active Bet Sessions)
+        activeActionsColumn.setCellFactory(col -> new javafx.scene.control.TableCell<BetSession, Void>() {
             private final javafx.scene.control.Button viewButton = new javafx.scene.control.Button("View");
             private final javafx.scene.control.Button editButton = new javafx.scene.control.Button("Edit");
-            private final javafx.scene.layout.HBox buttonsBox = new javafx.scene.layout.HBox(5, viewButton, editButton);
+            private final javafx.scene.control.Button deleteButton = new javafx.scene.control.Button("Delete");
+            private final javafx.scene.layout.HBox buttonsBox = new javafx.scene.layout.HBox(5, viewButton, editButton, deleteButton);
             
             {
                 // Configure view button
@@ -1163,6 +1175,13 @@ public class MyBetSessionsController implements Initializable {
                     handleEditBetSession(session);
                 });
                 
+                // Configure delete button with red styling
+                deleteButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px; -fx-background-color: #e74c3c; -fx-text-fill: white;");
+                deleteButton.setOnAction(event -> {
+                    BetSession session = getTableView().getItems().get(getIndex());
+                    handleDeleteBetSession(session);
+                });
+                
                 // Center the buttons
                 buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
             }
@@ -1176,8 +1195,11 @@ public class MyBetSessionsController implements Initializable {
                 } else {
                     BetSession session = getTableView().getItems().get(getIndex());
                     
-                    // Only allow editing pending sessions
-                    editButton.setDisable(!"pending".equalsIgnoreCase(session.getStatus()));
+                    // Only allow editing and deleting pending sessions
+                    boolean isPending = "pending".equalsIgnoreCase(session.getStatus());
+                    editButton.setDisable(!isPending);
+                    deleteButton.setDisable(!isPending);
+                    deleteButton.setVisible(isPending); // Only show delete button for pending sessions
                     
                     setGraphic(buttonsBox);
                 }
@@ -1215,5 +1237,95 @@ public class MyBetSessionsController implements Initializable {
             return false;
         }
         return true;
+    }
+      /**
+     * Handles deleting a bet session
+     * @param betSession The bet session to delete
+     */
+    private void handleDeleteBetSession(BetSession betSession) {
+        if (betSession == null) {
+            showAlert(Alert.AlertType.WARNING, "No Selection", 
+                      "Please select a bet session to delete.");
+            return;
+        }
+        
+        // Check if bet session is in 'pending' status
+        if (!"pending".equals(betSession.getStatus())) {
+            showAlert(Alert.AlertType.WARNING, "Cannot Delete",
+                      "Only pending bet sessions can be deleted.");
+            return;
+        }
+        
+        // Confirm deletion with the user
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Deletion");
+        confirmAlert.setHeaderText("Delete Bet Session");
+        confirmAlert.setContentText("Are you sure you want to delete this bet session?\nThis action cannot be undone.");
+        
+        confirmAlert.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                try {
+                    // Delete the bet session
+                    betSessionService.deleteBetSession(betSession.getId());
+                    
+                    // Refresh the table
+                    loadAllData();
+                    
+                    // Show success message
+                    showAlert(Alert.AlertType.INFORMATION, "Success", 
+                              "Bet session deleted successfully.");
+                } catch (SQLException ex) {
+                    showAlert(Alert.AlertType.ERROR, "Database Error", 
+                              "Error deleting bet session: " + ex.getMessage());
+                }
+            }
+        });
+    }
+    
+    /**
+     * Calculates and formats a countdown to a future date
+     * @param endDateTime The future date to count down to
+     * @return A formatted string representing the countdown (e.g., "2d 5h 30m")
+     */
+    private String formatCountdown(LocalDateTime endDateTime) {
+        if (endDateTime == null) return "N/A";
+        
+        LocalDateTime now = LocalDateTime.now();
+        
+        // If the end time is in the past, return "Ended"
+        if (endDateTime.isBefore(now)) {
+            return "Ended";
+        }
+        
+        // Calculate the time between now and the end time
+        long daysBetween = java.time.Duration.between(now, endDateTime).toDays();
+        long hoursBetween = java.time.Duration.between(now, endDateTime).toHours() % 24;
+        long minutesBetween = java.time.Duration.between(now, endDateTime).toMinutes() % 60;
+        
+        // Format the countdown differently based on remaining time
+        if (daysBetween > 0) {
+            // More than a day left, show days and hours
+            return String.format("%dd %dh", daysBetween, hoursBetween);
+        } else if (hoursBetween > 0) {
+            // Less than a day but more than an hour, show hours and minutes
+            return String.format("%dh %dm", hoursBetween, minutesBetween);
+        } else if (minutesBetween > 0) {
+            // Less than an hour, show only minutes
+            return String.format("%dm", minutesBetween);
+        } else {
+            // Less than a minute left
+            return "< 1m";
+        }
+    }
+    
+    /**
+     * Stops the countdown timer when the controller is being destroyed
+     * This should be called when closing the application or switching scenes
+     */
+    public void shutdown() {
+        if (countdownTimer != null) {
+            countdownTimer.cancel();
+            countdownTimer = null;
+        }
     }
 }
