@@ -6,10 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="fcec73b1-e0db-46ed-82d5-5664b449271f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/RaffleManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/RaffleManagementController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/services/RaffleService.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/services/RaffleService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/RaffleManagement.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/RaffleManagement.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/styles/raffle-management.css" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/styles/raffle-management.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/RaffleList.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/RaffleList.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,7 +83,7 @@
       <command value="mvn javafx:run" />
     </option>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.BetSessionApp">
     <configuration name="BetSessionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.esprit.main.BetSessionApp" />
       <module name="NFT-Marketplace" />
@@ -198,6 +195,7 @@
       <workItem from="1745660132935" duration="1123000" />
       <workItem from="1745746401814" duration="1224000" />
       <workItem from="1745749114872" duration="3853000" />
+      <workItem from="1745776246523" duration="1771000" />
     </task>
     <servers />
   </component>

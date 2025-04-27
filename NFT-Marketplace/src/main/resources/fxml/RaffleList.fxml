@@ -9,30 +9,8 @@
     <!-- Main Content -->
     <center>
         <VBox spacing="20">
-            <!-- Header Bar -->
-            <HBox alignment="CENTER_LEFT" style="-fx-background-color: #1e3c72;" spacing="10">
-                <padding>
-                    <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
-                </padding>
-                <children>
-                    <Label text="NFT Marketplace - Raffles" textFill="WHITE">
-                        <font>
-                            <Font name="System Bold" size="18.0" />
-                        </font>
-                    </Label>
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Button fx:id="backButton" mnemonicParsing="false" onAction="#handleBack" 
-                            style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 3;" 
-                            text="Back">
-                        <HBox.margin>
-                            <Insets left="15.0" />
-                        </HBox.margin>
-                    </Button>
-                </children>
-            </HBox>
-
             <padding>
-                <Insets top="0" right="20" bottom="20" left="20"/>
+                <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>
 
             <!-- Header -->
