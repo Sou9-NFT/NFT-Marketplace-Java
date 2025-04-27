@@ -24,6 +24,7 @@ import org.esprit.services.BlogService;
 import org.esprit.services.CommentService;
 import org.esprit.utils.GiphyService;
 import org.esprit.utils.TranslationService;
+import org.esprit.utils.TextToSpeech;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -46,11 +47,14 @@ public class BlogDetailController implements Initializable {
     @FXML private FlowPane gifPreviewPane;
     @FXML private ImageView selectedGifPreview;
     @FXML private Button clearGifButton;
+    @FXML private ToggleButton speakButton;
+    @FXML private ComboBox<String> voiceComboBox;
     
     private BlogService blogService;
     private CommentService commentService;
     private TranslationService translationService;
     private GiphyService giphyService;
+    private TextToSpeech tts;
     private Blog currentBlog;
     private User currentUser;
     private String selectedGifUrl;
@@ -62,14 +66,46 @@ public class BlogDetailController implements Initializable {
         commentService = new CommentService();
         translationService = TranslationService.getInstance();
         giphyService = GiphyService.getInstance();
+        tts = TextToSpeech.getInstance();
         setupCommentsList();
         setupLanguageComboBox();
+        setupVoiceSelection();
+        
+        // Initialize speak button
+        if (speakButton != null) {
+            speakButton.setOnAction(e -> {
+                if (speakButton.isSelected()) {
+                    String textToSpeak = blogTitleText.getText() + ". " + blogContentText.getText();
+                    tts.speak(textToSpeak);
+                } else {
+                    tts.stop();
+                }
+            });
+        }
     }
     
     private void setupLanguageComboBox() {
         languageComboBox.setItems(FXCollections.observableArrayList(
             "French", "Spanish", "German", "Italian", "Arabic"
         ));
+    }
+    
+    private void setupVoiceSelection() {
+        if (voiceComboBox != null) {
+            // Populate voice options
+            voiceComboBox.setItems(FXCollections.observableArrayList(tts.getAvailableVoices()));
+            
+            // Set default voice
+            voiceComboBox.setValue(voiceComboBox.getItems().get(0));
+            
+            // Handle voice changes
+            voiceComboBox.setOnAction(e -> {
+                String selectedVoice = voiceComboBox.getValue();
+                if (selectedVoice != null) {
+                    tts.setVoice(selectedVoice);
+                }
+            });
+        }
     }
     
     @FXML
@@ -114,6 +150,12 @@ public class BlogDetailController implements Initializable {
     }
     
     public void setBlog(Blog blog) {
+        // Stop any ongoing speech
+        if (tts != null && tts.isSpeaking()) {
+            tts.stop();
+            speakButton.setSelected(false);
+        }
+        
         System.out.println("Setting blog: " + (blog != null ? "Blog ID: " + blog.getId() : "null"));
         this.currentBlog = blog;
         if (blog == null) {

@@ -15,10 +15,24 @@
                 <padding>
                     <Insets top="20" right="20" bottom="20" left="20"/>
                 </padding>
-                
-                <!-- Blog header section -->
+                  <!-- Blog header section -->
                 <HBox spacing="10" alignment="CENTER_LEFT">
-                    <ImageView fx:id="authorProfilePicture" fitHeight="50" fitWidth="50" />
+                    <ImageView fx:id="authorProfilePicture" fitHeight="50" fitWidth="50" />                    <VBox HBox.hgrow="ALWAYS">
+                        <Label fx:id="authorNameLabel" styleClass="author-name" />
+                        <Label fx:id="postDateLabel" styleClass="post-date" />
+                    </VBox>
+                    <HBox spacing="10" alignment="CENTER">
+                        <ComboBox fx:id="voiceComboBox" promptText="Select Voice" styleClass="voice-selector">
+                            <tooltip>
+                                <Tooltip text="Choose a voice for text-to-speech" />
+                            </tooltip>
+                        </ComboBox>
+                        <ToggleButton fx:id="speakButton" text="Listen" styleClass="speak-button">
+                            <tooltip>
+                                <Tooltip text="Click to listen to the blog content" />
+                            </tooltip>
+                        </ToggleButton>
+                    </HBox>
                     <VBox>
                         <Label fx:id="authorNameLabel" style="-fx-font-weight: bold"/>
                         <Label fx:id="postDateLabel" style="-fx-text-fill: #666"/>
