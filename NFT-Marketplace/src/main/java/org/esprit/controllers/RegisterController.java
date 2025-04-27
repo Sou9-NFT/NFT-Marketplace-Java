@@ -6,6 +6,7 @@ import java.util.Map;
 import org.esprit.models.User;
 import org.esprit.models.User.ValidationResult;
 import org.esprit.services.UserService;
+import org.esprit.utils.IdenticonGenerator;
 import org.esprit.utils.PasswordHasher;
 
 import javafx.event.ActionEvent;
@@ -23,85 +24,94 @@ public class RegisterController {
 
     @FXML
     private TextField nameField;
-    
+
+    @FXML
+    private Label nameErrorLabel;
+
     @FXML
     private TextField emailField;
-    
+
+    @FXML
+    private Label emailErrorLabel;
+
     @FXML
     private PasswordField passwordField;
-    
+
+    @FXML
+    private Label passwordErrorLabel;
+
     @FXML
     private PasswordField confirmPasswordField;
     
     @FXML
-    private Label errorLabel;
-    
-    // Field-specific error labels
-    @FXML
-    private Label nameErrorLabel;
-    
-    @FXML
-    private Label emailErrorLabel;
-    
-    @FXML
-    private Label passwordErrorLabel;
-    
-    @FXML
     private Label confirmPasswordErrorLabel;
     
-    private UserService userService;
+    @FXML
+    private Label errorLabel; // Changed from statusMessageLabel to match the FXML
+
+    private final UserService userService;
     
     public RegisterController() {
         userService = new UserService();
     }
+
+    @FXML
+    private void handleLoginLink(ActionEvent event) {
+        try {
+            Parent loginView = FXMLLoader.load(getClass().getResource("/fxml/Login.fxml"));
+            Scene currentScene = ((Node) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            stage.setScene(new Scene(loginView, 800, 600));
+            stage.setTitle("NFT Marketplace - Login");
+            stage.show();
+        } catch (IOException e) {
+            showError("Error loading login page: " + e.getMessage());
+        }
+    }
     
+    private void showFieldError(Label errorLabel, String message) {
+        errorLabel.setText(message);
+        errorLabel.setVisible(true);
+    }
+    
+    private void hideFieldErrors() {
+        nameErrorLabel.setVisible(false);
+        emailErrorLabel.setVisible(false);
+        passwordErrorLabel.setVisible(false);
+        confirmPasswordErrorLabel.setVisible(false);
+    }
+    
+    private void showError(String message) {
+        errorLabel.setText(message); // Changed from statusMessageLabel to errorLabel
+        errorLabel.setVisible(true); // Changed from statusMessageLabel to errorLabel
+        errorLabel.getStyleClass().remove("status-success"); // Changed from statusMessageLabel to errorLabel
+        errorLabel.getStyleClass().add("status-error"); // Changed from statusMessageLabel to errorLabel
+    }
+
     @FXML
     private void handleRegister(ActionEvent event) {
-        // Clear all error messages first
-        clearAllErrors();
+        hideFieldErrors();
+        errorLabel.setVisible(false); // Changed from statusMessageLabel to errorLabel
         
         String name = nameField.getText().trim();
         String email = emailField.getText().trim();
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
         
-        boolean hasErrors = false;
-        
-        // Basic field presence validation
-        if (name.isEmpty()) {
-            showFieldError(nameErrorLabel, "Name cannot be empty");
-            hasErrors = true;
-        }
-        
-        if (email.isEmpty()) {
-            showFieldError(emailErrorLabel, "Email cannot be empty");
-            hasErrors = true;
-        }
-        
-        if (password.isEmpty()) {
-            showFieldError(passwordErrorLabel, "Password cannot be empty");
-            hasErrors = true;
-        }
-        
-        // Confirm password validation
+        // Check if passwords match
         if (!password.equals(confirmPassword)) {
             showFieldError(confirmPasswordErrorLabel, "Passwords do not match");
-            hasErrors = true;
-        }
-        
-        // If basic validations failed, stop here
-        if (hasErrors) {
             return;
         }
         
-        // Create a temporary user for full validation
-        User userToValidate = new User(email, password, name);
-        ValidationResult validationResult = userToValidate.validate();
+        // Validate input using User's validation
+        User tempUser = new User(email, password, name);
+        ValidationResult validationResult = tempUser.validate();
         
         if (!validationResult.isValid()) {
-            // Show validation errors on specific fields
-            Map<String, String> errors = validationResult.getErrors();
+            boolean hasErrors = false;
             
+            Map<String, String> errors = validationResult.getErrors();
             if (errors.containsKey("name")) {
                 showFieldError(nameErrorLabel, errors.get("name"));
                 hasErrors = true;
@@ -134,67 +144,50 @@ public class RegisterController {
             // Create new user with form data and hash the password
             User newUser = new User(email, PasswordHasher.hashPassword(password), name);
             
-            // Set default profile picture
-            newUser.setProfilePicture("/assets/default/default_profile.jpg");
+            try {
+                // Generate unique identicon based on email
+                String uploadsDir = System.getProperty("user.dir") + "/src/main/resources/uploads";
+                String identiconFilename = IdenticonGenerator.generateIdenticon(email, uploadsDir);
+                
+                // Set the path to be used by the application
+                newUser.setProfilePicture("/uploads/" + identiconFilename);
+                
+            } catch (Exception e) {
+                // If identicon generation fails, fall back to default profile image
+                newUser.setProfilePicture("/assets/default/default_profile.jpg");
+                System.err.println("Failed to generate identicon: " + e.getMessage());
+            }
             
-            // If validation passed, save the user
+            // Add the user to the database
             userService.add(newUser);
             
-            // Show success and navigate to login
-            showSuccess("Registration successful! Please login.");
-            switchToLogin(event);
+            // Navigate to login screen with success message
+            navigateToLogin(event, "Registration successful! Please log in.");
+            
         } catch (Exception e) {
-            showError("An error occurred: " + e.getMessage());
+            showError("Registration failed: " + e.getMessage());
             e.printStackTrace();
         }
     }
     
-    @FXML
-    private void switchToLogin(ActionEvent event) {
+    private void navigateToLogin(ActionEvent event, String successMessage) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             Parent loginView = loader.load();
             
+            LoginController controller = loader.getController();
+            if (successMessage != null) {
+                controller.showSuccess(successMessage);
+            }
+            
             Scene currentScene = ((Node) event.getSource()).getScene();
             Stage stage = (Stage) currentScene.getWindow();
             
-            Scene scene = new Scene(loginView, 600, 400);
-            stage.setScene(scene);
+            stage.setScene(new Scene(loginView, 800, 600));
+            stage.setTitle("NFT Marketplace - Login");
             stage.show();
         } catch (IOException e) {
             showError("Error loading login page: " + e.getMessage());
-            e.printStackTrace();
         }
-    }
-    
-    // Show error in the specific field error label
-    private void showFieldError(Label errorLabel, String message) {
-        errorLabel.setText(message);
-        errorLabel.setVisible(true);
-    }
-    
-    // Show general error in the main error label
-    private void showError(String message) {
-        errorLabel.setText(message);
-        errorLabel.setVisible(true);
-        errorLabel.getStyleClass().removeAll("status-success");
-        errorLabel.getStyleClass().add("status-error");
-    }
-    
-    // Show success message in the main error label
-    private void showSuccess(String message) {
-        errorLabel.setText(message);
-        errorLabel.setVisible(true);
-        errorLabel.getStyleClass().removeAll("status-error");
-        errorLabel.getStyleClass().add("status-success");
-    }
-    
-    // Clear all error messages
-    private void clearAllErrors() {
-        nameErrorLabel.setVisible(false);
-        emailErrorLabel.setVisible(false);
-        passwordErrorLabel.setVisible(false);
-        confirmPasswordErrorLabel.setVisible(false);
-        errorLabel.setVisible(false);
     }
 }

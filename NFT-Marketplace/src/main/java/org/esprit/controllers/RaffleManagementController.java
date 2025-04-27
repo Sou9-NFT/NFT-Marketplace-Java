@@ -9,7 +9,9 @@ import javafx.collections.ObservableList;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.layout.HBox;
+import javafx.scene.layout.*;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.ToggleGroup;
@@ -23,9 +25,11 @@ import org.esprit.utils.AlertUtils;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Date;
+import java.util.Map;
 
 public class RaffleManagementController {
     // Existing raffle table fields
@@ -51,7 +55,8 @@ public class RaffleManagementController {
     @FXML private ComboBox<String> statusFilter;
     @FXML private ToggleButton rafflesToggle;
     @FXML private ToggleButton participantsToggle;
-    
+    @FXML private Button statisticsButton;
+
     private RaffleService raffleService;
     private ParticipantService participantService;
     private User currentUser;
@@ -68,6 +73,121 @@ public class RaffleManagementController {
         setupFilters();
         loadRaffles();
         loadParticipants();
+        
+        // Setup statistics button
+        if (statisticsButton != null) {
+            statisticsButton.setOnAction(event -> showStatistics());
+        }
+    }
+
+    private void showStatistics() {
+        try {
+            Dialog<Void> dialog = new Dialog<>();
+            dialog.setTitle("Raffle Statistics");
+            dialog.setHeaderText(null);
+
+            VBox content = new VBox(25);  // Increased spacing between sections
+            content.setPadding(new Insets(25));
+            content.setPrefWidth(600);    // Increased dialog width
+            content.getStyleClass().add("statistics-dialog");
+
+            // Winners section
+            VBox winnersSection = new VBox(15);  // Increased internal spacing
+            winnersSection.getStyleClass().add("statistics-section");
+            
+            Label winnersTitle = new Label("Top Winners");
+            winnersTitle.getStyleClass().add("statistics-title");
+            
+            FlowPane winnerStats = new FlowPane(20, 20);  // Increased spacing between items
+            winnerStats.setAlignment(Pos.CENTER);
+            List<Map<String, Object>> winnerStatistics = raffleService.getWinnerStatistics();
+            
+            if (winnerStatistics.isEmpty()) {
+                Label noWinnersLabel = new Label("No winners found");
+                noWinnersLabel.getStyleClass().add("stat-label");
+                winnerStats.getChildren().add(noWinnersLabel);
+            } else {
+                for (Map<String, Object> stat : winnerStatistics) {
+                    VBox winnerBox = new VBox(5);
+                    winnerBox.setAlignment(Pos.CENTER);
+                    winnerBox.getStyleClass().add("statistics-item");
+                    
+                    ProgressIndicator progress = new ProgressIndicator();
+                    progress.getStyleClass().add("stat-progress");
+                    double winCount = ((Integer)stat.get("winCount")).doubleValue();
+                    progress.setProgress(winCount / Math.max(winCount, 10.0));
+                    
+                    Label nameLabel = new Label(stat.get("userName").toString());
+                    nameLabel.getStyleClass().add("winner-stat");
+                    
+                    Label countLabel = new Label(stat.get("winCount") + " wins");
+                    countLabel.getStyleClass().add("stat-count");
+                    
+                    winnerBox.getChildren().addAll(progress, nameLabel, countLabel);
+                    winnerStats.getChildren().add(winnerBox);
+                }
+            }
+
+            // Time statistics section
+            VBox timeSection = new VBox(10);
+            timeSection.getStyleClass().add("statistics-section");
+            
+            Label timeTitle = new Label("Most Active Days");
+            timeTitle.getStyleClass().add("statistics-title");
+            
+            FlowPane timeStats = new FlowPane(10, 10);
+            timeStats.setAlignment(Pos.CENTER);
+            List<Map<String, Object>> timeStatistics = raffleService.getCreationTimeStatistics();
+            
+            if (timeStatistics.isEmpty()) {
+                Label noTimeStatsLabel = new Label("No time statistics available");
+                noTimeStatsLabel.getStyleClass().add("stat-label");
+                timeStats.getChildren().add(noTimeStatsLabel);
+            } else {
+                // Find max count for percentage calculation
+                int maxCount = timeStatistics.stream()
+                    .mapToInt(stat -> (Integer)stat.get("count"))
+                    .max()
+                    .orElse(1);
+                
+                for (Map<String, Object> stat : timeStatistics) {
+                    VBox timeBox = new VBox(5);
+                    timeBox.setAlignment(Pos.CENTER);
+                    timeBox.getStyleClass().add("statistics-item");
+                    
+                    ProgressIndicator progress = new ProgressIndicator();
+                    progress.getStyleClass().add("stat-progress");
+                    double count = ((Integer)stat.get("count")).doubleValue();
+                    progress.setProgress(count / maxCount);
+                    
+                    String dayName = (String)stat.get("dayName");
+                    Label dayLabel = new Label(dayName);
+                    dayLabel.getStyleClass().add("time-stat");
+                    
+                    Label countLabel = new Label(stat.get("count") + " raffles");
+                    countLabel.getStyleClass().add("stat-count");
+                    
+                    timeBox.getChildren().addAll(progress, dayLabel, countLabel);
+                    timeStats.getChildren().add(timeBox);
+                }
+            }
+
+            // Add sections to content
+            winnersSection.getChildren().addAll(winnersTitle, winnerStats);
+            timeSection.getChildren().addAll(timeTitle, timeStats);
+            content.getChildren().addAll(winnersSection, timeSection);
+
+            // Add close button
+            ButtonType closeButton = new ButtonType("Close", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().add(closeButton);
+
+            dialog.getDialogPane().setContent(content);
+            dialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles/raffle-management.css").toExternalForm());
+            dialog.showAndWait();
+
+        } catch (SQLException e) {
+            AlertUtils.showError("Error", "Could not load statistics: " + e.getMessage());
+        }
     }
 
     private void setupToggles() {
@@ -101,6 +221,37 @@ public class RaffleManagementController {
         startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startTime"));
         endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endTime"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+        
+        // Apply custom styling to status column
+        statusColumn.setCellFactory(column -> new TableCell<Raffle, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    getStyleClass().removeAll("status-active", "status-upcoming", "status-completed", "status-cancelled");
+                } else {
+                    setText(item);
+                    getStyleClass().removeAll("status-active", "status-upcoming", "status-completed", "status-cancelled");
+                    switch (item.toLowerCase()) {
+                        case "active":
+                            getStyleClass().add("status-active");
+                            break;
+                        case "upcoming":
+                            getStyleClass().add("status-upcoming");
+                            break;
+                        case "completed":
+                            getStyleClass().add("status-completed");
+                            break;
+                        case "cancelled":
+                            getStyleClass().add("status-cancelled");
+                            break;
+                    }
+                }
+            }
+        });
         
         setupActionButtons();
     }
@@ -141,18 +292,74 @@ public class RaffleManagementController {
             new SimpleStringProperty(cellData.getValue().getUser().getName()));
         raffleNameColumn.setCellValueFactory(cellData -> 
             new SimpleStringProperty(cellData.getValue().getRaffle().getTitle()));
+            
+        // Format the date for better readability
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm");
         participationDateColumn.setCellValueFactory(cellData -> 
             new SimpleObjectProperty<>(Date.from(cellData.getValue().getJoinedAt().atZone(ZoneId.systemDefault()).toInstant())));
+        
+        // Update winner status column logic
         winnerStatusColumn.setCellValueFactory(cellData -> {
             Participant participant = cellData.getValue();
             Raffle raffle = participant.getRaffle();
-            if (raffle.getStatus().equals("ended") && raffle.getWinnerId() != null) {
-                return new SimpleStringProperty(raffle.getWinnerId().equals(participant.getUser().getId()) ? 
-                    "Winner" : "Not Winner");
+            String status;
+            
+            if (raffle.getStatus().equals("active")) {
+                status = "Pending";
+            } else if (raffle.getStatus().equals("ended")) {
+                if (raffle.getWinnerId() != null && raffle.getWinnerId().equals(participant.getUser().getId())) {
+                    status = "Winner";
+                } else if (raffle.getWinnerId() != null) {
+                    status = "Not Winner";
+                } else {
+                    status = "No Winner";
+                }
+            } else {
+                status = "Cancelled";
             }
-            return new SimpleStringProperty("Pending");
+            return new SimpleStringProperty(status);
         });
-        
+
+        // Style the winner status cells
+        winnerStatusColumn.setCellFactory(column -> new TableCell<Participant, String>() {
+            @Override
+            protected void updateItem(String status, boolean empty) {
+                super.updateItem(status, empty);
+                
+                if (empty || status == null) {
+                    setText(null);
+                    setGraphic(null);
+                    getStyleClass().removeAll("status-winner", "status-pending", "status-not-winner", "status-no-winner", "status-cancelled");
+                } else {
+                    setText(status);
+                    getStyleClass().removeAll("status-winner", "status-pending", "status-not-winner", "status-no-winner", "status-cancelled");
+                    
+                    switch (status) {
+                        case "Winner":
+                            getStyleClass().add("status-winner");
+                            setStyle("-fx-text-fill: #2E7D32;"); // Green color for winners
+                            break;
+                        case "Pending":
+                            getStyleClass().add("status-pending");
+                            setStyle("-fx-text-fill: #1976D2;"); // Blue color for pending
+                            break;
+                        case "Not Winner":
+                            getStyleClass().add("status-not-winner");
+                            setStyle("-fx-text-fill: #D32F2F;"); // Red color for non-winners
+                            break;
+                        case "No Winner":
+                            getStyleClass().add("status-no-winner");
+                            setStyle("-fx-text-fill: #757575;"); // Gray color for no winners
+                            break;
+                        case "Cancelled":
+                            getStyleClass().add("status-cancelled");
+                            setStyle("-fx-text-fill: #616161;"); // Dark gray for cancelled
+                            break;
+                    }
+                }
+            }
+        });
+
         setupParticipantActions();
     }
 
@@ -180,33 +387,39 @@ public class RaffleManagementController {
 
     private void setupFilters() {
         statusFilter.setItems(FXCollections.observableArrayList(
-            "All", "Active", "Upcoming", "Completed", "Cancelled"
+            "All", "active", "ended"
         ));
         statusFilter.setValue("All");
         
         // Add listeners for filter changes
-        statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterRaffles());
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> filterRaffles());
+        statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (rafflesToggle.isSelected()) {
+                filterRaffles();
+            } else {
+                filterParticipants();
+            }
+        });
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            if (rafflesToggle.isSelected()) {
+                filterRaffles();
+            } else {
+                filterParticipants();
+            }
+        });
     }
 
-    private void loadRaffles() {
+    public void loadRaffles() {
         try {
             List<Raffle> raffles = raffleService.getAllRaffles();
             
             // Ensure each raffle has a creator object
             for (Raffle raffle : raffles) {
-                // If the raffle has no creator, set the current user as creator
-                // This is a temporary fix to prevent NullPointerException
                 if (raffle.getCreator() == null) {
-                    // Enable loading mode to prevent validation during this temporary fix
                     raffle.setLoadingFromDatabase(true);
-                    
                     User tempCreator = new User();
                     tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
                     tempCreator.setName("Unknown Creator");
                     raffle.setCreator(tempCreator);
-                    
-                    // Disable loading mode after setting the property
                     raffle.setLoadingFromDatabase(false);
                 }
             }
@@ -217,7 +430,6 @@ public class RaffleManagementController {
             System.err.println("Error loading raffles: " + e.getMessage());
             e.printStackTrace();
             AlertUtils.showError("Error", "Could not load raffles: " + e.getMessage());
-            // Create empty list if there was an error to avoid NPE
             raffleList = FXCollections.observableArrayList();
             raffleTable.setItems(raffleList);
         }
@@ -370,6 +582,7 @@ public class RaffleManagementController {
             RaffleDetailsController controller = loader.getController();
             controller.setRaffle(raffle);
             controller.setCurrentUser(currentUser);
+            controller.setParentController(this); // Set this controller as parent
             
             Stage stage = new Stage();
             Scene scene = new Scene(detailsView);

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -15,14 +16,17 @@ import org.esprit.services.ArtworkService;
 import org.esprit.services.RaffleService;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 
 public class CreateRaffleController {
     @FXML
@@ -32,7 +36,7 @@ public class CreateRaffleController {
     private TextArea descriptionField;
     
     @FXML
-    private TextField artworkIdField;
+    private ComboBox<Artwork> artworkComboBox;
     
     @FXML
     private DatePicker endDatePicker;
@@ -60,6 +64,91 @@ public class CreateRaffleController {
         
         // Set default end date to tomorrow
         endDatePicker.setValue(LocalDate.now().plusDays(1));
+        
+        // Setup artwork ComboBox
+        setupArtworkComboBox();
+    }
+    
+    private void setupArtworkComboBox() {
+        // Configure how artwork items are displayed in the ComboBox
+        artworkComboBox.setCellFactory(param -> new ListCell<Artwork>() {
+            @Override
+            protected void updateItem(Artwork artwork, boolean empty) {
+                super.updateItem(artwork, empty);
+                
+                if (empty || artwork == null) {
+                    setText(null);
+                } else {
+                    setText(artwork.getTitle() + " (ID: " + artwork.getId() + ")");
+                }
+            }
+        });
+        
+        // Configure how the selected artwork is displayed in the ComboBox
+        artworkComboBox.setConverter(new StringConverter<Artwork>() {
+            @Override
+            public String toString(Artwork artwork) {
+                if (artwork == null) {
+                    return null;
+                }
+                return artwork.getTitle() + " (ID: " + artwork.getId() + ")";
+            }
+            
+            @Override
+            public Artwork fromString(String string) {
+                // This is needed for the converter but won't be used in our case
+                return null;
+            }
+        });
+    }
+    
+    private void loadUserArtworks() {
+        try {
+            if (currentUser != null) {
+                // Get all artworks owned by the current user
+                List<Artwork> userArtworks = artworkService.getByOwner(currentUser.getId());
+                
+                ObservableList<Artwork> artworkOptions = FXCollections.observableArrayList();
+                
+                if (userArtworks.isEmpty()) {
+                    // Create a special artwork object that indicates "NONE"
+                    final String PLACEHOLDER_TITLE = "NONE - Create an artwork first";
+                    final String PLACEHOLDER_DESC = "No artwork available";
+                    
+                    try {
+                        // Special case for when user has no artworks
+                        // We need a placeholder that won't trigger validation errors
+                        Artwork noArtwork = new PlaceholderArtwork(
+                            -1,
+                            currentUser.getId(),
+                            currentUser.getId(),
+                            1,
+                            PLACEHOLDER_TITLE,
+                            PLACEHOLDER_DESC,
+                            0.01,
+                            "none.png",
+                            LocalDateTime.now(),
+                            LocalDateTime.now()
+                        );
+                        artworkOptions.add(noArtwork);
+                    } catch (Exception e) {
+                        System.out.println("Error creating placeholder artwork: " + e.getMessage());
+                    }
+                } else {
+                    artworkOptions.addAll(userArtworks);
+                }
+                
+                artworkComboBox.setItems(artworkOptions);
+                
+                // Select the first item by default
+                if (!artworkOptions.isEmpty()) {
+                    artworkComboBox.setValue(artworkOptions.get(0));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showStatus("Error loading your artworks: " + e.getMessage(), true);
+        }
     }
     
     private void setupTimeComboBoxes() {
@@ -82,6 +171,8 @@ public class CreateRaffleController {
     
     public void setUser(User user) {
         this.currentUser = user;
+        // Load user's artworks when user is set
+        loadUserArtworks();
     }
     
     public void setParentController(RaffleListController controller) {
@@ -96,7 +187,7 @@ public class CreateRaffleController {
         // Get input values
         String title = titleField.getText().trim();
         String description = descriptionField.getText().trim();
-        String artworkIdStr = artworkIdField.getText().trim();
+        Artwork selectedArtwork = artworkComboBox.getValue();
         LocalDate endDate = endDatePicker.getValue();
         String hour = endTimeHourCombo.getValue();
         String minute = endTimeMinuteCombo.getValue();
@@ -130,26 +221,17 @@ public class CreateRaffleController {
             descriptionField.setStyle("");
         }
         
-        // Check artwork ID (entity validation)
-        if (artworkIdStr.isEmpty()) {
-            artworkIdField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
-            if (!hasErrors) showStatus("Please enter an artwork ID", true);
+        // Check artwork selection (entity validation)
+        if (selectedArtwork == null) {
+            artworkComboBox.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+            if (!hasErrors) showStatus("Please select an artwork", true);
+            hasErrors = true;
+        } else if (selectedArtwork.getId() == -1) {
+            artworkComboBox.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
+            if (!hasErrors) showStatus("You don't have any artworks to raffle. Please create an artwork first.", true);
             hasErrors = true;
         } else {
-            try {
-                int artworkId = Integer.parseInt(artworkIdStr);
-                if (artworkId <= 0) {
-                    artworkIdField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
-                    if (!hasErrors) showStatus("Artwork ID must be a positive number", true);
-                    hasErrors = true;
-                } else {
-                    artworkIdField.setStyle("");
-                }
-            } catch (NumberFormatException e) {
-                artworkIdField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
-                if (!hasErrors) showStatus("Artwork ID must be a valid number", true);
-                hasErrors = true;
-            }
+            artworkComboBox.setStyle("");
         }
         
         // Check end date (entity validation)
@@ -182,9 +264,6 @@ public class CreateRaffleController {
         }
         
         try {
-            // Parse artwork ID (already validated above)
-            int artworkId = Integer.parseInt(artworkIdStr);
-            
             // Create LocalDateTime with the selected date and time
             LocalDateTime endDateTime = LocalDateTime.of(
                 endDate,
@@ -200,27 +279,13 @@ public class CreateRaffleController {
                 return;
             }
             
-            // Verify artwork exists and check ownership (entity relationship validation)
-            Artwork artwork = artworkService.getOne(artworkId);
-            if (artwork == null) {
-                artworkIdField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
-                showStatus("Artwork with ID " + artworkId + " not found", true);
-                return;
-            }
-            
-            if (artwork.getOwnerId() != currentUser.getId()) {
-                artworkIdField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
-                showStatus("You can only create raffles for artworks you own", true);
-                return;
-            }
-            
             // All validation passed, create and save the raffle
             Raffle raffle = new Raffle(
                 title,
                 description,
                 Date.from(endDateTime.atZone(ZoneId.systemDefault()).toInstant()),
                 currentUser,
-                artworkId
+                selectedArtwork.getId()
             );
             
             raffleService.add(raffle);
@@ -245,12 +310,9 @@ public class CreateRaffleController {
                 }
             }).start();
             
-        } catch (NumberFormatException e) {
-            artworkIdField.setStyle("-fx-border-color: red; -fx-border-width: 2px;");
-            showStatus("Please enter a valid artwork ID number", true);
         } catch (Exception e) {
-            showStatus("Error creating raffle: " + e.getMessage(), true);
             e.printStackTrace();
+            showStatus("Error creating raffle: " + e.getMessage(), true);
         }
     }
     
@@ -261,25 +323,89 @@ public class CreateRaffleController {
     
     private void clearStatus() {
         statusLabel.setVisible(false);
-        titleField.setStyle("");
-        descriptionField.setStyle("");
-        artworkIdField.setStyle("");
-        endDatePicker.setStyle("");
-        endTimeHourCombo.setStyle("");
-        endTimeMinuteCombo.setStyle("");
+        statusLabel.setText("");
+        statusLabel.setStyle("");
     }
     
     private void showStatus(String message, boolean isError) {
         statusLabel.setText(message);
         statusLabel.setVisible(true);
-        statusLabel.getStyleClass().removeAll("status-error", "status-success");
-        statusLabel.getStyleClass().add(isError ? "status-error" : "status-success");
         
-        // Apply direct styling for red error messages
         if (isError) {
-            statusLabel.setStyle("-fx-text-fill: #FF0000; -fx-font-weight: bold;");
+            statusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
         } else {
-            statusLabel.setStyle("-fx-text-fill: #009900; -fx-font-weight: normal;");
+            statusLabel.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+        }
+    }
+    
+    // Inner class to create a placeholder artwork without validation
+    private static class PlaceholderArtwork extends Artwork {
+        public PlaceholderArtwork(int id, int creatorId, int ownerId, int categoryId, 
+                                 String title, String description, double price, 
+                                 String imageName, LocalDateTime createdAt, LocalDateTime updatedAt) {
+            // Call superclass constructor but handle exceptions
+            super();
+            // Set the properties directly
+            setId(id);
+            
+            try {
+                setCreatorId(creatorId > 0 ? creatorId : 1);
+                setOwnerId(ownerId > 0 ? ownerId : 1);
+                setCategoryId(categoryId > 0 ? categoryId : 1);
+            } catch (IllegalArgumentException e) {
+                // Ignore validation errors for IDs
+                try {
+                    // Call these with reflection if needed
+                    java.lang.reflect.Field creatorIdField = Artwork.class.getDeclaredField("creatorId");
+                    creatorIdField.setAccessible(true);
+                    creatorIdField.set(this, creatorId > 0 ? creatorId : 1);
+                    
+                    java.lang.reflect.Field ownerIdField = Artwork.class.getDeclaredField("ownerId");
+                    ownerIdField.setAccessible(true);
+                    ownerIdField.set(this, ownerId > 0 ? ownerId : 1);
+                    
+                    java.lang.reflect.Field categoryIdField = Artwork.class.getDeclaredField("categoryId");
+                    categoryIdField.setAccessible(true);
+                    categoryIdField.set(this, categoryId > 0 ? categoryId : 1);
+                } catch (Exception ex) {
+                    // Last resort
+                    System.err.println("Failed to set fields via reflection: " + ex.getMessage());
+                }
+            }
+            
+            try {
+                // Try to bypass validation for these fields
+                java.lang.reflect.Field titleField = Artwork.class.getDeclaredField("title");
+                titleField.setAccessible(true);
+                titleField.set(this, title);
+                
+                java.lang.reflect.Field descriptionField = Artwork.class.getDeclaredField("description");
+                descriptionField.setAccessible(true);
+                descriptionField.set(this, description);
+                
+                java.lang.reflect.Field priceField = Artwork.class.getDeclaredField("price");
+                priceField.setAccessible(true);
+                priceField.set(this, price);
+                
+                java.lang.reflect.Field imageNameField = Artwork.class.getDeclaredField("imageName");
+                imageNameField.setAccessible(true);
+                imageNameField.set(this, imageName);
+                
+                java.lang.reflect.Field createdAtField = Artwork.class.getDeclaredField("createdAt");
+                createdAtField.setAccessible(true);
+                createdAtField.set(this, createdAt);
+                
+                java.lang.reflect.Field updatedAtField = Artwork.class.getDeclaredField("updatedAt");
+                updatedAtField.setAccessible(true);
+                updatedAtField.set(this, updatedAt);
+            } catch (Exception e) {
+                System.err.println("Error in PlaceholderArtwork constructor: " + e.getMessage());
+            }
+        }
+        
+        @Override
+        public void validate() {
+            // Override to disable validation
         }
     }
 }
