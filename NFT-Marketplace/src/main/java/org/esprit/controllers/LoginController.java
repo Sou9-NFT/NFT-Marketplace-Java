@@ -19,6 +19,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 
 public class LoginController {
@@ -59,15 +60,22 @@ public class LoginController {
         // Initialize cryptocurrency ticker
         cryptoTicker = new CryptoTickerComponent();
         
-        if (cryptoTickerScroll != null) {
-            // Replace the ScrollPane content with our crypto ticker component
-            cryptoTickerScroll.setContent(cryptoTicker.getView().getContent());
-            
-            // Apply the same styling from the crypto ticker ScrollPane to our ScrollPane
-            cryptoTickerScroll.getStyleClass().addAll(cryptoTicker.getView().getStyleClass());
-            cryptoTickerScroll.setFitToWidth(true);
-            cryptoTickerScroll.setFitToHeight(true);
-        }
+        // Use Platform.runLater to ensure FXML elements are fully loaded
+        javafx.application.Platform.runLater(() -> {
+            if (cryptoTickerContainer != null) {
+                // Clear any existing content and add the crypto ticker directly to the container
+                cryptoTickerContainer.getChildren().clear();
+                cryptoTickerContainer.getChildren().add(cryptoTicker.getView());
+                
+                // Make sure the ticker takes full width
+                HBox.setHgrow(cryptoTicker.getView(), Priority.ALWAYS);
+                cryptoTicker.getView().setMaxWidth(Double.MAX_VALUE);
+                cryptoTicker.getView().setFitToWidth(true);
+            } else {
+                // Log error if container is still null
+                System.err.println("Error: cryptoTickerContainer is null in LoginController initialize()");
+            }
+        });
     }
     
     @FXML
