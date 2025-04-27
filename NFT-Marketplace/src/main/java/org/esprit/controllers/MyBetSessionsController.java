@@ -2,6 +2,7 @@ package org.esprit.controllers;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
@@ -204,9 +205,8 @@ public class MyBetSessionsController implements Initializable {
                    new SimpleStringProperty(formatDateTime(time)) : 
                    new SimpleStringProperty("N/A");
         });
-        
-        marketplaceCurrentPriceColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(String.format("%.2f", cellData.getValue().getCurrentPrice())));
+          marketplaceCurrentPriceColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(String.format("%.2f Dannous", cellData.getValue().getCurrentPrice())));
             
         // Configure TAB 2: My active bet sessions table columns
         activeArtworkColumn.setCellValueFactory(cellData -> {
@@ -229,9 +229,8 @@ public class MyBetSessionsController implements Initializable {
                    new SimpleStringProperty(formatDateTime(time)) : 
                    new SimpleStringProperty("N/A");
         });
-            
-        activeCurrentPriceColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(String.format("%.2f", cellData.getValue().getCurrentPrice())));
+              activeCurrentPriceColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(String.format("%.2f Dannous", cellData.getValue().getCurrentPrice())));
             
         activeStatusColumn.setCellValueFactory(cellData -> 
             cellData.getValue().statusProperty());
@@ -257,9 +256,8 @@ public class MyBetSessionsController implements Initializable {
                    new SimpleStringProperty(formatDateTime(time)) : 
                    new SimpleStringProperty("N/A");
         });
-            
-        completedFinalPriceColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(String.format("%.2f", cellData.getValue().getCurrentPrice())));
+              completedFinalPriceColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(String.format("%.2f Dannous", cellData.getValue().getCurrentPrice())));
             
         completedStatusColumn.setCellValueFactory(cellData -> 
             cellData.getValue().statusProperty());
@@ -1140,13 +1138,12 @@ public class MyBetSessionsController implements Initializable {
                 }
             }
         });
-        
-        
-        // Setup active bets action column (Tab 2 - My Active Bet Sessions)
-        activeActionsColumn.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
+            // Setup active bets action column (Tab 2 - My Active Bet Sessions)
+        activeActionsColumn.setCellFactory(col -> new javafx.scene.control.TableCell<BetSession, Void>() {
             private final javafx.scene.control.Button viewButton = new javafx.scene.control.Button("View");
             private final javafx.scene.control.Button editButton = new javafx.scene.control.Button("Edit");
-            private final javafx.scene.layout.HBox buttonsBox = new javafx.scene.layout.HBox(5, viewButton, editButton);
+            private final javafx.scene.control.Button deleteButton = new javafx.scene.control.Button("Delete");
+            private final javafx.scene.layout.HBox buttonsBox = new javafx.scene.layout.HBox(5, viewButton, editButton, deleteButton);
             
             {
                 // Configure view button
@@ -1163,6 +1160,13 @@ public class MyBetSessionsController implements Initializable {
                     handleEditBetSession(session);
                 });
                 
+                // Configure delete button with red styling
+                deleteButton.setStyle("-fx-font-size: 10px; -fx-padding: 2px 5px; -fx-background-color: #e74c3c; -fx-text-fill: white;");
+                deleteButton.setOnAction(event -> {
+                    BetSession session = getTableView().getItems().get(getIndex());
+                    handleDeleteBetSession(session);
+                });
+                
                 // Center the buttons
                 buttonsBox.setAlignment(javafx.geometry.Pos.CENTER);
             }
@@ -1176,8 +1180,11 @@ public class MyBetSessionsController implements Initializable {
                 } else {
                     BetSession session = getTableView().getItems().get(getIndex());
                     
-                    // Only allow editing pending sessions
-                    editButton.setDisable(!"pending".equalsIgnoreCase(session.getStatus()));
+                    // Only allow editing and deleting pending sessions
+                    boolean isPending = "pending".equalsIgnoreCase(session.getStatus());
+                    editButton.setDisable(!isPending);
+                    deleteButton.setDisable(!isPending);
+                    deleteButton.setVisible(isPending); // Only show delete button for pending sessions
                     
                     setGraphic(buttonsBox);
                 }
@@ -1215,5 +1222,48 @@ public class MyBetSessionsController implements Initializable {
             return false;
         }
         return true;
+    }
+      /**
+     * Handles deleting a bet session
+     * @param betSession The bet session to delete
+     */
+    private void handleDeleteBetSession(BetSession betSession) {
+        if (betSession == null) {
+            showAlert(Alert.AlertType.WARNING, "No Selection", 
+                      "Please select a bet session to delete.");
+            return;
+        }
+        
+        // Check if bet session is in 'pending' status
+        if (!"pending".equals(betSession.getStatus())) {
+            showAlert(Alert.AlertType.WARNING, "Cannot Delete",
+                      "Only pending bet sessions can be deleted.");
+            return;
+        }
+        
+        // Confirm deletion with the user
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Confirm Deletion");
+        confirmAlert.setHeaderText("Delete Bet Session");
+        confirmAlert.setContentText("Are you sure you want to delete this bet session?\nThis action cannot be undone.");
+        
+        confirmAlert.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                try {
+                    // Delete the bet session
+                    betSessionService.deleteBetSession(betSession.getId());
+                    
+                    // Refresh the table
+                    loadAllData();
+                    
+                    // Show success message
+                    showAlert(Alert.AlertType.INFORMATION, "Success", 
+                              "Bet session deleted successfully.");
+                } catch (SQLException ex) {
+                    showAlert(Alert.AlertType.ERROR, "Database Error", 
+                              "Error deleting bet session: " + ex.getMessage());
+                }
+            }
+        });
     }
 }

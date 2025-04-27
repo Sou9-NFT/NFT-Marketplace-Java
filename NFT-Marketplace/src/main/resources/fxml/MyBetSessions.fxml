@@ -62,9 +62,7 @@
                                               </HBox>                                              <TableView fx:id="marketplaceBetsTableView" prefHeight="220.0">
                                                 <columns>
                                                 <TableColumn fx:id="marketplaceArtworkColumn" text="Artwork" />
-                                                  <TableColumn fx:id="marketplaceSellerColumn" text="Seller" />
-                                                  <TableColumn fx:id="marketplaceEndTimeColumn" text="End Time" />
-                                                  <TableColumn fx:id="marketplaceCurrentPriceColumn" text="Current Price" />
+                                                  <TableColumn fx:id="marketplaceSellerColumn" text="Seller" />                                                  <TableColumn fx:id="marketplaceEndTimeColumn" text="End Time" />                                                  <TableColumn fx:id="marketplaceCurrentPriceColumn" text="Current Price" />
                                                   <TableColumn fx:id="marketplaceActionsColumn" text="Actions" />
                                                 </columns>
                                                 <columnResizePolicy>
@@ -123,9 +121,7 @@
                                               </Label>                                              <TableView fx:id="activeBetsTableView" prefHeight="200.0">
                                                 <columns>
                                                   <TableColumn fx:id="activeArtworkColumn" text="Artwork" />
-                                                  <TableColumn fx:id="activeStartTimeColumn" text="Start Time" />
-                                                  <TableColumn fx:id="activeEndTimeColumn" text="End Time" />
-                                                  <TableColumn fx:id="activeCurrentPriceColumn" text="Current Price" />
+                                                  <TableColumn fx:id="activeStartTimeColumn" text="Start Time" />                                                  <TableColumn fx:id="activeEndTimeColumn" text="End Time" />                                                  <TableColumn fx:id="activeCurrentPriceColumn" text="Current Price" />
                                                   <TableColumn fx:id="activeStatusColumn" text="Status" />
                                                   <TableColumn fx:id="activeActionsColumn" text="Actions" />
                                                 </columns>
