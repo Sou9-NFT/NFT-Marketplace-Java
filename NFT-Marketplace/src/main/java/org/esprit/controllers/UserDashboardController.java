@@ -353,8 +353,7 @@ public class UserDashboardController {
             e.printStackTrace();
         }
     }
-    
-    @FXML
+      @FXML
     private void handleTradeDisputeButton(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeDisputeList.fxml"));
@@ -367,6 +366,23 @@ public class UserDashboardController {
         } catch (IOException e) {
             showAlert("Error", "Could not load trade disputes: " + e.getMessage());
             System.err.println("Error in handleTradeDisputeButton: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleTradeRequestButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeRequestList.fxml"));
+            Parent tradeRequestView = loader.load();
+            
+            TradeRequestListController controller = loader.getController();
+            controller.setUser(currentUser);
+            
+            loadContentInPlace(tradeRequestView, "Trade Requests");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade requests: " + e.getMessage());
+            System.err.println("Error in handleTradeRequestButton: " + e.getMessage());
             e.printStackTrace();
         }
     }

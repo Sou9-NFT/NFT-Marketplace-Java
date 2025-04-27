@@ -11,9 +11,11 @@ import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import org.esprit.models.Artwork;
 import org.esprit.models.TradeOffer;
+import org.esprit.models.TradeState;
 import org.esprit.models.User;
 import org.esprit.services.ArtworkService;
 import org.esprit.services.TradeOfferService;
+import org.esprit.services.TradeStateService;
 import org.esprit.services.UserService;
 
 import java.time.LocalDateTime;
@@ -189,9 +191,19 @@ public class CreateTradeController {
             tradeOffer.setDescription(description);
             tradeOffer.setCreationDate(LocalDateTime.now());
             tradeOffer.setStatus("pending");
-            
-            // Save trade offer
+              // Save trade offer
             tradeService.add(tradeOffer);
+              // Create and save trade state
+            TradeState tradeState = new TradeState();
+            tradeState.setTradeOffer(tradeOffer);
+            tradeState.setReceivedItem(tradeOffer.getReceivedItem());
+            tradeState.setOfferedItem(tradeOffer.getOfferedItem());
+            tradeState.setSender(tradeOffer.getSender());
+            tradeState.setReceiver(tradeOffer.getReceiverName());
+            tradeState.setDescription(tradeOffer.getDescription());
+            
+            TradeStateService tradeStateService = new TradeStateService();
+            tradeStateService.add(tradeState);
             
             // Show success and close dialog
             showStatus("Trade offer created successfully!", false);
