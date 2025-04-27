@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fcec73b1-e0db-46ed-82d5-5664b449271f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/ArtworkManagementController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/ArtworkManagementController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/config.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/ArtworkManagement.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/ArtworkManagement.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -57,6 +59,7 @@
     "Maven.NFT-Marketplace [-U,clean,install].executor": "Run",
     "Maven.NFT-Marketplace [clean,compile].executor": "Run",
     "Maven.NFT-Marketplace [clean].executor": "Run",
+    "Maven.NFT-Marketplace [javafx:run\\].executor": "Run",
     "Maven.NFT-Marketplace [javafx:run].executor": "Run",
     "Maven.NFT-Marketplace [org.openjfx:javafx-maven-plugin:0.0.8:run].executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -80,6 +83,7 @@
       <command value="mvn --version" />
       <command value="mvn clean compile" />
       <command value="mvn -U clean install" />
+      <command value="mvn javafx:run\" />
       <command value="mvn clean" />
       <command value="mvn javafx:run" />
     </option>
