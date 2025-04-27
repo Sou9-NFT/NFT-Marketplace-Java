@@ -1,7 +1,12 @@
 package org.esprit.models;
 import java.util.List;
 import java.util.ArrayList;
-
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
 public class Category {
     // Constants for validation
@@ -9,6 +14,7 @@ public class Category {
     public static final int MAX_NAME_LENGTH = 50;
     public static final int MIN_DESCRIPTION_LENGTH = 10;
     public static final int MAX_DESCRIPTION_LENGTH = 500;
+    private static final String PROFANITY_API_URL = "https://vector.profanity.dev";
     
     private int id;
     private int managerId;
@@ -29,7 +35,6 @@ public class Category {
         setDescription(description);
         setAllowedMimeTypes(allowedMimeTypes);
     }
-
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -121,7 +126,56 @@ public class Category {
     }
 
     /**
-     * Validates all properties of the category object
+     * Check if the provided text contains profanity using the profanity API
+     * 
+     * @param text The text to check for profanity
+     * @return true if profanity is detected, false otherwise
+     * @throws IOException if there's an issue with the API call
+     * @throws InterruptedException if the API call is interrupted
+     */
+    private boolean containsProfanity(String text) throws IOException, InterruptedException {
+        if (text == null || text.trim().isEmpty()) {
+            return false;
+        }
+
+        HttpClient client = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+        
+        // Create the JSON request body
+        String requestBody = "{\"message\":\"" + text.replace("\"", "\\\"") + "\"}";
+        
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(PROFANITY_API_URL))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                .build();
+        
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        // Check if the API detected profanity (you may need to adjust this based on the actual API response)
+        return response.statusCode() == 200 && response.body().contains("true");
+    }
+    
+    /**
+     * Check both name and description for profanity
+     * 
+     * @throws IllegalArgumentException if profanity is detected in either field
+     * @throws IOException if there's an issue with the API call
+     * @throws InterruptedException if the API call is interrupted
+     */
+    public void checkForProfanity() throws IOException, InterruptedException {
+        if (containsProfanity(name)) {
+            throw new IllegalArgumentException("Category name contains inappropriate content");
+        }
+        
+        if (containsProfanity(description)) {
+            throw new IllegalArgumentException("Category description contains inappropriate content");
+        }
+    }
+
+    /**
+     * Validates all properties of the category object including profanity check
      * @throws IllegalArgumentException if any validation fails
      */
     public void validate() {
@@ -139,6 +193,14 @@ public class Category {
         }
         if (managerId <= 0) {
             throw new IllegalArgumentException("Manager ID must be a positive number");
+        }
+        
+        try {
+            // Check for profanity in name and description
+            checkForProfanity();
+        } catch (IOException | InterruptedException e) {
+            // Log the error but don't prevent validation
+            System.err.println("Warning: Could not check for profanity: " + e.getMessage());
         }
     }
 
