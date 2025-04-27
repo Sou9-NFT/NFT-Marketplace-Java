@@ -7,6 +7,8 @@
     <list default="true" id="fcec73b1-e0db-46ed-82d5-5664b449271f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/NFT-Marketplace/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/RaffleDetailsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/RaffleDetailsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/RaffleDetails.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/RaffleDetails.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,8 +81,8 @@
       <command value="mvn clean" />
       <command value="mvn --version" />
       <command value="mvn clean compile" />
-      <command value="mvn javafx:run" />
       <command value="mvn -U clean install" />
+      <command value="mvn javafx:run" />
     </option>
   </component>
   <component name="RunManager">
@@ -194,7 +196,7 @@
       <workItem from="1745659594078" duration="386000" />
       <workItem from="1745660132935" duration="1123000" />
       <workItem from="1745746401814" duration="1224000" />
-      <workItem from="1745749114872" duration="1001000" />
+      <workItem from="1745749114872" duration="3853000" />
     </task>
     <servers />
   </component>
