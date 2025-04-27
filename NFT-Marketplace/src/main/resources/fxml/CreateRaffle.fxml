@@ -20,9 +20,13 @@
               wrapText="true"
               styleClass="form-field"/>
     
-    <TextField fx:id="artworkIdField" 
-              promptText="Artwork ID"
-              styleClass="form-field"/>
+    <VBox spacing="5">
+        <Label text="Select Artwork"/>
+        <ComboBox fx:id="artworkComboBox" 
+                  promptText="Select an artwork"
+                  maxWidth="Infinity"
+                  styleClass="form-field"/>
+    </VBox>
     
     <VBox spacing="5">
         <Label text="End Date and Time"/>

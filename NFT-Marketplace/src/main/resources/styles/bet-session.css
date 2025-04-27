@@ -1,12 +1,39 @@
 /* BetSession Enhanced Styles */
 
+/* Basic Styles - For standalone usage without main.css */
+.root {
+  -fx-font-family: "Poppins", sans-serif;
+  -fx-font-size: 14px;
+  -fx-background-color: #f9f9f9;
+}
+
+/* Button Base Styles */
+.button {
+  -fx-background-radius: 4px;
+  -fx-cursor: hand;
+  -fx-padding: 8px 12px;
+  -fx-font-size: 13px;
+}
+
+.button:hover {
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 5, 0, 0, 0);
+}
+
+/* Container */
+.container {
+  -fx-background-color: white;
+  -fx-background-radius: 8px;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.1), 8, 0, 0, 1);
+}
+
 /* Header Styles */
 .bet-session-header {
-  -fx-background-color: linear-gradient(135deg, #4528dc 10%, #57048a);
+  -fx-background-color:  #4528dc  !important;
+  background-color:  #4528dc  !important;
 }
 
 .bet-session-header .title {
-  -fx-text-fill: #4528dc;
+  -fx-text-fill: white;
   -fx-font-size: 28px;
   -fx-font-weight: bold;
   -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 3, 0, 0, 1);
@@ -57,6 +84,27 @@
 
 .bet-session-table .table-row-cell:selected {
   -fx-background-color: #cfe2ff;
+}
+
+/* TableView Header Styles */
+.table-view .column-header .label {
+  -fx-text-fill: white !important;
+  -fx-font-weight: bold;
+  font-weight: bold;
+  color: white !important;
+}
+
+.table-view .column-header {
+  -fx-background-color: black;
+  -fx-border-color: #444444;
+  -fx-padding: 8px 5px;
+  background-color: black;
+  border-color: #444444;
+  padding: 8px 5px;
+}
+
+.table-view .column-header-background {
+  -fx-background-color: black;
 }
 
 /* Action Buttons Area */

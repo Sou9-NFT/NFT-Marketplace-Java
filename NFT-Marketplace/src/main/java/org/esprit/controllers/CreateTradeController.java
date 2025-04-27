@@ -1,16 +1,21 @@
 package org.esprit.controllers;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.esprit.models.Artwork;
 import org.esprit.models.TradeOffer;
+import org.esprit.models.TradeState;
 import org.esprit.models.User;
 import org.esprit.services.ArtworkService;
 import org.esprit.services.TradeOfferService;
+import org.esprit.services.TradeStateService;
 import org.esprit.services.UserService;
 
 import java.time.LocalDateTime;
@@ -18,13 +23,13 @@ import java.time.LocalDateTime;
 public class CreateTradeController {
     
     @FXML
-    private TextField offeredArtworkField;
+    private ComboBox<Artwork> offeredArtworkCombo;
     
     @FXML
-    private TextField requestedArtworkField;
+    private ComboBox<Artwork> requestedArtworkCombo;
     
     @FXML
-    private TextField receiverField;
+    private ComboBox<User> receiverCombo;
     
     @FXML
     private TextArea descriptionField;
@@ -46,6 +51,117 @@ public class CreateTradeController {
     
     public void setUser(User user) {
         this.currentUser = user;
+        loadData();
+    }
+    
+    private void loadData() {
+        try {
+            // Load user's artworks for offered artwork combo
+            ObservableList<Artwork> userArtworks = FXCollections.observableArrayList(
+                artworkService.getByOwner(currentUser.getId())
+            );
+            offeredArtworkCombo.setItems(userArtworks);
+            
+            // Load all users except current user for receiver combo
+            ObservableList<User> allUsers = FXCollections.observableArrayList(
+                userService.getAll().stream()
+                    .filter(user -> user.getId() != currentUser.getId())
+                    .toList()
+            );
+            receiverCombo.setItems(allUsers);
+            
+            // Set cell factories to display meaningful text
+            offeredArtworkCombo.setCellFactory(param -> new ListCell<Artwork>() {
+                @Override
+                protected void updateItem(Artwork item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getTitle());
+                    }
+                }
+            });
+            
+            requestedArtworkCombo.setCellFactory(param -> new ListCell<Artwork>() {
+                @Override
+                protected void updateItem(Artwork item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getTitle());
+                    }
+                }
+            });
+            
+            receiverCombo.setCellFactory(param -> new ListCell<User>() {
+                @Override
+                protected void updateItem(User item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getName());
+                    }
+                }
+            });
+            
+            // Set button cell factories to display meaningful text
+            offeredArtworkCombo.setButtonCell(new ListCell<Artwork>() {
+                @Override
+                protected void updateItem(Artwork item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getTitle());
+                    }
+                }
+            });
+            
+            requestedArtworkCombo.setButtonCell(new ListCell<Artwork>() {
+                @Override
+                protected void updateItem(Artwork item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getTitle());
+                    }
+                }
+            });
+            
+            receiverCombo.setButtonCell(new ListCell<User>() {
+                @Override
+                protected void updateItem(User item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                    } else {
+                        setText(item.getName());
+                    }
+                }
+            });
+            
+            // Update requested artwork combo when receiver is selected
+            receiverCombo.setOnAction(event -> {
+                User selectedUser = receiverCombo.getValue();
+                if (selectedUser != null) {
+                    try {
+                        ObservableList<Artwork> receiverArtworks = FXCollections.observableArrayList(
+                            artworkService.getByOwner(selectedUser.getId())
+                        );
+                        requestedArtworkCombo.setItems(receiverArtworks);
+                    } catch (Exception e) {
+                        showStatus("Error loading receiver's artworks: " + e.getMessage(), true);
+                    }
+                }
+            });
+            
+        } catch (Exception e) {
+            showStatus("Error loading data: " + e.getMessage(), true);
+        }
     }
     
     public void setParentController(TradeOfferListController controller) {
@@ -54,50 +170,18 @@ public class CreateTradeController {
     
     @FXML
     private void handleCreateTrade(ActionEvent event) {
-        String offeredArtworkIdStr = offeredArtworkField.getText().trim();
-        String requestedArtworkIdStr = requestedArtworkField.getText().trim();
-        String receiverUsername = receiverField.getText().trim();
+        Artwork offeredArtwork = offeredArtworkCombo.getValue();
+        Artwork requestedArtwork = requestedArtworkCombo.getValue();
+        User receiver = receiverCombo.getValue();
         String description = descriptionField.getText().trim();
         
         // Validate inputs
-        if (offeredArtworkIdStr.isEmpty() || requestedArtworkIdStr.isEmpty() || receiverUsername.isEmpty()) {
-            showStatus("Please fill in all required fields", true);
+        if (offeredArtwork == null || requestedArtwork == null || receiver == null) {
+            showStatus("Please select all required fields", true);
             return;
         }
         
         try {
-            // Parse artwork IDs
-            int offeredArtworkId = Integer.parseInt(offeredArtworkIdStr);
-            int requestedArtworkId = Integer.parseInt(requestedArtworkIdStr);
-            
-            // Get artwork objects
-            Artwork offeredArtwork = artworkService.getOne(offeredArtworkId);
-            Artwork requestedArtwork = artworkService.getOne(requestedArtworkId);
-            
-            if (offeredArtwork == null || requestedArtwork == null) {
-                showStatus("One or both artworks not found", true);
-                return;
-            }
-            
-            // Verify artwork ownership
-            if (offeredArtwork.getOwnerId() != currentUser.getId()) {
-                showStatus("You can only offer artworks you own", true);
-                return;
-            }
-            
-            // Get receiver user
-            User receiver = userService.findByUsername(receiverUsername);
-            if (receiver == null) {
-                showStatus("Receiver user not found", true);
-                return;
-            }
-            
-            // Verify receiver owns the requested artwork
-            if (requestedArtwork.getOwnerId() != receiver.getId()) {
-                showStatus("The requested artwork is not owned by the receiver", true);
-                return;
-            }
-            
             // Create new trade offer
             TradeOffer tradeOffer = new TradeOffer();
             tradeOffer.setSender(currentUser);
@@ -107,9 +191,19 @@ public class CreateTradeController {
             tradeOffer.setDescription(description);
             tradeOffer.setCreationDate(LocalDateTime.now());
             tradeOffer.setStatus("pending");
-            
-            // Save trade offer
+              // Save trade offer
             tradeService.add(tradeOffer);
+              // Create and save trade state
+            TradeState tradeState = new TradeState();
+            tradeState.setTradeOffer(tradeOffer);
+            tradeState.setReceivedItem(tradeOffer.getReceivedItem());
+            tradeState.setOfferedItem(tradeOffer.getOfferedItem());
+            tradeState.setSender(tradeOffer.getSender());
+            tradeState.setReceiver(tradeOffer.getReceiverName());
+            tradeState.setDescription(tradeOffer.getDescription());
+            
+            TradeStateService tradeStateService = new TradeStateService();
+            tradeStateService.add(tradeState);
             
             // Show success and close dialog
             showStatus("Trade offer created successfully!", false);
@@ -120,10 +214,8 @@ public class CreateTradeController {
             }
             
             // Close the dialog
-            ((Stage) offeredArtworkField.getScene().getWindow()).close();
+            ((Stage) offeredArtworkCombo.getScene().getWindow()).close();
             
-        } catch (NumberFormatException e) {
-            showStatus("Please enter valid artwork ID numbers", true);
         } catch (Exception e) {
             showStatus("Error creating trade offer: " + e.getMessage(), true);
         }
@@ -131,7 +223,7 @@ public class CreateTradeController {
     
     @FXML
     private void handleCancel(ActionEvent event) {
-        ((Stage) offeredArtworkField.getScene().getWindow()).close();
+        ((Stage) offeredArtworkCombo.getScene().getWindow()).close();
     }
     
     private void showStatus(String message, boolean isError) {

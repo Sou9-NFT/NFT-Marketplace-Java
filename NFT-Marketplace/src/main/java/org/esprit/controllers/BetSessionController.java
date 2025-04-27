@@ -4,19 +4,15 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.esprit.models.Artwork;
 import org.esprit.models.BetSession;
 import org.esprit.models.User;
 import org.esprit.services.BetSessionService;
 import org.esprit.services.UserService;
-import org.esprit.utils.TimeUtils;
 
-import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -84,15 +80,11 @@ public class BetSessionController implements Initializable {
     private Button updateButton;
       @FXML
     private Button deleteButton;
-    
-    private BetSessionService betSessionService;
+      private BetSessionService betSessionService;
     private UserService userService;
     
     // Add field for current user
     private User currentUser;
-    
-    // Scheduler for countdown updates
-    private ScheduledExecutorService countdownExecutor;
     
     public BetSessionController() {
         betSessionService = new BetSessionService();
@@ -118,14 +110,47 @@ public class BetSessionController implements Initializable {
             Artwork artwork = cellData.getValue().getArtwork();
             return artwork != null ? 
                    new SimpleStringProperty(artwork.getTitle()) : 
-                   new SimpleStringProperty("N/A");
-        });
+                   new SimpleStringProperty("N/A");        });
           createdAtColumn.setCellValueFactory(cellData -> cellData.getValue().createdAtProperty());
-        startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
+        createdAtColumn.setCellFactory(column -> new javafx.scene.control.TableCell<BetSession, LocalDateTime>() {
+            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+            
+            @Override
+            protected void updateItem(LocalDateTime createdAt, boolean empty) {
+                super.updateItem(createdAt, empty);
+                
+                if (empty || createdAt == null) {
+                    setText(null);
+                    return;
+                }
+                
+                // Format date in a readable way
+                setText(createdAt.format(formatter));
+            }
+        });
         
-        // Custom cell factory to show countdown for active sessions
+        startTimeColumn.setCellValueFactory(cellData -> cellData.getValue().startTimeProperty());
+        startTimeColumn.setCellFactory(column -> new javafx.scene.control.TableCell<BetSession, LocalDateTime>() {
+            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+            
+            @Override
+            protected void updateItem(LocalDateTime startTime, boolean empty) {
+                super.updateItem(startTime, empty);
+                
+                if (empty || startTime == null) {
+                    setText(null);
+                    return;
+                }
+                
+                // Format date in a readable way
+                setText(startTime.format(formatter));
+            }
+        });
+          // Custom cell factory to format date display for end time
         endTimeColumn.setCellValueFactory(cellData -> cellData.getValue().endTimeProperty());
         endTimeColumn.setCellFactory(column -> new javafx.scene.control.TableCell<BetSession, LocalDateTime>() {
+            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+            
             @Override
             protected void updateItem(LocalDateTime endTime, boolean empty) {
                 super.updateItem(endTime, empty);
@@ -135,18 +160,11 @@ public class BetSessionController implements Initializable {
                     return;
                 }
                 
-                BetSession betSession = getTableView().getItems().get(getIndex());
-                if (betSession != null && "active".equals(betSession.getStatus())) {
-                    // For active sessions, show a countdown
-                    setText(TimeUtils.formatCountdown(endTime));
-                } else {
-                    // For other sessions, show the regular date/time
-                    setText(endTime.toString());
-                }
+                // Format date in a readable way for all sessions
+                setText(endTime.format(formatter));
             }
         });
-        
-        initialPriceColumn.setCellValueFactory(cellData -> cellData.getValue().initialPriceProperty());
+          initialPriceColumn.setCellValueFactory(cellData -> cellData.getValue().initialPriceProperty());
         currentPriceColumn.setCellValueFactory(cellData -> cellData.getValue().currentPriceProperty());
         statusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
 
@@ -175,16 +193,12 @@ public class BetSessionController implements Initializable {
                     tableView.getSelectionModel().select(session);
                     deleteSelectedBetSession();
                 });
-            }
-            @Override
+            }            @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : hbox);
             }
         });
-        
-        // Set up countdown timer to refresh the display every second
-        startCountdownTimer();
         
         // Load data
         loadBetSessions();
@@ -665,14 +679,16 @@ public class BetSessionController implements Initializable {
             infoGrid.add(new Label(String.valueOf(selectedBetSession.getInitialPrice())), 1, 2);
             infoGrid.add(new Label("Current Price:"), 0, 3);
             infoGrid.add(new Label(String.valueOf(selectedBetSession.getCurrentPrice())), 1, 3);
-            infoGrid.add(new Label("Status:"), 0, 4);
-            infoGrid.add(new Label(selectedBetSession.getStatus()), 1, 4);
+            infoGrid.add(new Label("Status:"), 0, 4);            infoGrid.add(new Label(selectedBetSession.getStatus()), 1, 4);
             if (selectedBetSession.getStartTime() != null) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
                 infoGrid.add(new Label("Start Time:"), 0, 5);
-                infoGrid.add(new Label(selectedBetSession.getStartTime().toString()), 1, 5);
-            }            if (selectedBetSession.getEndTime() != null) {
+                infoGrid.add(new Label(selectedBetSession.getStartTime().format(formatter)), 1, 5);
+            }            
+            if (selectedBetSession.getEndTime() != null) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
                 infoGrid.add(new Label("End Time:"), 0, 6);
-                infoGrid.add(new Label(selectedBetSession.getEndTime().toString()), 1, 6);
+                infoGrid.add(new Label(selectedBetSession.getEndTime().format(formatter)), 1, 6);
             }
             
             // Add mysterious mode indicator
@@ -740,43 +756,8 @@ public class BetSessionController implements Initializable {
         } catch (Exception e) {
             Alert alert = new Alert(AlertType.ERROR, 
                     "Error showing bet session details: " + e.getMessage());
-            alert.showAndWait();
-            e.printStackTrace();
+            alert.showAndWait();            e.printStackTrace();
         }
-    }
-    
-    /**
-     * Starts a timer to update the countdown display every second
-     */
-    private void startCountdownTimer() {
-        // Stop any existing timer first
-        stopCountdownTimer();
-        
-        // Create a new scheduler
-        countdownExecutor = Executors.newSingleThreadScheduledExecutor();
-        
-        // Schedule a task to update the table every second
-        countdownExecutor.scheduleAtFixedRate(() -> {
-            // Update UI on JavaFX thread
-            Platform.runLater(() -> {
-                tableView.refresh();
-            });
-        }, 0, 1, TimeUnit.SECONDS);
-    }
-    
-    /**
-     * Stops the countdown timer and releases resources
-     */
-    private void stopCountdownTimer() {
-        if (countdownExecutor != null && !countdownExecutor.isShutdown()) {
-            countdownExecutor.shutdownNow();
-            countdownExecutor = null;
-        }
-    }
-
-    // Clean up resources when controller is no longer needed
-    public void cleanup() {
-        stopCountdownTimer();
     }
 
     void setBetSession(BetSession selectedSession) {

@@ -47,6 +47,7 @@
 			<Button maxWidth="Infinity" text="System Logs" onAction="#handleSystemLogs" styleClass="sidebar-button" />
 			<Button maxWidth="Infinity" text="Bet Sessions" onAction="#handleBetSessions" styleClass="sidebar-button" />
 			<Button maxWidth="Infinity" text="Artworks" onAction="#handleManageArtworks" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Trade Disputes" onAction="#handleTradeDisputes" styleClass="sidebar-button" />
 		</VBox>
 	</left>
 	<center>
@@ -88,7 +89,6 @@
 					</HBox>
 					<TableView fx:id="userTable" VBox.vgrow="ALWAYS">
 						<columns>
-							<TableColumn fx:id="idColumn" text="ID" prefWidth="50" />
 							<TableColumn fx:id="nameColumn" text="Name" prefWidth="150" />
 							<TableColumn fx:id="emailColumn" text="Email" prefWidth="200" />
 							<TableColumn fx:id="rolesColumn" text="Roles" prefWidth="150" />
