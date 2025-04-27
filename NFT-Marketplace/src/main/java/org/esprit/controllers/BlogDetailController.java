@@ -21,7 +21,7 @@ import org.esprit.models.User;
 import org.esprit.models.Comment;
 import org.esprit.services.BlogService;
 import org.esprit.services.CommentService;
-import org.esprit.services.TranslationService;
+import org.esprit.utils.TranslationService;
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -45,10 +45,9 @@ public class BlogDetailController implements Initializable {
     private User currentUser;
     private final String UPLOAD_DIR = "src/main/resources/uploads/";
       @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        blogService = new BlogService();
+    public void initialize(URL url, ResourceBundle rb) {        blogService = new BlogService();
         commentService = new CommentService();
-        translationService = new TranslationService();
+        translationService = TranslationService.getInstance();
         setupCommentsList();
         setupLanguageComboBox();
     }

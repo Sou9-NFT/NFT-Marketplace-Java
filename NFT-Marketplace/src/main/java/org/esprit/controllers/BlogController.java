@@ -19,6 +19,7 @@ import org.esprit.models.Comment;
 import org.esprit.models.User;
 import org.esprit.services.BlogService;
 import org.esprit.services.CommentService;
+import org.esprit.utils.TranslationService;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -54,9 +55,6 @@ import javafx.scene.Node;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.shape.Circle;
-import org.esprit.services.TranslationService;
-
-import java.io.File;
 
 public class BlogController implements Initializable {
     @FXML private ListView<Blog> blogListView;
@@ -100,10 +98,9 @@ public class BlogController implements Initializable {
             blogTableView.setVisible(isAdmin);
         }
         refreshBlogList();
-    }    @Override    public void initialize(URL url, ResourceBundle rb) {
-        blogService = new BlogService();
+    }    @Override    public void initialize(URL url, ResourceBundle rb) {        blogService = new BlogService();
         commentService = new CommentService();
-        translationService = new TranslationService();
+        translationService = TranslationService.getInstance();
         languageComboBox.setItems(languages);
 
         // Setup blog list view with profile pictures
