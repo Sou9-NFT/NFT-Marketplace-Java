@@ -8,7 +8,7 @@
 <?import javafx.scene.text.Font?>
 <BorderPane 
 	xmlns="http://javafx.com/javafx" 
-	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.LoginController" styleClass="root" stylesheets="@../styles/main.css">
+	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.LoginController" styleClass="root" stylesheets="@../styles/main.css, @../styles/crypto-ticker.css">
 	<!-- Header Section -->
 	<top>
 		<VBox>
@@ -26,6 +26,10 @@
 				<Button text="Explore" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button text="About" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
 				<Button text="Contact" style="-fx-background-color: transparent; -fx-text-fill: white;"/>
+			</HBox>
+			<!-- Add CryptoTicker Component Container -->
+			<HBox fx:id="cryptoTickerContainer" alignment="CENTER" prefHeight="60" HBox.hgrow="ALWAYS">
+				<!-- The cryptoTicker will be added here programmatically -->
 			</HBox>
 		</VBox>
 	</top>
