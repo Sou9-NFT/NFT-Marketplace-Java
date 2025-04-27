@@ -21,7 +21,6 @@
     <Label fx:id="startDateLabel"/>
     <Label fx:id="endDateLabel"/>
     <Label fx:id="statusLabel"/>
-    <Label fx:id="artworkIdLabel"/>
     <Label fx:id="winnerLabel" visible="false"/>
     
     <ImageView fx:id="artworkImageView" fitWidth="300" fitHeight="200" preserveRatio="true"/>

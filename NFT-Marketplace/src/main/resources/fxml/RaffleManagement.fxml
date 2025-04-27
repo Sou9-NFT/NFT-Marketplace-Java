@@ -52,7 +52,6 @@
         <!-- Raffles Table -->
         <TableView fx:id="raffleTable" visible="true" managed="true">
             <columns>
-                <TableColumn fx:id="idColumn" text="ID" prefWidth="0" visible="false"/>
                 <TableColumn fx:id="titleColumn" text="Title" prefWidth="220"/>
                 <TableColumn fx:id="artworkColumn" text="Artwork" prefWidth="170"/>
                 <TableColumn fx:id="startDateColumn" text="Start Date" prefWidth="130"/>

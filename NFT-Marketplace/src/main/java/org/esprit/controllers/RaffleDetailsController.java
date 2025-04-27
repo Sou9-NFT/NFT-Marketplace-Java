@@ -95,7 +95,6 @@ public class RaffleDetailsController {
 
         // Handle artwork display
         try {
-            artworkIdLabel.setText("Artwork ID: " + raffle.getArtworkId());
             Artwork artwork = artworkService.getOne(raffle.getArtworkId());
             if (artwork != null) {
                 loadArtworkImage(artwork);
