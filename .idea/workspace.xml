@@ -6,11 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="fcec73b1-e0db-46ed-82d5-5664b449271f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/BlogController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/UserDashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/controllers/UserDashboardController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/services/BlogService.java" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/java/org/esprit/services/BlogService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/Blog.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/fxml/Blog.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/styles/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/src/main/resources/styles/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/NFT-Marketplace/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/NFT-Marketplace/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,20 +23,16 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "sanalar00"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;sanalar00&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/grp-ArtiTechs/NFT-Marketplace-Java.git",
-    "accountId": "a7f8f223-249e-4663-8d66-206aecbdfc0d"
-  }
-}]]></component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 3
+
+}</component>
+  <component name="GithubPullRequestsUISettings">{  &quot;selectedUrlAndAccountId&quot;: {    &quot;url&quot;: &quot;https://github.com/grp-ArtiTechs/NFT-Marketplace-Java.git&quot;,    &quot;accountId&quot;: &quot;a7f8f223-249e-4663-8d66-206aecbdfc0d&quot;  }
+}</component>
+  <component name="ProjectColorInfo">{  &quot;associatedIndex&quot;: 3
 }</component>
   <component name="ProjectId" id="2vdiBeIlywq5kyyhxMDHqMj9reU" />
   <component name="ProjectLevelVcsManager">
@@ -60,14 +52,18 @@
     "Application.TestCrudParticipant.executor": "Run",
     "Application.TestCrudRaffle.executor": "Run",
     "Application.TestCrudUser.executor": "Run",
+    "Maven.NFT-Marketplace [--version].executor": "Run",
+    "Maven.NFT-Marketplace [-U,clean,install].executor": "Run",
+    "Maven.NFT-Marketplace [clean,compile].executor": "Run",
     "Maven.NFT-Marketplace [clean].executor": "Run",
     "Maven.NFT-Marketplace [javafx:run].executor": "Run",
     "Maven.NFT-Marketplace [org.openjfx:javafx-maven-plugin:0.0.8:run].executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "#74 on blog",
+    "git-widget-placeholder": "Raffle",
     "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -81,10 +77,13 @@
   <component name="RunAnythingCache">
     <option name="myCommands">
       <command value="mvn clean" />
+      <command value="mvn --version" />
+      <command value="mvn clean compile" />
       <command value="mvn javafx:run" />
+      <command value="mvn -U clean install" />
     </option>
   </component>
-  <component name="RunManager" selected="Application.BetSessionApp">
+  <component name="RunManager">
     <configuration name="BetSessionApp" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="org.esprit.main.BetSessionApp" />
       <module name="NFT-Marketplace" />
@@ -186,12 +185,24 @@
       <workItem from="1744544732269" duration="1713000" />
       <workItem from="1744561266430" duration="498000" />
       <workItem from="1744561774312" duration="243000" />
+      <workItem from="1744562025330" duration="185000" />
+      <workItem from="1744567670665" duration="2458000" />
+      <workItem from="1744567996851" duration="420000" />
+      <workItem from="1744568453169" duration="12825000" />
       <workItem from="1744573347267" duration="3797000" />
-      <workItem from="1745617638423" duration="1616000" />
+      <workItem from="1745221743705" duration="2611000" />
+      <workItem from="1745659594078" duration="386000" />
+      <workItem from="1745660132935" duration="1123000" />
+      <workItem from="1745746401814" duration="1224000" />
+      <workItem from="1745749114872" duration="1001000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

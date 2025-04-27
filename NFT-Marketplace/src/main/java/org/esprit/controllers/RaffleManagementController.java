@@ -23,6 +23,7 @@ import org.esprit.utils.AlertUtils;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Date;
@@ -102,6 +103,37 @@ public class RaffleManagementController {
         endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endTime"));
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
         
+        // Apply custom styling to status column
+        statusColumn.setCellFactory(column -> new TableCell<Raffle, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    getStyleClass().removeAll("status-active", "status-upcoming", "status-completed", "status-cancelled");
+                } else {
+                    setText(item);
+                    getStyleClass().removeAll("status-active", "status-upcoming", "status-completed", "status-cancelled");
+                    switch (item.toLowerCase()) {
+                        case "active":
+                            getStyleClass().add("status-active");
+                            break;
+                        case "upcoming":
+                            getStyleClass().add("status-upcoming");
+                            break;
+                        case "completed":
+                            getStyleClass().add("status-completed");
+                            break;
+                        case "cancelled":
+                            getStyleClass().add("status-cancelled");
+                            break;
+                    }
+                }
+            }
+        });
+        
         setupActionButtons();
     }
 
@@ -141,8 +173,59 @@ public class RaffleManagementController {
             new SimpleStringProperty(cellData.getValue().getUser().getName()));
         raffleNameColumn.setCellValueFactory(cellData -> 
             new SimpleStringProperty(cellData.getValue().getRaffle().getTitle()));
+            
+        // Format the date for better readability
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm");
         participationDateColumn.setCellValueFactory(cellData -> 
             new SimpleObjectProperty<>(Date.from(cellData.getValue().getJoinedAt().atZone(ZoneId.systemDefault()).toInstant())));
+        participationDateColumn.setCellFactory(column -> new TableCell<Participant, Date>() {
+            @Override
+            protected void updateItem(Date item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(dateFormat.format(item));
+                }
+            }
+        });
+        
+        // Apply custom styling to winner status column
+        winnerStatusColumn.setCellFactory(column -> new TableCell<Participant, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                
+                if (empty) {
+                    setText(null);
+                    setGraphic(null);
+                    getStyleClass().removeAll("status-winner", "pending-status", "not-winner-status");
+                } else {
+                    Participant participant = getTableView().getItems().get(getIndex());
+                    Raffle raffle = participant.getRaffle();
+                    
+                    String winnerStatus = "Pending";
+                    
+                    if (raffle.getStatus().equals("ended") && raffle.getWinnerId() != null) {
+                        if (raffle.getWinnerId().equals(participant.getUser().getId())) {
+                            winnerStatus = "Winner";
+                            getStyleClass().removeAll("pending-status", "not-winner-status");
+                            getStyleClass().add("status-winner");
+                        } else {
+                            winnerStatus = "Not Winner";
+                            getStyleClass().removeAll("status-winner", "pending-status");
+                            getStyleClass().add("not-winner-status");
+                        }
+                    } else {
+                        getStyleClass().removeAll("status-winner", "not-winner-status");
+                        getStyleClass().add("pending-status");
+                    }
+                    
+                    setText(winnerStatus);
+                }
+            }
+        });
+        
         winnerStatusColumn.setCellValueFactory(cellData -> {
             Participant participant = cellData.getValue();
             Raffle raffle = participant.getRaffle();
@@ -189,24 +272,18 @@ public class RaffleManagementController {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> filterRaffles());
     }
 
-    private void loadRaffles() {
+    public void loadRaffles() {
         try {
             List<Raffle> raffles = raffleService.getAllRaffles();
             
             // Ensure each raffle has a creator object
             for (Raffle raffle : raffles) {
-                // If the raffle has no creator, set the current user as creator
-                // This is a temporary fix to prevent NullPointerException
                 if (raffle.getCreator() == null) {
-                    // Enable loading mode to prevent validation during this temporary fix
                     raffle.setLoadingFromDatabase(true);
-                    
                     User tempCreator = new User();
                     tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
                     tempCreator.setName("Unknown Creator");
                     raffle.setCreator(tempCreator);
-                    
-                    // Disable loading mode after setting the property
                     raffle.setLoadingFromDatabase(false);
                 }
             }
@@ -217,7 +294,6 @@ public class RaffleManagementController {
             System.err.println("Error loading raffles: " + e.getMessage());
             e.printStackTrace();
             AlertUtils.showError("Error", "Could not load raffles: " + e.getMessage());
-            // Create empty list if there was an error to avoid NPE
             raffleList = FXCollections.observableArrayList();
             raffleTable.setItems(raffleList);
         }
@@ -370,6 +446,7 @@ public class RaffleManagementController {
             RaffleDetailsController controller = loader.getController();
             controller.setRaffle(raffle);
             controller.setCurrentUser(currentUser);
+            controller.setParentController(this); // Set this controller as parent
             
             Stage stage = new Stage();
             Scene scene = new Scene(detailsView);
