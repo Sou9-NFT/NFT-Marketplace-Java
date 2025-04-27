@@ -41,11 +41,18 @@ public class UserDashboardController {
     
     @FXML
     private Button notificationsButton;
-      @FXML
+    
+    @FXML
     private Button betSessionButton;
     
     @FXML
     private Button blogsButton;
+    
+    @FXML
+    private Button tradeOfferButton;
+    
+    @FXML
+    private Button tradeDisputeButton;
     
     @FXML
     private StackPane contentArea;
@@ -226,7 +233,8 @@ public class UserDashboardController {
             showAlert("Error", "Could not load trade offers: " + e.getMessage());
         }
     }
-      @FXML
+    
+    @FXML
     private void handleBlogsButton(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BlogList.fxml"));
@@ -239,6 +247,40 @@ public class UserDashboardController {
             loadContentInPlace(blogView, "Blogs");
         } catch (IOException e) {
             showAlert("Error", "Could not load blogs: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleTradeOfferButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeOfferList.fxml"));
+            Parent tradeOfferView = loader.load();
+            
+            TradeOfferListController controller = loader.getController();
+            controller.setUser(currentUser);
+            
+            loadContentInPlace(tradeOfferView, "Trade Offers");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade offers: " + e.getMessage());
+            System.err.println("Error in handleTradeOfferButton: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void handleTradeDisputeButton(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeDisputeList.fxml"));
+            Parent tradeDisputeView = loader.load();
+            
+            TradeDisputeListController controller = loader.getController();
+            controller.setUser(currentUser);
+            
+            loadContentInPlace(tradeDisputeView, "Trade Disputes");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade disputes: " + e.getMessage());
+            System.err.println("Error in handleTradeDisputeButton: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     

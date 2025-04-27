@@ -478,6 +478,22 @@ public class AdminDashboardController implements Initializable {
         }
     }
     
+    @FXML
+    private void handleTradeDisputes(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminTradeDisputes.fxml"));
+            Parent tradeDisputesView = loader.load();
+            
+            AdminTradeDisputesController controller = loader.getController();
+            controller.setUser(currentAdminUser);
+            
+            loadContentInPlace(tradeDisputesView, "Trade Disputes");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade disputes: " + e.getMessage());
+            System.err.println("Error in handleTradeDisputes: " + e.getMessage());
+        }
+    }
+    
     /**
      * Show a "Coming Soon" message in the content area
      */

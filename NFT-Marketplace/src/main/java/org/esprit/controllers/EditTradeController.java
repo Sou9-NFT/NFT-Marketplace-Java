@@ -1,85 +1,186 @@
 package org.esprit.controllers;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.Label;
+import javafx.fxml.Initializable;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
 import org.esprit.models.TradeOffer;
 import org.esprit.models.Artwork;
+import org.esprit.services.ArtworkService;
+import org.esprit.services.TradeOfferService;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.net.URL;
+import java.util.ResourceBundle;
 
-public class EditTradeController {
-
+public class EditTradeController implements Initializable {
+    
     @FXML
     private ComboBox<Artwork> offeredItemComboBox;
-
+    
     @FXML
     private ComboBox<Artwork> requestedItemComboBox;
-
+    
     @FXML
     private TextArea descriptionField;
-
+    
     @FXML
     private Label statusLabel;
-
+    
     private TradeOffer tradeOffer;
-
+    private TradeOfferService tradeService;
+    private ArtworkService artworkService;
+    private TradeOfferListController parentController;
+    
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        tradeService = new TradeOfferService();
+        artworkService = new ArtworkService();
+        
+        // Set up cell factories for ComboBoxes to display artwork titles
+        offeredItemComboBox.setCellFactory(param -> new ListCell<Artwork>() {
+            @Override
+            protected void updateItem(Artwork item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getTitle());
+                }
+            }
+        });
+        
+        requestedItemComboBox.setCellFactory(param -> new ListCell<Artwork>() {
+            @Override
+            protected void updateItem(Artwork item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getTitle());
+                }
+            }
+        });
+        
+        // Set up button cell factories for ComboBoxes
+        offeredItemComboBox.setButtonCell(new ListCell<Artwork>() {
+            @Override
+            protected void updateItem(Artwork item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getTitle());
+                }
+            }
+        });
+        
+        requestedItemComboBox.setButtonCell(new ListCell<Artwork>() {
+            @Override
+            protected void updateItem(Artwork item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getTitle());
+                }
+            }
+        });
+    }
+    
     public void setTradeOffer(TradeOffer tradeOffer) {
         this.tradeOffer = tradeOffer;
         populateFields();
     }
-
+    
+    public void setParentController(TradeOfferListController controller) {
+        this.parentController = controller;
+    }
+    
     private void populateFields() {
         if (tradeOffer != null) {
-            offeredItemComboBox.setValue(tradeOffer.getOfferedItem());
-            requestedItemComboBox.setValue(tradeOffer.getReceivedItem());
-            descriptionField.setText(tradeOffer.getDescription());
+            try {
+                // Load user's artworks for offered artwork combo
+                ObservableList<Artwork> userArtworks = FXCollections.observableArrayList(
+                    artworkService.getByOwner(tradeOffer.getSender().getId())
+                );
+                offeredItemComboBox.setItems(userArtworks);
+                offeredItemComboBox.setValue(tradeOffer.getOfferedItem());
+                
+                // Load receiver's artworks for requested artwork combo
+                ObservableList<Artwork> receiverArtworks = FXCollections.observableArrayList(
+                    artworkService.getByOwner(tradeOffer.getReceiverName().getId())
+                );
+                requestedItemComboBox.setItems(receiverArtworks);
+                requestedItemComboBox.setValue(tradeOffer.getReceivedItem());
+                
+                // Set description
+                descriptionField.setText(tradeOffer.getDescription());
+                
+            } catch (Exception e) {
+                showError("Error loading trade offer data: " + e.getMessage());
+            }
         }
     }
-
+    
     @FXML
     private void handleSave(ActionEvent event) {
-        if (tradeOffer != null) {
+        if (tradeOffer == null) {
+            showError("No trade offer selected");
+            return;
+        }
+        
+        try {
+            // Update trade offer with new values
             tradeOffer.setOfferedItem(offeredItemComboBox.getValue());
             tradeOffer.setReceivedItem(requestedItemComboBox.getValue());
             tradeOffer.setDescription(descriptionField.getText());
-
-            // Logic to update the trade offer in the database
-            statusLabel.setText("Trade offer updated successfully.");
-        } else {
-            statusLabel.setText("Error: No trade offer to update.");
+            
+            // Save changes
+            tradeService.update(tradeOffer);
+            
+            // Refresh parent view
+            if (parentController != null) {
+                parentController.refreshTrades();
+            }
+            
+            // Show success message
+            showSuccess("Trade offer updated successfully!");
+            
+            // Close the window after a short delay to show the success message
+            new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        javafx.application.Platform.runLater(() -> {
+                            ((Stage) descriptionField.getScene().getWindow()).close();
+                        });
+                    }
+                },
+                1000 // 1 second delay
+            );
+            
+        } catch (Exception e) {
+            showError("Error updating trade offer: " + e.getMessage());
         }
     }
-
+    
     @FXML
     private void handleCancel(ActionEvent event) {
-        // Logic to close the edit window
-        statusLabel.getScene().getWindow().hide();
+        ((Stage) descriptionField.getScene().getWindow()).close();
     }
-
-    private void loadUserArtworks() {
-        try {
-            // Mock logic to retrieve user artworks
-            List<Artwork> userArtworks = List.of(
-                new Artwork(1, 0, 1, 0, "User Artwork 1", "Description 1", 0.0, "Image1.jpg", LocalDateTime.now(), LocalDateTime.now()),
-                new Artwork(2, 0, 1, 0, "User Artwork 2", "Description 2", 0.0, "Image2.jpg", LocalDateTime.now(), LocalDateTime.now())
-            );
-            offeredItemComboBox.getItems().clear();
-            offeredItemComboBox.getItems().addAll(userArtworks);
-
-            // Mock logic to retrieve all artworks
-            List<Artwork> allArtworks = List.of(
-                new Artwork(1, 0, 1, 0, "Artwork 1", "Description 1", 0.0, "Image1.jpg", LocalDateTime.now(), LocalDateTime.now()),
-                new Artwork(2, 0, 2, 0, "Artwork 2", "Description 2", 0.0, "Image2.jpg", LocalDateTime.now(), LocalDateTime.now()),
-                new Artwork(3, 0, 3, 0, "Artwork 3", "Description 3", 0.0, "Image3.jpg", LocalDateTime.now(), LocalDateTime.now())
-            );
-            requestedItemComboBox.getItems().clear();
-            requestedItemComboBox.getItems().addAll(allArtworks);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    
+    private void showError(String message) {
+        statusLabel.setText(message);
+        statusLabel.setStyle("-fx-text-fill: red;");
+        statusLabel.setVisible(true);
+    }
+    
+    private void showSuccess(String message) {
+        statusLabel.setText(message);
+        statusLabel.setStyle("-fx-text-fill: green;");
+        statusLabel.setVisible(true);
     }
 }
