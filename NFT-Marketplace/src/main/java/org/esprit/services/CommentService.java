@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import org.esprit.utils.ProfanityFilter;
 
 import org.esprit.models.Comment;
 import org.esprit.models.Blog;
@@ -23,10 +24,13 @@ public class CommentService implements IService<Comment> {
         connection = DatabaseConnection.getInstance().getConnection();
         userService = new UserService();
         blogService = new BlogService();
-    }
+    }    @Override
+    public void add(Comment comment) throws Exception {
+        // Filter profanity from comment content before saving
+        String filteredContent = ProfanityFilter.filterText(comment.getContent());
+        comment.setContent(filteredContent);
 
-    @Override
-    public void add(Comment comment) throws Exception {        String sql = "INSERT INTO comment (user_id, blog_id, content, created_at, gif_url) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO comment (user_id, blog_id, content, created_at, gif_url) VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, comment.getUser().getId());

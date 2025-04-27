@@ -3,6 +3,7 @@ package org.esprit.models;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import org.esprit.utils.ProfanityFilter;
 
 public class Comment {
     private Integer id;
@@ -47,9 +48,7 @@ public class Comment {
         public Map<String, String> getErrors() {
             return errors;
         }
-    }
-
-    // Validation method
+    }    // Validation method
     public ValidationResult validate() {
         ValidationResult result = new ValidationResult();
 
@@ -60,6 +59,14 @@ public class Comment {
             result.addError("content", "Comment must be at least 2 characters long");
         } else if (content.length() > 1000) {
             result.addError("content", "Comment cannot be longer than 1000 characters");
+        } else {
+            try {
+                if (ProfanityFilter.containsProfanity(content)) {
+                    result.addError("content", "Comment contains inappropriate language");
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to check profanity: " + e.getMessage());
+            }
         }
 
         // User validation
