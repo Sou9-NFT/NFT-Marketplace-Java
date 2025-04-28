@@ -5,58 +5,44 @@ import java.text.SimpleDateFormat;
 import java.io.IOException;
 import java.io.File;
 import java.util.Date;
+import java.util.Optional;
 
 import org.esprit.models.Artwork;
 import org.esprit.models.Participant;
 import org.esprit.models.Raffle;
 import org.esprit.models.User;
-import org.esprit.services.ArtworkService;
-import org.esprit.services.ParticipantService;
-import org.esprit.services.RaffleService;
-import org.esprit.services.UserService;
+import org.esprit.services.*;
+import org.esprit.utils.PdfGenerator;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
-import java.util.Optional;
+import javafx.scene.layout.VBox;
+import javafx.scene.canvas.Canvas;
+import java.awt.Desktop;
 
 public class RaffleDetailsController {
-    @FXML
-    private ImageView artworkImageView;
-    @FXML
-    private Label titleLabel;
-    @FXML
-    private TextArea descriptionArea;
-    @FXML
-    private Label creatorLabel;
-    @FXML
-    private Label startDateLabel;
-    @FXML
-    private Label endDateLabel;
-    @FXML
-    private Label statusLabel;
-    @FXML
-    private Label artworkIdLabel;
-    @FXML
-    private Label winnerLabel;
-    @FXML
-    private ListView<String> participantsListView;
-    @FXML
-    private Button participateButton;
-    @FXML
-    private Button manageButton;
-    @FXML
-    private Button deleteButton;
+    @FXML private ImageView artworkImageView;
+    @FXML private Label titleLabel;
+    @FXML private TextArea descriptionArea;
+    @FXML private Label creatorLabel;
+    @FXML private Label startDateLabel;
+    @FXML private Label endDateLabel;
+    @FXML private Label statusLabel;
+    @FXML private Label artworkIdLabel;
+    @FXML private Label winnerLabel;
+    @FXML private ListView<String> participantsListView;
+    @FXML private Button participateButton;
+    @FXML private Button manageButton;
+    @FXML private Button deleteButton;
+    @FXML private Button downloadPdfButton;
+    @FXML private Button shareOnXButton;
 
     private Raffle raffle;
     private User currentUser;
@@ -64,104 +50,27 @@ public class RaffleDetailsController {
     private ArtworkService artworkService;
     private ParticipantService participantService;
     private UserService userService;
+    private TwitterService twitterService;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private RaffleListController parentController;
     private javafx.animation.Timeline autoRefreshTimeline;
+    private String currentCaptchaText;
 
     public void initialize() {
         raffleService = new RaffleService();
         artworkService = new ArtworkService();
         participantService = new ParticipantService();
         userService = new UserService();
+        twitterService = new TwitterService();
         
-        // Setup auto-refresh timeline with shorter interval for more responsive updates
+        // Setup auto-refresh timeline
         autoRefreshTimeline = new javafx.animation.Timeline(
             new javafx.animation.KeyFrame(
-                javafx.util.Duration.seconds(2), // Refresh every 2 seconds
+                javafx.util.Duration.seconds(2),
                 event -> refreshRaffle()
             )
         );
         autoRefreshTimeline.setCycleCount(javafx.animation.Timeline.INDEFINITE);
-    }
-
-    public void setRaffle(Raffle raffle) {
-        this.raffle = raffle;
-        loadRaffleDetails();
-        autoRefreshTimeline.play(); // Start auto-refresh
-    }
-
-    public void setCurrentUser(User user) {
-        this.currentUser = user;
-        // Update the UI if needed based on the current user
-        if (currentUser != null && raffle != null) {
-            System.out.println("Setting current user: " + currentUser.getName());
-            // Explicitly call updateButtons to ensure they're visible
-            updateButtons();
-            refreshRaffle();
-        } else {
-            System.out.println("Current user is null or raffle is null");
-        }
-    }
-
-    public void setParentController(RaffleListController controller) {
-        this.parentController = controller;
-    }
-
-    private void refreshRaffle() {
-        try {
-            // Get the latest raffle state
-            Raffle updatedRaffle = raffleService.getOne(raffle.getId());
-            
-            if (updatedRaffle == null) {
-                // Raffle was deleted
-                autoRefreshTimeline.stop();
-                handleClose();
-                return;
-            }
-
-            // Check if any state changed
-            boolean stateChanged = !updatedRaffle.getStatus().equals(raffle.getStatus()) ||
-                (updatedRaffle.getWinnerId() != null && !updatedRaffle.getWinnerId().equals(raffle.getWinnerId())) ||
-                (updatedRaffle.getWinnerId() == null && raffle.getWinnerId() != null) ||
-                updatedRaffle.getParticipants().size() != raffle.getParticipants().size();
-            
-            if (stateChanged) {
-                // Show notification if raffle just ended
-                if (updatedRaffle.getStatus().equals("ended") && !raffle.getStatus().equals("ended")) {
-                    javafx.application.Platform.runLater(() -> {
-                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                        alert.setTitle("Raffle Ended");
-                        alert.setHeaderText(null);
-                        if (updatedRaffle.getWinnerId() != null) {
-                            try {
-                                User winner = userService.getOne(updatedRaffle.getWinnerId());
-                                alert.setContentText("The raffle has ended! Winner: " + winner.getName());
-                            } catch (Exception e) {
-                                alert.setContentText("The raffle has ended! A winner has been selected.");
-                            }
-                        } else {
-                            alert.setContentText("The raffle has ended without participants.");
-                        }
-                        alert.show();
-                    });
-                }
-                
-                // Update the UI with new raffle state
-                this.raffle = updatedRaffle;
-                javafx.application.Platform.runLater(this::loadRaffleDetails);
-                
-                // Refresh parent view if needed
-                if (parentController != null) {
-                    javafx.application.Platform.runLater(() -> parentController.refreshRaffles());
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // Don't stop refresh timeline on transient errors
-        } catch (Exception e) {
-            e.printStackTrace();
-            autoRefreshTimeline.stop(); // Stop on critical errors
-        }
     }
 
     private void loadRaffleDetails() {
@@ -186,7 +95,6 @@ public class RaffleDetailsController {
 
         // Handle artwork display
         try {
-            artworkIdLabel.setText("Artwork ID: " + raffle.getArtworkId());
             Artwork artwork = artworkService.getOne(raffle.getArtworkId());
             if (artwork != null) {
                 loadArtworkImage(artwork);
@@ -195,24 +103,128 @@ public class RaffleDetailsController {
             System.err.println("Error loading artwork details: " + e.getMessage());
         }
 
-        // Handle winner display
+        // Handle winner display and share button visibility
         if (raffle.getStatus().equals("ended")) {
             if (raffle.getWinnerId() != null) {
                 try {
                     User winner = userService.getOne(raffle.getWinnerId());
                     winnerLabel.setText("Winner: " + winner.getName());
+                    // Show share button only for the winner
+                    shareOnXButton.setVisible(currentUser != null && currentUser.getId() == raffle.getWinnerId());
                 } catch (Exception e) {
                     winnerLabel.setText("Winner ID: " + raffle.getWinnerId());
                 }
+                winnerLabel.setVisible(true);
             } else if (raffle.getParticipants().isEmpty()) {
                 winnerLabel.setText("No winner (no participants)");
+                shareOnXButton.setVisible(false);
             }
             winnerLabel.setVisible(true);
         } else {
             winnerLabel.setVisible(false);
+            shareOnXButton.setVisible(false);
         }
 
         updateButtons();
+    }
+
+    @FXML
+    private void handleShareOnX() {
+        try {
+            Artwork artwork = artworkService.getOne(raffle.getArtworkId());
+            if (artwork != null) {
+                // Try to find the artwork image file
+                String imagePath = null;
+                
+                // Try multiple possible paths for the image
+                File resourceImageFile = new File("src/main/resources/uploads/" + artwork.getImageName());
+                if (resourceImageFile.exists()) {
+                    imagePath = resourceImageFile.getAbsolutePath();
+                } else {
+                    File projectRoot = new File("").getAbsoluteFile();
+                    File uploadsDir = new File(projectRoot, "uploads");
+                    File directImageFile = new File(uploadsDir, artwork.getImageName());
+                    if (directImageFile.exists()) {
+                        imagePath = directImageFile.getAbsolutePath();
+                    }
+                }
+
+                if (imagePath == null) {
+                    throw new IOException("Could not find artwork image file");
+                }
+
+                String response = twitterService.shareWin(raffle.getTitle(), artwork.getTitle(), imagePath);
+                
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully shared your win on X!");
+                alert.showAndWait();
+            }
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Failed to share on X: " + e.getMessage());
+            alert.showAndWait();
+        }
+    }
+
+    private void refreshRaffle() {
+        try {
+            // Get the latest raffle state
+            Raffle updatedRaffle = raffleService.getOne(raffle.getId());
+            
+            if (updatedRaffle == null) {
+                // Raffle was deleted
+                autoRefreshTimeline.stop();
+                handleClose();
+                return;
+            }
+
+            // Check if any state changed
+            boolean stateChanged = !updatedRaffle.getStatus().equals(raffle.getStatus()) ||
+                (updatedRaffle.getWinnerId() != null && !updatedRaffle.getWinnerId().equals(raffle.getWinnerId())) ||
+                (updatedRaffle.getWinnerId() == null && raffle.getWinnerId() != null) ||
+                updatedRaffle.getParticipants().size() != raffle.getParticipants().size();
+            
+            if (stateChanged) {
+                // Show notification if raffle just ended
+                if (updatedRaffle.getStatus().equals("ended") && !raffle.getStatus().equals("ended")) {
+                    Platform.runLater(() -> {
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Raffle Ended");
+                        alert.setHeaderText(null);
+                        if (updatedRaffle.getWinnerId() != null) {
+                            try {
+                                User winner = userService.getOne(updatedRaffle.getWinnerId());
+                                alert.setContentText("The raffle has ended! Winner: " + winner.getName());
+                            } catch (Exception e) {
+                                alert.setContentText("The raffle has ended! A winner has been selected.");
+                            }
+                        } else {
+                            alert.setContentText("The raffle has ended without participants.");
+                        }
+                        alert.show();
+                    });
+                }
+                
+                // Update the UI with new raffle state
+                this.raffle = updatedRaffle;
+                Platform.runLater(this::loadRaffleDetails);
+                
+                // Refresh parent view if needed
+                if (parentController != null) {
+                    Platform.runLater(() -> parentController.refreshRaffles());
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            // Don't stop refresh timeline on transient errors
+        } catch (Exception e) {
+            e.printStackTrace();
+            autoRefreshTimeline.stop(); // Stop on critical errors
+        }
     }
 
     private void loadArtworkImage(Artwork artwork) {
@@ -345,7 +357,7 @@ public class RaffleDetailsController {
                                 try {
                                     Image image = new Image(fallbackFile.toURI().toString());
                                     if (!image.isError()) {
-                artworkImageView.setImage(image);
+                                        artworkImageView.setImage(image);
                                         artworkImageView.setFitWidth(250);
                                         artworkImageView.setFitHeight(150);
                                         artworkImageView.setPreserveRatio(true);
@@ -410,66 +422,30 @@ public class RaffleDetailsController {
     }
 
     private void updateButtons() {
-        if (currentUser != null) {
-            // Ensure raffle has a creator
-            if (raffle.getCreator() == null) {
-                // Create a temporary creator for this raffle
-                User tempCreator = new User();
-                tempCreator.setId(currentUser != null ? currentUser.getId() : 0);
-                tempCreator.setName("Unknown Creator");
-                raffle.setCreator(tempCreator);
-            }
-            
-            // Check if current user is the creator
-            boolean isCreator = currentUser.getId() == raffle.getCreator().getId();
-            
-            // Check if the raffle is active for participate button
-            boolean isActive = raffle.getStatus().equals("active");
-            boolean isParticipant = raffle.getParticipants().stream()
+        // Show/hide buttons based on permissions
+        boolean isCreator = currentUser != null && raffle.getCreator() != null && 
+                           currentUser.getId() == raffle.getCreator().getId();
+        boolean isActive = raffle.getStatus().equals("active");
+        
+        // Manage & Delete only for creator
+        manageButton.setVisible(isCreator);
+        deleteButton.setVisible(isCreator);
+        
+        // Participate only for non-creators and active raffles
+        if (isActive && currentUser != null && !isCreator) {
+            // Check if user has already participated
+            boolean alreadyParticipated = raffle.getParticipants().stream()
                 .anyMatch(p -> p.getId() == currentUser.getId());
             
-            // Update participate button - creators can't participate in their own raffles
-            participateButton.setDisable(isCreator || isParticipant || !isActive);
-            
-            // Update text to explain why button is disabled
-            String buttonText;
-            if (isCreator) {
-                buttonText = "Can't Join Your Own Raffle";
-            } else if (isParticipant) {
-                buttonText = "Already Participating";
-            } else if (!isActive) {
-                buttonText = "Raffle " + raffle.getStatus();
-            } else {
-                buttonText = "Participate";
-            }
-            participateButton.setText(buttonText);
-            
-            // Always show participate button
-            participateButton.setVisible(true);
-            participateButton.setManaged(true);
-            
-            // Only show manage and delete buttons to the creator
-            manageButton.setVisible(isCreator);
-            deleteButton.setVisible(isCreator);
-            manageButton.setManaged(isCreator);
-            deleteButton.setManaged(isCreator);
-            
-            // Debug info
-            System.out.println("Buttons visibility updated:");
-            System.out.println("Is creator: " + isCreator);
-            System.out.println("Participate button visible: " + participateButton.isVisible());
-            System.out.println("Manage button visible: " + manageButton.isVisible());
-            System.out.println("Delete button visible: " + deleteButton.isVisible());
+            participateButton.setVisible(!alreadyParticipated);
+            participateButton.setText(alreadyParticipated ? "Already Joined" : "Participate");
+            participateButton.setDisable(alreadyParticipated);
         } else {
-            // If not logged in, hide all action buttons
             participateButton.setVisible(false);
-            manageButton.setVisible(false);
-            deleteButton.setVisible(false);
-            
-            participateButton.setManaged(false);
-            manageButton.setManaged(false);
-            deleteButton.setManaged(false);
         }
+        
+        // Download PDF button is always visible for all users
+        downloadPdfButton.setVisible(true);
     }
 
     @FXML
@@ -484,20 +460,87 @@ public class RaffleDetailsController {
                 return;
             }
 
-            // Create new participant
-            Participant participant = new Participant(raffle, currentUser);
-            participantService.add(participant);
-
-            // Refresh raffle details
-            this.raffle = raffleService.getOne(raffle.getId());
-            loadRaffleDetails();
+            // Create and show the CAPTCHA dialog
+            Dialog<Boolean> dialog = new Dialog<>();
+            dialog.setTitle("Verify Participation");
+            dialog.setHeaderText("Please enter the text shown below");
             
-            // Refresh parent view if needed
-            if (parentController != null) {
-                parentController.refreshRaffles();
-            }
+            // Generate CAPTCHA
+            currentCaptchaText = CaptchaService.generateCaptchaText();
+            Canvas captchaCanvas = CaptchaService.generateCaptchaImage(currentCaptchaText);
+            
+            // Create dialog content
+            VBox content = new VBox(10);
+            content.setStyle("-fx-padding: 10; -fx-background-color: #1a1a1a;");
+            
+            // Add canvas with some styling
+            captchaCanvas.setStyle("-fx-effect: dropshadow(gaussian, #00ffff, 10, 0, 0, 0);");
+            
+            // Add text field for input
+            TextField captchaInput = new TextField();
+            captchaInput.setPromptText("Enter the text shown above");
+            captchaInput.setStyle("-fx-background-color: #333333; -fx-text-fill: white; -fx-prompt-text-fill: #888888;");
+            
+            content.getChildren().addAll(captchaCanvas, captchaInput);
+            
+            // Set the content
+            DialogPane dialogPane = dialog.getDialogPane();
+            dialogPane.setContent(content);
+            dialogPane.setStyle("-fx-background-color: #1a1a1a;");
+            
+            // Add buttons
+            dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+            Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
+            okButton.setStyle("-fx-background-color: #00bfff; -fx-text-fill: white;");
+            
+            // Handle the dialog result
+            dialog.setResultConverter(dialogButton -> {
+                if (dialogButton == ButtonType.OK) {
+                    try {
+                        String userInput = captchaInput.getText().trim().toUpperCase();
+                        if (userInput.isEmpty()) {
+                            showError("Please enter the CAPTCHA text");
+                            return false;
+                        }
+
+                        if (!userInput.equals(currentCaptchaText)) {
+                            showError("Incorrect CAPTCHA text. Please try again.");
+                            return false;
+                        }
+
+                        // Create new participant
+                        Participant participant = new Participant(raffle, currentUser);
+                        participantService.add(participant);
+
+                        // Refresh raffle details
+                        this.raffle = raffleService.getOne(raffle.getId());
+                        loadRaffleDetails();
+                        
+                        // Show success message
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                        alert.setTitle("Success");
+                        alert.setHeaderText(null);
+                        alert.setContentText("You have successfully joined the raffle!");
+                        alert.showAndWait();
+                        
+                        // Refresh parent view if needed
+                        if (parentController != null) {
+                            parentController.refreshRaffles();
+                        }
+                        return true;
+                    } catch (Exception e) {
+                        showError("Error joining raffle: " + e.getMessage());
+                        return false;
+                    }
+                }
+                return false;
+            });
+
+            // Show the dialog
+            dialog.showAndWait();
+
         } catch (Exception e) {
-            showError("Error joining raffle: " + e.getMessage());
+            showError("Error: " + e.getMessage());
         }
     }
 
@@ -588,5 +631,88 @@ public class RaffleDetailsController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    public void setParentController(Object controller) {
+        if (controller instanceof RaffleListController) {
+            this.parentController = (RaffleListController) controller;
+        } else if (controller instanceof RaffleManagementController) {
+            // When parent is RaffleManagementController, we'll refresh that instead
+            RaffleManagementController managementController = (RaffleManagementController) controller;
+            this.parentController = new RaffleListController() {
+                @Override
+                public void refreshRaffles() {
+                    managementController.loadRaffles();
+                }
+            };
+        }
+    }
+
+    public void setRaffle(Raffle raffle) {
+        this.raffle = raffle;
+        if (raffle != null) {
+            loadRaffleDetails();
+            autoRefreshTimeline.play();
+        }
+    }
+
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+        if (raffle != null) {
+            updateButtons();
+        }
+    }
+
+    /**
+     * Handles the download PDF button action.
+     * Generates a PDF report for the current raffle and opens it.
+     */
+    @FXML
+    private void handleDownloadPdf() {
+        try {
+            Artwork artwork = null;
+            try {
+                artwork = artworkService.getOne(raffle.getArtworkId());
+            } catch (Exception e) {
+                System.err.println("Error loading artwork for PDF: " + e.getMessage());
+            }
+            
+            // Generate the PDF
+            String pdfPath = PdfGenerator.generateRaffleReport(raffle, artwork, currentUser);
+            
+            // Try to open the PDF with the default system viewer
+            File pdfFile = new File(pdfPath);
+            if (pdfFile.exists() && Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().open(pdfFile);
+                    
+                    // Show success message
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("PDF Generated");
+                    alert.setHeaderText(null);
+                    alert.setContentText("PDF report has been generated and opened. You can save it to your preferred location.");
+                    alert.showAndWait();
+                } catch (Exception e) {
+                    System.err.println("Error opening PDF: " + e.getMessage());
+                    
+                    // If we can't open it automatically, tell the user where it is
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("PDF Generated");
+                    alert.setHeaderText(null);
+                    alert.setContentText("PDF report has been generated at: " + pdfPath + "\n\nPlease open it manually to view and save it.");
+                    alert.showAndWait();
+                }
+            } else {
+                // If Desktop is not supported, just show the file location
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("PDF Generated");
+                alert.setHeaderText(null);
+                alert.setContentText("PDF report has been generated at: " + pdfPath);
+                alert.showAndWait();
+            }
+        } catch (Exception e) {
+            showError("Error generating PDF: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import org.esprit.models.Blog;
 import org.esprit.models.User;
 import org.esprit.utils.DatabaseConnection;
+import org.esprit.utils.ProfanityFilter;
 
 public class BlogService implements IService<Blog> {
     
@@ -20,9 +21,14 @@ public class BlogService implements IService<Blog> {
         connection = DatabaseConnection.getInstance().getConnection();
         userService = new UserService();
     }
-    
-    @Override
+      @Override
     public void add(Blog blog) throws Exception {
+        // Filter profanity from blog title and content before saving
+        String filteredTitle = ProfanityFilter.filterText(blog.getTitle());
+        String filteredContent = ProfanityFilter.filterText(blog.getContent());
+        blog.setTitle(filteredTitle);
+        blog.setContent(filteredContent);
+
         String sql = "INSERT INTO blog (user_id, title, translated_title, content, date, " +
                     "translated_content, translation_language, image_filename) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -39,7 +45,6 @@ public class BlogService implements IService<Blog> {
             
             stmt.executeUpdate();
             
-            // Set the generated ID back to the blog object
             try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     blog.setId(generatedKeys.getInt(1));
@@ -47,9 +52,14 @@ public class BlogService implements IService<Blog> {
             }
         }
     }
-    
-    @Override
+      @Override
     public void update(Blog blog) throws Exception {
+        // Filter profanity from blog title and content before updating
+        String filteredTitle = ProfanityFilter.filterText(blog.getTitle());
+        String filteredContent = ProfanityFilter.filterText(blog.getContent());
+        blog.setTitle(filteredTitle);
+        blog.setContent(filteredContent);
+
         String sql = "UPDATE blog SET user_id = ?, title = ?, translated_title = ?, " +
                     "content = ?, date = ?, translated_content = ?, translation_language = ?, " +
                     "image_filename = ? WHERE id = ?";
@@ -82,7 +92,7 @@ public class BlogService implements IService<Blog> {
     @Override
     public List<Blog> getAll() throws Exception {
         List<Blog> blogs = new ArrayList<>();
-        String sql = "SELECT * FROM blog";
+        String sql = "SELECT * FROM blog ORDER BY date DESC";
         
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
@@ -118,10 +128,32 @@ public class BlogService implements IService<Blog> {
     
     public List<Blog> getByUser(User user) throws Exception {
         List<Blog> blogs = new ArrayList<>();
-        String sql = "SELECT * FROM blog WHERE user_id = ?";
+        String sql = "SELECT * FROM blog WHERE user_id = ? ORDER BY date DESC";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, user.getId());
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    blogs.add(mapResultSetToBlog(rs));
+                }
+            }
+        }
+        
+        return blogs;
+    }
+
+    public List<Blog> search(String searchText) throws Exception {
+        List<Blog> blogs = new ArrayList<>();
+        String sql = "SELECT * FROM blog WHERE LOWER(title) LIKE ? OR LOWER(content) LIKE ? " +
+                    "OR EXISTS (SELECT 1 FROM user WHERE id = blog.user_id AND LOWER(name) LIKE ?) " +
+                    "ORDER BY date DESC";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            String searchPattern = "%" + searchText.toLowerCase() + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
             
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -150,7 +182,9 @@ public class BlogService implements IService<Blog> {
         blog.setUser(user);
         
         return blog;
-    }    public List<Blog> readAll() throws Exception {
+    }
+
+    public List<Blog> readAll() throws Exception {
         return getAll();
     }
 }

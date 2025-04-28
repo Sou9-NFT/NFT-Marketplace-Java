@@ -143,15 +143,6 @@ public class User {
             }
         }
         
-        // Ethereum wallet address validation (if set)
-        if (walletAddress != null && !walletAddress.trim().isEmpty()) {
-            if (walletAddress.length() != 42) {
-                result.addError("walletAddress", "Ethereum address must be exactly 42 characters");
-            } else if (!isValidWalletAddress(walletAddress)) {
-                result.addError("walletAddress", "Invalid Ethereum address format");
-            }
-        }
-        
         // GitHub username validation (if set)
         if (githubUsername != null && !githubUsername.trim().isEmpty()) {
             if (!isValidGithubUsername(githubUsername)) {
@@ -179,12 +170,6 @@ public class User {
         // Must contain only letters and spaces
         String nameRegex = "^[a-zA-Z\\s]+$";
         return Pattern.compile(nameRegex).matcher(name).matches();
-    }
-
-    private boolean isValidWalletAddress(String walletAddress) {
-        // Ethereum address format: 0x followed by 40 hex characters
-        String walletRegex = "^0x[a-fA-F0-9]{40}$";
-        return Pattern.compile(walletRegex).matcher(walletAddress).matches();
     }
 
     private boolean isValidProfilePicture(String url) {

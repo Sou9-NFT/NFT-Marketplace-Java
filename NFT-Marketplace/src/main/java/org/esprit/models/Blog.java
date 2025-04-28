@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.esprit.utils.ProfanityFilter;
 
 public class Blog {
     private Integer id;
@@ -88,12 +89,13 @@ public class Blog {
         }
 
         return result;
-    }
-
-    // Simple profanity check (you should implement a more comprehensive solution)
-    private boolean containsProfanity(String text) {
-        // Add your profanity detection logic here
-        return false;
+    }    private boolean containsProfanity(String text) {
+        try {
+            return ProfanityFilter.containsProfanity(text);
+        } catch (Exception e) {
+            System.err.println("Failed to check profanity: " + e.getMessage());
+            return false;
+        }
     }
 
     // Getters and Setters

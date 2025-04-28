@@ -37,6 +37,15 @@ public class EditProfileController {
 
     @FXML
     private TextField githubField;
+    
+    @FXML
+    private TextField currentPassword;
+    
+    @FXML
+    private TextField newPassword;
+    
+    @FXML
+    private TextField confirmPassword;
 
     @FXML
     private Label statusLabel;
@@ -45,7 +54,7 @@ public class EditProfileController {
     private ImageView profileImageView;
 
     private User currentUser;
-    private UserService userService;
+    private final UserService userService;
     private File selectedProfilePicFile;
 
     public EditProfileController() {
@@ -89,8 +98,19 @@ public class EditProfileController {
                 profilePicPath = "/assets/default/default_profile.jpg";
             }
 
-            // Load the image
-            Image profileImage = new Image(getClass().getResourceAsStream(profilePicPath));
+            Image profileImage;
+            
+            // Check if the profile picture is a URL (GitHub avatar) or a local resource
+            if (profilePicPath.startsWith("http://") || profilePicPath.startsWith("https://")) {
+                // For remote URLs (like GitHub avatars)
+                profileImage = new Image(profilePicPath);
+                System.out.println("Loading remote profile image from: " + profilePicPath);
+            } else {
+                // For local resource paths
+                profileImage = new Image(getClass().getResourceAsStream(profilePicPath));
+                System.out.println("Loading local profile image from: " + profilePicPath);
+            }
+            
             profileImageView.setImage(profileImage);
 
             // Apply styling to make the image circular
@@ -148,6 +168,50 @@ public class EditProfileController {
         String githubUsername = githubField.getText().trim();
 
         try {
+            // Create a copy of the current user for validation
+            User updatedUser = new User();
+            updatedUser.setId(currentUser.getId());
+            updatedUser.setName(name);
+            updatedUser.setEmail(email);
+            updatedUser.setWalletAddress(walletAddress.isEmpty() ? null : walletAddress);
+            updatedUser.setGithubUsername(githubUsername.isEmpty() ? null : githubUsername);
+            
+            // Set other fields from current user to avoid losing data
+            updatedUser.setRoles(currentUser.getRoles());
+            updatedUser.setBalance(currentUser.getBalance());
+            updatedUser.setCreatedAt(currentUser.getCreatedAt());
+            updatedUser.setProfilePicture(currentUser.getProfilePicture());
+
+            // Password handling - special case that requires controller-level validation
+            boolean passwordChanged = false;
+            // Check if password fields exist in the form
+            if (newPassword != null && currentPassword != null && confirmPassword != null) {
+                if (!newPassword.getText().isEmpty()) {
+                    // Verify current password
+                    if (!currentUser.getPassword().equals(currentPassword.getText())) {
+                        showStatus("Current password is incorrect.");
+                        return;
+                    }
+
+                    // Check if new passwords match
+                    if (!newPassword.getText().equals(confirmPassword.getText())) {
+                        showStatus("New passwords do not match.");
+                        return;
+                    }
+
+                    // Set the new password for validation
+                    updatedUser.setPassword(newPassword.getText());
+                    passwordChanged = true;
+                } else {
+                    // Skip password validation by setting a placeholder
+                    // We'll restore the actual password after validation
+                    updatedUser.setPassword("placeholder");
+                }
+            } else {
+                // Password fields don't exist in this version of the form
+                updatedUser.setPassword("placeholder");
+            }
+
             // Check if the email is being changed and if it's already in use
             if (!email.equals(currentUser.getEmail())) {
                 User existingUser = userService.getByEmail(email);
@@ -175,18 +239,8 @@ public class EditProfileController {
                 return;
             }
             
-            // Validate wallet address if provided
-            if (walletAddress != null && !walletAddress.isEmpty()) {
-                // Ethereum address format: 0x followed by 40 hex characters
-                String walletRegex = "^0x[a-fA-F0-9]{40}$";
-                if (!Pattern.compile(walletRegex).matcher(walletAddress).matches()) {
-                    showStatus("Invalid Ethereum address format");
-                    return;
-                }
-            }
-            
             // Validate GitHub username if provided
-            if (githubUsername != null && !githubUsername.isEmpty()) {
+            if (!githubUsername.isEmpty()) {
                 // GitHub username validation (alphanumeric with hyphens, no consecutive hyphens)
                 String githubRegex = "^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$";
                 if (!Pattern.compile(githubRegex).matcher(githubUsername).matches()) {
@@ -226,6 +280,21 @@ public class EditProfileController {
                     e.printStackTrace();
                     return;
                 }
+            }
+
+            // Update the current user with validated data
+            currentUser.setName(updatedUser.getName());
+            currentUser.setEmail(updatedUser.getEmail());
+            currentUser.setWalletAddress(updatedUser.getWalletAddress());
+            currentUser.setGithubUsername(updatedUser.getGithubUsername());
+            
+            // Only update password if it was changed
+            if (passwordChanged) {
+                currentUser.setPassword(updatedUser.getPassword());
+            }
+            
+            if (updatedUser.getProfilePicture() != null) {
+                currentUser.setProfilePicture(updatedUser.getProfilePicture());
             }
 
             // Save changes to database

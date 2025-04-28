@@ -72,9 +72,17 @@ public class TradeOfferService implements IService<TradeOffer> {
     public void delete(TradeOffer tradeOffer) throws Exception {
         String sql = "DELETE FROM trade_offer WHERE id = ?";
         
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try {
+            PreparedStatement stmt = connection.prepareStatement(sql);
             stmt.setInt(1, tradeOffer.getId());
-            stmt.executeUpdate();
+            int rowsAffected = stmt.executeUpdate();
+            stmt.close();
+            
+            if (rowsAffected == 0) {
+                throw new Exception("No trade offer found with ID: " + tradeOffer.getId());
+            }
+        } catch (SQLException e) {
+            throw new Exception("Error deleting trade offer: " + e.getMessage());
         }
     }
 
@@ -125,8 +133,7 @@ public class TradeOfferService implements IService<TradeOffer> {
                       "JOIN artwork o ON t.offered_item = o.id " +
                       "JOIN artwork rc ON t.received_item = rc.id";
 
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             Statement stmt = conn.createStatement();
+        try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
@@ -180,13 +187,71 @@ public class TradeOfferService implements IService<TradeOffer> {
     public void updateTradeStatus(int tradeId, String newStatus) throws SQLException {
         String query = "UPDATE trade_offer SET status = ? WHERE id = ?";
         
-        try (Connection conn = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query)) {
-            
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setString(1, newStatus);
             pstmt.setInt(2, tradeId);
             pstmt.executeUpdate();
         }
+    }
+
+    // Get trade offers for a specific user (either as sender or receiver)
+    public List<TradeOffer> getUserTradeOffers(int userId) throws SQLException {
+        List<TradeOffer> tradeOffers = new ArrayList<>();
+        String query = "SELECT t.*, " +
+                      "s.id as sender_id, s.name as sender_name, " +
+                      "r.id as receiver_id, r.name as receiver_name, " +
+                      "o.id as offered_id, o.title as offered_title, " +
+                      "rc.id as received_id, rc.title as received_title " +
+                      "FROM trade_offer t " +
+                      "JOIN user s ON t.sender = s.id " +
+                      "JOIN user r ON t.receiver_name = r.id " +
+                      "JOIN artwork o ON t.offered_item = o.id " +
+                      "JOIN artwork rc ON t.received_item = rc.id " +
+                      "WHERE t.sender = ? OR t.receiver_name = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, userId);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    TradeOffer trade = new TradeOffer();
+                    trade.setId(rs.getInt("id"));
+
+                    // Set sender
+                    User sender = new User();
+                    sender.setId(rs.getInt("sender_id"));
+                    sender.setName(rs.getString("sender_name"));
+                    trade.setSender(sender);
+
+                    // Set receiver
+                    User receiver = new User();
+                    receiver.setId(rs.getInt("receiver_id"));
+                    receiver.setName(rs.getString("receiver_name"));
+                    trade.setReceiverName(receiver);
+
+                    // Set offered item
+                    Artwork offeredItem = new Artwork();
+                    offeredItem.setId(rs.getInt("offered_id"));
+                    offeredItem.setTitle(rs.getString("offered_title"));
+                    trade.setOfferedItem(offeredItem);
+
+                    // Set received item
+                    Artwork receivedItem = new Artwork();
+                    receivedItem.setId(rs.getInt("received_id"));
+                    receivedItem.setTitle(rs.getString("received_title"));
+                    trade.setReceivedItem(receivedItem);
+
+                    // Set other fields
+                    trade.setDescription(rs.getString("description"));
+                    trade.setCreationDate(rs.getTimestamp("creation_date").toLocalDateTime());
+                    trade.setStatus(rs.getString("status"));
+
+                    tradeOffers.add(trade);
+                }
+            }
+        }
+        return tradeOffers;
     }
 
     private TradeOffer mapResultSetToTradeOffer(ResultSet rs) throws Exception {

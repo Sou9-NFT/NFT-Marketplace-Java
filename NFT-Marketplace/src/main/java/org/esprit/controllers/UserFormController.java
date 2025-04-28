@@ -7,6 +7,8 @@ import java.util.Map;
 
 import org.esprit.models.User;
 import org.esprit.services.UserService;
+import org.esprit.utils.IdenticonGenerator;
+import org.esprit.utils.PasswordHasher;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -247,64 +249,57 @@ public class UserFormController {
         userToValidate.setRoles(roles);
         
         // Use the User entity validation
-        User.ValidationResult result = userToValidate.validate();
+        User.ValidationResult validationResult = userToValidate.validate();
         
-        // Reset all field styling
-        nameField.getStyleClass().removeAll("error");
-        emailField.getStyleClass().removeAll("error");
-        passwordField.getStyleClass().removeAll("error");
-        balanceField.getStyleClass().removeAll("error");
-        walletField.getStyleClass().removeAll("error");
-        githubField.getStyleClass().removeAll("error");
-        
-        // Hide all error labels first
-        hideAllErrorLabels();
-        
-        // If valid, return true immediately
-        if (result.isValid()) {
-            return true;
+        if (!validationResult.isValid()) {
+            Map<String, String> errors = validationResult.getErrors();
+            
+            if (errors.containsKey("name")) {
+                showFieldError(nameErrorLabel, errors.get("name"));
+                nameField.getStyleClass().add("error");
+            }
+            
+            if (errors.containsKey("email")) {
+                showFieldError(emailErrorLabel, errors.get("email"));
+                emailField.getStyleClass().add("error");
+            }
+            
+            if (errors.containsKey("password")) {
+                showFieldError(passwordErrorLabel, errors.get("password"));
+                passwordField.getStyleClass().add("error");
+            }
+            
+            if (errors.containsKey("balance")) {
+                showFieldError(balanceErrorLabel, errors.get("balance"));
+                balanceField.getStyleClass().add("error");
+            }
+            
+            if (errors.containsKey("walletAddress")) {
+                showFieldError(walletErrorLabel, errors.get("walletAddress"));
+                walletField.getStyleClass().add("error");
+            }
+            
+            if (errors.containsKey("githubUsername")) {
+                showFieldError(githubErrorLabel, errors.get("githubUsername"));
+                githubField.getStyleClass().add("error");
+            }
+            
+            if (roles.isEmpty()) {
+                showFieldError(rolesErrorLabel, "User must have at least one role");
+            }
+            
+            return false;
         }
         
-        // Handle validation errors
-        Map<String, String> errors = result.getErrors();
+        // If we're here, the basic validation passed
+        // Now check for any application-specific validations
         
-        // Show field-specific errors
-        if (errors.containsKey("name")) {
-            showFieldError(nameErrorLabel, errors.get("name"));
-            nameField.getStyleClass().add("error");
-        }
-        
-        if (errors.containsKey("email")) {
-            showFieldError(emailErrorLabel, errors.get("email"));
-            emailField.getStyleClass().add("error");
-        }
-        
-        if (errors.containsKey("password")) {
-            showFieldError(passwordErrorLabel, errors.get("password"));
-            passwordField.getStyleClass().add("error");
-        }
-        
-        if (errors.containsKey("balance")) {
-            showFieldError(balanceErrorLabel, errors.get("balance"));
-            balanceField.getStyleClass().add("error");
-        }
-        
-        if (errors.containsKey("walletAddress")) {
-            showFieldError(walletErrorLabel, errors.get("walletAddress"));
-            walletField.getStyleClass().add("error");
-        }
-        
-        if (errors.containsKey("githubUsername")) {
-            showFieldError(githubErrorLabel, errors.get("githubUsername"));
-            githubField.getStyleClass().add("error");
-        }
-        
-        // Check if roles are selected (this is not in User entity validation)
         if (roles.isEmpty()) {
-            showFieldError(rolesErrorLabel, "At least one role must be selected");
+            showFieldError(rolesErrorLabel, "User must have at least one role");
+            return false;
         }
         
-        return false;
+        return true;
     }
 
     private void showFieldError(Label errorLabel, String message) {
@@ -326,10 +321,21 @@ public class UserFormController {
         }
 
         // Create new user
-        User newUser = new User(email, password, name);
+        User newUser = new User(email, PasswordHasher.hashPassword(password), name);
 
-        // Set default profile picture
-        newUser.setProfilePicture("/assets/default/default_profile.jpg");
+        try {
+            // Generate unique identicon based on email
+            String uploadsDir = System.getProperty("user.dir") + "/src/main/resources/uploads";
+            String identiconFilename = IdenticonGenerator.generateIdenticon(email, uploadsDir);
+            
+            // Set the path to be used by the application
+            newUser.setProfilePicture("/uploads/" + identiconFilename);
+            
+        } catch (Exception e) {
+            // If identicon generation fails, fall back to default profile image
+            newUser.setProfilePicture("/assets/default/default_profile.jpg");
+            System.err.println("Failed to generate identicon: " + e.getMessage());
+        }
 
         // Set roles
         List<String> roles = new ArrayList<>();
@@ -384,7 +390,7 @@ public class UserFormController {
 
         // Update password if provided
         if (!password.isEmpty()) {
-            userToEdit.setPassword(password);
+            userToEdit.setPassword(PasswordHasher.hashPassword(password));
         }
 
         // Update roles

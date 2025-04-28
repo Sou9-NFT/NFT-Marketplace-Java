@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Random;
 
 import org.esprit.models.Artwork;
@@ -74,7 +76,7 @@ public class RaffleService implements IService<Raffle> {
             }
         }
 
-        // Normal update for raffle that doesn't need to be ended or if selectWinner failed
+        // Normal update for raffle that doesn't need to be
         String query = "UPDATE raffle SET title=?, raffle_description=?, end_time=?, status=?, winner_id=?, artwork_id=? WHERE id=?";
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setString(1, raffle.getTitle());
@@ -503,5 +505,59 @@ public class RaffleService implements IService<Raffle> {
         } finally {
             connection.setAutoCommit(true);
         }
+    }
+
+    /**
+     * Gets statistics about raffle winners
+     * @return List of winners with their win counts
+     */
+    public List<Map<String, Object>> getWinnerStatistics() throws SQLException {
+        List<Map<String, Object>> winnerStats = new ArrayList<>();
+        String query = "SELECT u.id, u.name, COUNT(*) as win_count " +
+                      "FROM raffle r " +
+                      "JOIN user u ON r.winner_id = u.id " +
+                      "WHERE r.status = 'ended' AND r.winner_id IS NOT NULL " +
+                      "GROUP BY u.id, u.name " +
+                      "ORDER BY win_count DESC " +
+                      "LIMIT 10";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            
+            while (rs.next()) {
+                Map<String, Object> stat = new HashMap<>();
+                stat.put("userId", rs.getInt("id"));
+                stat.put("userName", rs.getString("name"));
+                stat.put("winCount", rs.getInt("win_count"));
+                winnerStats.add(stat);
+            }
+        }
+        return winnerStats;
+    }
+
+    /**
+     * Gets statistics about raffle creation times
+     * @return List of time periods with raffle counts
+     */
+    public List<Map<String, Object>> getCreationTimeStatistics() throws SQLException {
+        List<Map<String, Object>> timeStats = new ArrayList<>();
+        String query = "SELECT " +
+                      "DAYNAME(created_at) as day_name, " +
+                      "COUNT(*) as raffle_count " +
+                      "FROM raffle " +
+                      "GROUP BY DAYNAME(created_at), DAYOFWEEK(created_at) " +
+                      "ORDER BY DAYOFWEEK(created_at)";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            
+            while (rs.next()) {
+                Map<String, Object> stat = new HashMap<>();
+                stat.put("dayName", rs.getString("day_name"));
+                stat.put("count", rs.getInt("raffle_count"));
+                timeStats.add(stat);
+            }
+        }
+        return timeStats;
     }
 }

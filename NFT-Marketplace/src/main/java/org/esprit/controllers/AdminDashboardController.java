@@ -35,6 +35,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -44,7 +45,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
@@ -85,8 +85,18 @@ public class AdminDashboardController implements Initializable {
     @FXML
     private Label adminNameLabel;
     
+    // New UI components for sidebar layout
     @FXML
-    private Pane userManagementSection;
+    private VBox welcomeScreen;
+    
+    @FXML
+    private ScrollPane userManagementSection;
+    
+    @FXML
+    private ScrollPane blogManagementSection;
+    
+    @FXML
+    private ScrollPane contentArea;
 
     // Blog Management
     @FXML private ListView<Blog> blogListView;
@@ -140,6 +150,9 @@ public class AdminDashboardController implements Initializable {
                 );
             }
         }
+        
+        // Initially show the welcome screen
+        showWelcomeScreen();
     }
 
     public void setCurrentUser(User user) {
@@ -149,52 +162,100 @@ public class AdminDashboardController implements Initializable {
         }
     }
     
+    /**
+     * Helper method to hide all content sections
+     */
+    private void hideAllSections() {
+        if (welcomeScreen != null) welcomeScreen.setVisible(false);
+        if (welcomeScreen != null) welcomeScreen.setManaged(false);
+        if (userManagementSection != null) userManagementSection.setVisible(false);
+        if (userManagementSection != null) userManagementSection.setManaged(false);
+        if (blogManagementSection != null) blogManagementSection.setVisible(false);
+        if (blogManagementSection != null) blogManagementSection.setManaged(false);
+        if (contentArea != null) contentArea.setVisible(false);
+        if (contentArea != null) contentArea.setManaged(false);
+    }
+    
+    /**
+     * Show the welcome screen
+     */
+    private void showWelcomeScreen() {
+        hideAllSections();
+        if (welcomeScreen != null) {
+            welcomeScreen.setVisible(true);
+            welcomeScreen.setManaged(true);
+        }
+        
+        // Update window title - safely check if the scene and window exist
+        if (adminNameLabel != null && adminNameLabel.getScene() != null && adminNameLabel.getScene().getWindow() != null) {
+            Stage stage = (Stage) adminNameLabel.getScene().getWindow();
+            stage.setTitle("NFT Marketplace - Admin Dashboard");
+        }
+    }
+    
+    /**
+     * Show the user management section
+     */
+    private void showUserManagement() {
+        hideAllSections();
+        if (userManagementSection != null) {
+            userManagementSection.setVisible(true);
+            userManagementSection.setManaged(true);
+            loadAllUsers();  // Refresh user list
+            
+            // Update window title - safely check if the scene and window exist
+            if (adminNameLabel != null && adminNameLabel.getScene() != null && adminNameLabel.getScene().getWindow() != null) {
+                Stage stage = (Stage) adminNameLabel.getScene().getWindow();
+                stage.setTitle("NFT Marketplace - User Management");
+            }
+        }
+    }
+    
+    /**
+     * Show the blog management section
+     */
+    private void showBlogManagement() {
+        hideAllSections();
+        if (blogManagementSection != null) {
+            blogManagementSection.setVisible(true);
+            blogManagementSection.setManaged(true);
+            refreshBlogList();  // Refresh blog list
+            
+            // Update window title - safely check if the scene and window exist
+            if (adminNameLabel != null && adminNameLabel.getScene() != null && adminNameLabel.getScene().getWindow() != null) {
+                Stage stage = (Stage) adminNameLabel.getScene().getWindow();
+                stage.setTitle("NFT Marketplace - Blog Management");
+            }
+        }
+    }
+    
+    /**
+     * Load content into the dynamic content area
+     */
+    private void loadContentInPlace(Parent content, String title) {
+        hideAllSections();
+        if (contentArea != null) {
+            // Clear existing content and set new content
+            VBox container = (VBox) contentArea.getContent();
+            if (container != null) {
+                container.getChildren().clear();
+                container.getChildren().add(content);
+            }
+            
+            contentArea.setVisible(true);
+            contentArea.setManaged(true);
+            
+            // Update window title - safely check if the scene and window exist
+            if (adminNameLabel != null && adminNameLabel.getScene() != null && adminNameLabel.getScene().getWindow() != null) {
+                Stage stage = (Stage) adminNameLabel.getScene().getWindow();
+                stage.setTitle("NFT Marketplace - " + title);
+            }
+        }
+    }
+    
     @FXML
     private void handleManageUsers(ActionEvent event) {
-        try {
-            // Create a new FXML loader for a standalone user management page
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserManagement.fxml"));
-            // If UserManagement.fxml doesn't exist, we'll need to create it
-            // For now, we'll handle the fallback to show an alert
-            
-            if (loader.getLocation() == null) {
-                // Temporary fallback until UserManagement.fxml is created
-                showAlert("Information", "User Management will open in a new page. Please create UserManagement.fxml.");
-                
-                // Fall back to the old behavior temporarily
-                if (userManagementSection != null) {
-                    userManagementSection.setVisible(true);
-                    userManagementSection.setManaged(true);
-                    loadAllUsers();
-                    
-                    VBox contentArea = (VBox) ((Button) event.getSource()).getScene().lookup("#contentArea");
-                    if (contentArea != null) {
-                        contentArea.setVisible(true);
-                        contentArea.setManaged(true);
-                    }
-                }
-            } else {
-                // If UserManagement.fxml exists, load it
-                Parent userManagementView = loader.load();
-                
-                // Pass the current admin user to the controller if it has a setCurrentUser method
-                Object controller = loader.getController();
-                if (controller != null) {
-                    try {
-                        controller.getClass().getMethod("setCurrentUser", User.class)
-                            .invoke(controller, currentAdminUser);
-                    } catch (Exception e) {
-                        // Silently ignore if method not available
-                    }
-                }
-                
-                // Navigate to the user management view in a new scene
-                navigateToView(event, userManagementView, "NFT Marketplace - User Management");
-            }
-        } catch (IOException e) {
-            showAlert("Error", "Could not load user management: " + e.getMessage());
-            System.err.println("Error in handleManageUsers: " + e.getMessage());
-        }
+        showUserManagement();
     }
     
     @FXML
@@ -206,7 +267,7 @@ public class AdminDashboardController implements Initializable {
             CategoryManagementController controller = loader.getController();
             controller.setCurrentUser(currentAdminUser);
             
-            navigateToView(event, categoriesView, "NFT Marketplace - Category Management");
+            loadContentInPlace(categoriesView, "Category Management");
         } catch (IOException e) {
             showAlert("Error", "Could not load category management: " + e.getMessage());
             System.err.println("Error in handleManageCategories: " + e.getMessage());
@@ -226,75 +287,59 @@ public class AdminDashboardController implements Initializable {
                     controller.setCurrentUser(currentAdminUser, true);
                 }
                 
-                navigateToView(event, artworkView, "NFT Marketplace - Artwork Management");
+                loadContentInPlace(artworkView, "Artwork Management");
             } catch (IOException e) {
                 showAlert("Error", "Could not load artwork management: " + e.getMessage());
                 System.err.println("Error in handleManageArtworks: " + e.getMessage());
             }
         } else {
-            showComingSoonView(event, "Artwork Management");
+            showComingSoonInPlace("Artwork Management");
         }
     }
     
     @FXML
     private void handleManageBlog(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BlogManagement.fxml"));
-            Parent blogView = loader.load();
-            
-            BlogController controller = loader.getController();
-            controller.setAdminMode(true); // Enable admin-specific features
-            controller.setCurrentUser(currentAdminUser);
-            
-            navigateToView(event, blogView, "NFT Marketplace - Blog Management");
-        } catch (IOException e) {
-            showAlert("Error", "Could not load blog management: " + e.getMessage());
-            System.err.println("Error in handleManageBlog: " + e.getMessage());
+        // If we have our own blog management UI integrated in the dashboard
+        if (blogManagementSection != null) {
+            showBlogManagement();
+        } else {
+            // Otherwise load the standalone blog management
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BlogManagement.fxml"));
+                Parent blogView = loader.load();
+                
+                BlogController controller = loader.getController();
+                controller.setAdminMode(true); // Enable admin-specific features
+                controller.setCurrentUser(currentAdminUser);
+                
+                loadContentInPlace(blogView, "Blog Management");
+            } catch (IOException e) {
+                showAlert("Error", "Could not load blog management: " + e.getMessage());
+                System.err.println("Error in handleManageBlog: " + e.getMessage());
+            }
         }
     }
 
     @FXML
     private void handleManageRaffles(ActionEvent event) {
         try {
-            // Log the resource path we're looking for
-            System.out.println("Attempting to load resource: /fxml/RaffleManagement.fxml");
-            
-            // Try to get the resource URL
             URL resourceUrl = getClass().getResource("/fxml/RaffleManagement.fxml");
             
-            // Debug information
             if (resourceUrl == null) {
-                System.err.println("ERROR: Resource not found: /fxml/RaffleManagement.fxml");
-                
-                // Try alternate paths to debug
-                System.out.println("Checking classpath resources:");
-                URL rootResource = getClass().getResource("/");
-                if (rootResource != null) {
-                    System.out.println("Root resource path: " + rootResource.getPath());
-                } else {
-                    System.out.println("Root resource path not found");
-                }
-                
-                showAlert("Error", "Could not find RaffleManagement.fxml resource. Check console for details.");
+                showComingSoonInPlace("Raffle Management");
                 return;
             }
             
-            System.out.println("Resource found at: " + resourceUrl.toString());
-            
-            // Load the FXML file
             FXMLLoader loader = new FXMLLoader(resourceUrl);
             Parent raffleView = loader.load();
             
-            // Get the controller and set the current user
             RaffleManagementController controller = loader.getController();
             controller.setCurrentUser(currentAdminUser);
             
-            // Navigate to the raffle management view
-            navigateToView(event, raffleView, "NFT Marketplace - Raffle Management");
-            
+            loadContentInPlace(raffleView, "Raffle Management");
         } catch (IOException e) {
             System.err.println("ERROR in handleManageRaffles: " + e.getMessage());
-            e.printStackTrace(); // Print full stack trace for debugging
+            e.printStackTrace();
             showAlert("Error", "Could not load raffle management: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("UNEXPECTED ERROR in handleManageRaffles: " + e.getMessage());
@@ -315,13 +360,13 @@ public class AdminDashboardController implements Initializable {
                     controller.setCurrentUser(currentAdminUser);
                 }
                 
-                navigateToView(event, transactionView, "NFT Marketplace - Transaction Management");
+                loadContentInPlace(transactionView, "Transaction Management");
             } catch (IOException e) {
                 showAlert("Error", "Could not load transaction management: " + e.getMessage());
                 System.err.println("Error in handleManageTransactions: " + e.getMessage());
             }
         } else {
-            showComingSoonView(event, "Transaction Management");
+            showComingSoonInPlace("Transaction Management");
         }
     }
     
@@ -337,13 +382,13 @@ public class AdminDashboardController implements Initializable {
                     controller.setCurrentUser(currentAdminUser);
                 }
                 
-                navigateToView(event, analyticsView, "NFT Marketplace - Analytics");
+                loadContentInPlace(analyticsView, "Analytics");
             } catch (IOException e) {
                 showAlert("Error", "Could not load analytics: " + e.getMessage());
                 System.err.println("Error in handleAnalytics: " + e.getMessage());
             }
         } else {
-            showComingSoonView(event, "Analytics");
+            showComingSoonInPlace("Analytics");
         }
     }
     
@@ -359,13 +404,13 @@ public class AdminDashboardController implements Initializable {
                     controller.setCurrentUser(currentAdminUser);
                 }
                 
-                navigateToView(event, settingsView, "NFT Marketplace - Settings");
+                loadContentInPlace(settingsView, "Settings");
             } catch (IOException e) {
                 showAlert("Error", "Could not load settings: " + e.getMessage());
                 System.err.println("Error in handleSettings: " + e.getMessage());
             }
         } else {
-            showComingSoonView(event, "Settings");
+            showComingSoonInPlace("Settings");
         }
     }
     
@@ -381,13 +426,13 @@ public class AdminDashboardController implements Initializable {
                     controller.setCurrentUser(currentAdminUser);
                 }
                 
-                navigateToView(event, reportsView, "NFT Marketplace - Reports");
+                loadContentInPlace(reportsView, "Reports");
             } catch (IOException e) {
                 showAlert("Error", "Could not load reports: " + e.getMessage());
                 System.err.println("Error in handleReports: " + e.getMessage());
             }
         } else {
-            showComingSoonView(event, "Reports");
+            showComingSoonInPlace("Reports");
         }
     }
     
@@ -403,39 +448,98 @@ public class AdminDashboardController implements Initializable {
                     controller.setCurrentUser(currentAdminUser);
                 }
                 
-                navigateToView(event, logsView, "NFT Marketplace - System Logs");
+                loadContentInPlace(logsView, "System Logs");
             } catch (IOException e) {
                 showAlert("Error", "Could not load system logs: " + e.getMessage());
                 System.err.println("Error in handleSystemLogs: " + e.getMessage());
             }
         } else {
-            showComingSoonView(event, "System Logs");
+            showComingSoonInPlace("System Logs");
         }
     }
     
     @FXML
-private void handleBetSessions(ActionEvent event) {
-    try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BetSession.fxml"));
-        Parent betSessionView = loader.load();
-        
-        // If there's a controller with setCurrentUser method, we can set the admin as a user
-        BetSessionController controller = loader.getController();
-        if (controller != null && currentAdminUser != null) {
-            controller.setCurrentUser(currentAdminUser);
+    private void handleBetSessions(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BetSession.fxml"));
+            Parent betSessionView = loader.load();
+            
+            // If there's a controller with setCurrentUser method, we can set the admin as a user
+            BetSessionController controller = loader.getController();
+            if (controller != null && currentAdminUser != null) {
+                controller.setCurrentUser(currentAdminUser);
+            }
+            
+            loadContentInPlace(betSessionView, "Bet Sessions Management");
+        } catch (IOException e) {
+            System.err.println("Error in handleBetSessions: " + e.getMessage());
+            e.printStackTrace();
+            showAlert("Error", "Could not load Bet Sessions interface: " + e.getMessage());
         }
-        
-        Scene scene = new Scene(betSessionView);
-        Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-        stage.setScene(scene);
-        stage.setTitle("NFT Marketplace - Bet Sessions Management");
-        stage.show();
-    } catch (IOException e) {
-        System.err.println("Error in handleBetSessions: " + e.getMessage());
-        e.printStackTrace();
-        showAlert("Error", "Could not load Bet Sessions interface: " + e.getMessage());
     }
-}
+    
+    @FXML
+    private void handleTradeDisputes(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminTradeDisputes.fxml"));
+            Parent tradeDisputesView = loader.load();
+            
+            AdminTradeDisputesController controller = loader.getController();
+            controller.setUser(currentAdminUser);
+            
+            loadContentInPlace(tradeDisputesView, "Trade Disputes");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade disputes: " + e.getMessage());
+            System.err.println("Error in handleTradeDisputes: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Show a "Coming Soon" message in the content area
+     */
+    private void showComingSoonInPlace(String featureName) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ComingSoon.fxml"));
+            
+            if (loader.getLocation() == null) {
+                showAlert("Coming Soon", featureName + " feature is coming soon!");
+                return;
+            }
+            
+            Parent comingSoonView = loader.load();
+            
+            if (loader.getController() != null) {
+                try {
+                    Object controller = loader.getController();
+                    controller.getClass().getMethod("setFeatureName", String.class)
+                        .invoke(controller, featureName);
+                    
+                    // If there's a setUser method, set the current user
+                    try {
+                        controller.getClass().getMethod("setUser", User.class)
+                            .invoke(controller, currentAdminUser);
+                    } catch (Exception e) {
+                        // Ignore if method doesn't exist
+                    }
+                    
+                    // If there's a setAdmin method, indicate this is the admin
+                    try {
+                        controller.getClass().getMethod("setAdmin", boolean.class)
+                            .invoke(controller, true);
+                    } catch (Exception e) {
+                        // Ignore if method doesn't exist
+                    }
+                } catch (Exception e) {
+                    // Ignore if method not available
+                }
+            }
+            
+            loadContentInPlace(comingSoonView, "Coming Soon: " + featureName);
+        } catch (IOException e) {
+            showAlert("Coming Soon", featureName + " feature is coming soon!");
+        }
+    }
+    
     private void setupTableColumns() {
         // Only set up if columns are properly injected
         if (idColumn != null) {
@@ -650,12 +754,7 @@ private void handleBetSessions(ActionEvent event) {
             ProfileController controller = loader.getController();
             controller.setUser(currentAdminUser);
             
-            Scene currentScene = ((Button) event.getSource()).getScene();
-            Stage stage = (Stage) currentScene.getWindow();
-            
-            stage.setScene(new Scene(profileView, 800, 600));
-            stage.setTitle("NFT Marketplace - Profile");
-            stage.show();
+            loadContentInPlace(profileView, "Profile");
         } catch (IOException e) {
             showStatus("Error loading profile page: " + e.getMessage(), true);
             System.err.println("Error loading profile page: " + e.getMessage());
@@ -668,7 +767,14 @@ private void handleBetSessions(ActionEvent event) {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Login.fxml"));
             Parent loginView = loader.load();
             
-            navigateToView(event, loginView, "NFT Marketplace - Login");
+            // This is one of the few cases where we actually navigate to a new scene
+            // Most operations now use loadContentInPlace instead
+            Scene currentScene = ((Button) event.getSource()).getScene();
+            Stage stage = (Stage) currentScene.getWindow();
+            
+            stage.setScene(new Scene(loginView));
+            stage.setTitle("NFT Marketplace - Login");
+            stage.show();
         } catch (IOException e) {
             showStatus("Error logging out: " + e.getMessage(), true);
             e.printStackTrace();
@@ -676,37 +782,14 @@ private void handleBetSessions(ActionEvent event) {
     }
     
     private void navigateToView(ActionEvent event, Parent view, String title) {
+        // This is only used for rare cases where we need to navigate away
+        // Most operations now use loadContentInPlace instead
         Scene currentScene = ((Button) event.getSource()).getScene();
         Stage stage = (Stage) currentScene.getWindow();
         
         stage.setScene(new Scene(view));
         stage.setTitle(title);
         stage.show();
-    }
-    
-    private void showComingSoonView(ActionEvent event, String featureName) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ComingSoon.fxml"));
-            
-            if (loader.getLocation() == null) {
-                showAlert("Coming Soon", featureName + " feature is coming soon!");
-            } else {
-                Parent comingSoonView = loader.load();
-                
-                if (loader.getController() != null) {
-                    try {
-                        loader.getController().getClass().getMethod("setFeatureName", String.class)
-                            .invoke(loader.getController(), featureName);
-                    } catch (Exception e) {
-                        // Silently ignore if method not available
-                    }
-                }
-                
-                navigateToView(event, comingSoonView, "NFT Marketplace - Coming Soon");
-            }
-        } catch (IOException e) {
-            showAlert("Coming Soon", featureName + " feature is coming soon!");
-        }
     }
     
     private void showAlert(String title, String message) {
@@ -740,7 +823,9 @@ private void handleBetSessions(ActionEvent event) {
         clearBlogFields();
         currentBlog = new Blog();
         enableBlogFields(true);
-    }    @FXML
+    }    
+    
+    @FXML
     private void handleSaveBlog() {
         if (currentAdminUser == null) {
             showAlert(Alert.AlertType.ERROR, "Error", "Admin user information is required to create or edit a blog.");

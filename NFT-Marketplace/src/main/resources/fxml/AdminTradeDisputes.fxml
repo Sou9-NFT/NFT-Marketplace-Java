@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.AdminTradeDisputesController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label text="Trade Disputes" style="-fx-font-size: 24px;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <TableView fx:id="disputeTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="reporterColumn" text="Reporter" prefWidth="120"/>
+            <TableColumn fx:id="tradeIdColumn" text="Trade ID" prefWidth="100"/>
+            <TableColumn fx:id="offeredItemColumn" text="Offered Item" prefWidth="150"/>
+            <TableColumn fx:id="receivedItemColumn" text="Received Item" prefWidth="150"/>
+            <TableColumn fx:id="reasonColumn" text="Reason" prefWidth="200"/>
+            <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+            <TableColumn fx:id="timestampColumn" text="Date" prefWidth="150"/>
+            <TableColumn fx:id="actionsColumn" text="Actions" prefWidth="100"/>
+        </columns>
+    </TableView>
+</VBox> 

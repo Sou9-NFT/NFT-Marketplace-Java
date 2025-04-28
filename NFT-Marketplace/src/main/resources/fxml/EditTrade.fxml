@@ -20,13 +20,12 @@
         <Label text="Requested Item:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
         <ComboBox fx:id="requestedItemComboBox" prefWidth="200" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
         
-        <Label text="Status:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <ComboBox fx:id="statusComboBox" prefWidth="200" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-        
-        <Label text="Description:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextArea fx:id="descriptionArea" prefRowCount="3" prefWidth="200" 
-                  wrapText="true" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <Label text="Description:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextArea fx:id="descriptionField" prefRowCount="3" prefWidth="200" 
+                  wrapText="true" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
     </GridPane>
+    
+    <Label fx:id="statusLabel" visible="false" wrapText="true"/>
     
     <HBox spacing="10" alignment="CENTER">
         <Button fx:id="saveButton" text="Save Changes" onAction="#handleSave"/>

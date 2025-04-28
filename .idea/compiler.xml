@@ -9,5 +9,11 @@
         <module name="NFT-Marketplace" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel target="22" />
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="NFT-Marketplace" options="" />
+    </option>
   </component>
 </project>
