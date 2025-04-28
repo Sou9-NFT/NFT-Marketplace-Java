@@ -1,35 +1,50 @@
 package org.esprit.controllers;
 
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.stage.Stage;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.layout.*;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.control.ToggleGroup;
-
-import org.esprit.models.Raffle;
-import org.esprit.models.User;
-import org.esprit.models.Participant;
-import org.esprit.services.RaffleService;
-import org.esprit.services.ParticipantService;
-import org.esprit.utils.AlertUtils;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+
+import org.esprit.models.Participant;
+import org.esprit.models.Raffle;
+import org.esprit.models.User;
+import org.esprit.services.ParticipantService;
+import org.esprit.services.RaffleService;
+import org.esprit.utils.AlertUtils;
+
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 public class RaffleManagementController {
     // Existing raffle table fields
@@ -64,19 +79,25 @@ public class RaffleManagementController {
     private ObservableList<Participant> participantList;
 
     public void initialize() {
-        raffleService = new RaffleService();
-        participantService = new ParticipantService();
-        
-        setupToggles();
-        setupTable();
-        setupParticipantTable();
-        setupFilters();
-        loadRaffles();
-        loadParticipants();
-        
-        // Setup statistics button
-        if (statisticsButton != null) {
-            statisticsButton.setOnAction(event -> showStatistics());
+        try {
+            raffleService = new RaffleService();
+            participantService = new ParticipantService();
+            
+            setupToggles();
+            setupTable();
+            setupParticipantTable();
+            setupFilters();
+            loadRaffles();
+            loadParticipants();
+            
+            // Setup statistics button
+            if (statisticsButton != null) {
+                statisticsButton.setOnAction(event -> showStatistics());
+            }
+        } catch (Exception e) {
+            System.err.println("Error initializing RaffleManagementController: " + e.getMessage());
+            e.printStackTrace();
+            AlertUtils.showError("Error", "Could not initialize raffle management: " + e.getMessage());
         }
     }
 
@@ -100,7 +121,14 @@ public class RaffleManagementController {
             
             FlowPane winnerStats = new FlowPane(20, 20);  // Increased spacing between items
             winnerStats.setAlignment(Pos.CENTER);
-            List<Map<String, Object>> winnerStatistics = raffleService.getWinnerStatistics();
+            List<Map<String, Object>> winnerStatistics = new ArrayList<>();
+            
+            try {
+                winnerStatistics = raffleService.getWinnerStatistics();
+            } catch (SQLException e) {
+                System.err.println("Error getting winner statistics: " + e.getMessage());
+                e.printStackTrace();
+            }
             
             if (winnerStatistics.isEmpty()) {
                 Label noWinnersLabel = new Label("No winners found");
@@ -137,7 +165,14 @@ public class RaffleManagementController {
             
             FlowPane timeStats = new FlowPane(10, 10);
             timeStats.setAlignment(Pos.CENTER);
-            List<Map<String, Object>> timeStatistics = raffleService.getCreationTimeStatistics();
+            List<Map<String, Object>> timeStatistics = new ArrayList<>();
+            
+            try {
+                timeStatistics = raffleService.getCreationTimeStatistics();
+            } catch (SQLException e) {
+                System.err.println("Error getting creation time statistics: " + e.getMessage());
+                e.printStackTrace();
+            }
             
             if (timeStatistics.isEmpty()) {
                 Label noTimeStatsLabel = new Label("No time statistics available");
@@ -182,10 +217,16 @@ public class RaffleManagementController {
             dialog.getDialogPane().getButtonTypes().add(closeButton);
 
             dialog.getDialogPane().setContent(content);
-            dialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles/raffle-management.css").toExternalForm());
+            try {
+                dialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles/raffle-management.css").toExternalForm());
+            } catch (Exception e) {
+                System.err.println("Error loading stylesheet: " + e.getMessage());
+            }
             dialog.showAndWait();
 
-        } catch (SQLException e) {
+        } catch (Exception e) {
+            System.err.println("Error showing statistics: " + e.getMessage());
+            e.printStackTrace();
             AlertUtils.showError("Error", "Could not load statistics: " + e.getMessage());
         }
     }
@@ -215,45 +256,49 @@ public class RaffleManagementController {
     }
 
     private void setupTable() {
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-        artworkColumn.setCellValueFactory(new PropertyValueFactory<>("artworkTitle"));
-        startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startTime"));
-        endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endTime"));
-        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        
-        // Apply custom styling to status column
-        statusColumn.setCellFactory(column -> new TableCell<Raffle, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                
-                if (empty || item == null) {
-                    setText(null);
-                    setGraphic(null);
-                    getStyleClass().removeAll("status-active", "status-upcoming", "status-completed", "status-cancelled");
-                } else {
-                    setText(item);
-                    getStyleClass().removeAll("status-active", "status-upcoming", "status-completed", "status-cancelled");
-                    switch (item.toLowerCase()) {
-                        case "active":
-                            getStyleClass().add("status-active");
-                            break;
-                        case "upcoming":
-                            getStyleClass().add("status-upcoming");
-                            break;
-                        case "completed":
-                            getStyleClass().add("status-completed");
-                            break;
-                        case "cancelled":
-                            getStyleClass().add("status-cancelled");
-                            break;
+        try {
+            titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+            artworkColumn.setCellValueFactory(new PropertyValueFactory<>("artworkTitle"));
+            startDateColumn.setCellValueFactory(new PropertyValueFactory<>("startTime"));
+            endDateColumn.setCellValueFactory(new PropertyValueFactory<>("endTime"));
+            statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+            
+            // Apply custom styling to status column
+            statusColumn.setCellFactory(column -> new TableCell<Raffle, String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    
+                    if (empty || item == null) {
+                        setText(null);
+                        setGraphic(null);
+                        getStyleClass().removeAll("status-active", "status-upcoming", "status-completed", "status-cancelled");
+                    } else {
+                        setText(item);
+                        getStyleClass().removeAll("status-active", "status-upcoming", "status-completed", "status-cancelled");
+                        switch (item.toLowerCase()) {
+                            case "active":
+                                getStyleClass().add("status-active");
+                                break;
+                            case "upcoming":
+                                getStyleClass().add("status-upcoming");
+                                break;
+                            case "completed":
+                                getStyleClass().add("status-completed");
+                                break;
+                            case "cancelled":
+                                getStyleClass().add("status-cancelled");
+                                break;
+                        }
                     }
                 }
-            }
-        });
-        
-        setupActionButtons();
+            });
+            
+            setupActionButtons();
+        } catch (Exception e) {
+            System.err.println("Error setting up table: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void setupActionButtons() {
@@ -297,7 +342,7 @@ public class RaffleManagementController {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm");
         participationDateColumn.setCellValueFactory(cellData -> 
             new SimpleObjectProperty<>(Date.from(cellData.getValue().getJoinedAt().atZone(ZoneId.systemDefault()).toInstant())));
-        
+
         // Update winner status column logic
         winnerStatusColumn.setCellValueFactory(cellData -> {
             Participant participant = cellData.getValue();
@@ -598,5 +643,7 @@ public class RaffleManagementController {
 
     public void setCurrentUser(User user) {
         this.currentUser = user;
+        // Check if the user is really set
+        System.out.println("Current user set: " + (user != null ? user.getName() + " (ID: " + user.getId() + ")" : "null"));
     }
 }
