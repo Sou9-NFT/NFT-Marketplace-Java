@@ -44,9 +44,6 @@ public class UserManagementController implements Initializable {
     private TableView<User> userTable;
 
     @FXML
-    private TableColumn<User, Integer> idColumn;
-
-    @FXML
     private TableColumn<User, String> nameColumn;
 
     @FXML
@@ -149,7 +146,6 @@ public class UserManagementController implements Initializable {
 
     private void setupTableColumns() {
         // Set up the table columns
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         

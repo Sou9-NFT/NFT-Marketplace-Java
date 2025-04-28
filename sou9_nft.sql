@@ -359,21 +359,6 @@ CREATE TABLE IF NOT EXISTS `user` (
 -- Table structure for table `vote`
 --
 
-DROP TABLE IF EXISTS `vote`;
-CREATE TABLE IF NOT EXISTS `vote` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `user_id` int NOT NULL,
-  `blog_id` int DEFAULT NULL,
-  `comment_id` int DEFAULT NULL,
-  `vote_type` smallint NOT NULL,
-  `created_at` datetime NOT NULL COMMENT '(DC2Type:datetime_immutable)',
-  PRIMARY KEY (`id`),
-  KEY `IDX_5A108564A76ED395` (`user_id`),
-  KEY `IDX_5A108564DAE07E97` (`blog_id`),
-  KEY `IDX_5A108564F8697D13` (`comment_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
 -- Constraints for dumped tables
 --
 
@@ -474,11 +459,6 @@ ALTER TABLE `trade_state`
 --
 -- Constraints for table `vote`
 --
-ALTER TABLE `vote`
-  ADD CONSTRAINT `FK_5A108564A76ED395` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
-  ADD CONSTRAINT `FK_5A108564DAE07E97` FOREIGN KEY (`blog_id`) REFERENCES `blog` (`id`),
-  ADD CONSTRAINT `FK_5A108564F8697D13` FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`);
-COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

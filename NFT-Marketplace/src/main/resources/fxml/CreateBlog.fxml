@@ -41,14 +41,7 @@
                 <Button text="Choose Image" onAction="#handleChooseImage" styleClass="secondary-button"/>
                 <Label text="Recommended: 1200x630 pixels" styleClass="helper-text"/>
             </VBox>
-        </HBox>
-
-        <Label text="Translation Language" styleClass="field-label"/>
-        <HBox spacing="10" alignment="CENTER_LEFT">
-            <ComboBox fx:id="languageComboBox" promptText="Select language" styleClass="language-combo"/>
-            <Button fx:id="translateButton" text="Translate" onAction="#handleTranslate" styleClass="secondary-button"/>
-        </HBox>
-    </VBox>
+        </HBox>    </VBox>
 
     <!-- Action Buttons -->
     <HBox spacing="10" alignment="CENTER_RIGHT">
