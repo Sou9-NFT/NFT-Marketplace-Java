@@ -1,5 +1,6 @@
 package org.esprit.controllers;
 
+import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -16,9 +17,11 @@ import org.esprit.services.UserService;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -78,9 +81,14 @@ public class BetSessionController implements Initializable {
     
     @FXML
     private Button updateButton;
-      @FXML
+    
+    @FXML
     private Button deleteButton;
-      private BetSessionService betSessionService;
+    
+    @FXML
+    private Button statsButton;
+    
+    private BetSessionService betSessionService;
     private UserService userService;
     
     // Add field for current user
@@ -764,5 +772,32 @@ public class BetSessionController implements Initializable {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     // Example method for placing a bid (add this where you handle bid placement)
-
+    @FXML
+    public void showBetStatistics() {
+        try {
+            // Load the BetStatistics.fxml file
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/BetStatistics.fxml"));
+            Parent root = loader.load();
+            
+            // Get the controller
+            BetStatisticsController statisticsController = loader.getController();
+            
+            // Create a new stage for the statistics window
+            Stage statisticsStage = new Stage();
+            statisticsStage.initModality(Modality.APPLICATION_MODAL);
+            statisticsStage.setTitle("Bet Statistics Dashboard");
+            
+            // Set the scene
+            Scene scene = new Scene(root);
+            statisticsStage.setScene(scene);
+            
+            // Show the stage
+            statisticsStage.show();
+        } catch (IOException e) {
+            Alert alert = new Alert(AlertType.ERROR, 
+                    "Error opening statistics window: " + e.getMessage());
+            alert.showAndWait();
+            e.printStackTrace();
+        }
+    }
 }

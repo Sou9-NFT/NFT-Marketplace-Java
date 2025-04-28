@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<AnchorPane 
+	xmlns="http://javafx.com/javafx/17" 
+	xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.esprit.controllers.BetStatisticsController" prefWidth="800" prefHeight="600" stylesheets="@../styles/main.css, @../styles/bet-session.css">
+	<VBox spacing="20" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0">
+		<padding>
+			<Insets top="20" right="20" bottom="20" left="20"/>
+		</padding>
+		<HBox alignment="CENTER_LEFT" spacing="20">
+			<Label text="Bet Statistics Dashboard" styleClass="title">
+				<font>
+					<Font name="System Bold" size="24.0"/>
+				</font>
+			</Label>
+			<Region HBox.hgrow="ALWAYS" />
+			<Button fx:id="refreshButton" text="Refresh Data" onAction="#refreshData" styleClass="button-primary"/>
+			<Button fx:id="closeButton" text="Close" onAction="#closeWindow" styleClass="button-secondary"/>
+		</HBox>
+		<TitledPane text="Summary Statistics" expanded="true">
+			<GridPane hgap="20" vgap="10">
+				<padding>
+					<Insets top="10" right="10" bottom="10" left="10"/>
+				</padding>
+				<columnConstraints>
+					<ColumnConstraints percentWidth="25" />
+					<ColumnConstraints percentWidth="25" />
+					<ColumnConstraints percentWidth="25" />
+					<ColumnConstraints percentWidth="25" />
+				</columnConstraints>
+				<!-- Row 0 -->
+				<VBox GridPane.columnIndex="0" GridPane.rowIndex="0" styleClass="stat-box">
+					<Label text="Total Bets" styleClass="stat-label"/>
+					<Label fx:id="totalBetsLabel" text="0" styleClass="stat-value"/>
+				</VBox>
+				<VBox GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="stat-box">
+					<Label text="Active Bets" styleClass="stat-label"/>
+					<Label fx:id="activeBetsLabel" text="0" styleClass="stat-value"/>
+				</VBox>
+				<VBox GridPane.columnIndex="2" GridPane.rowIndex="0" styleClass="stat-box">
+					<Label text="Completed Bets" styleClass="stat-label"/>
+					<Label fx:id="completedBetsLabel" text="0" styleClass="stat-value"/>
+				</VBox>
+				<VBox GridPane.columnIndex="3" GridPane.rowIndex="0" styleClass="stat-box">
+					<Label text="Total Value (ETH)" styleClass="stat-label"/>
+					<Label fx:id="totalValueLabel" text="0.00" styleClass="stat-value"/>
+				</VBox>
+				<!-- Row 1 -->
+				<VBox GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="stat-box">
+					<Label text="Avg. Duration (days)" styleClass="stat-label"/>
+					<Label fx:id="avgDurationLabel" text="0" styleClass="stat-value"/>
+				</VBox>
+				<VBox GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="stat-box">
+					<Label text="Avg. Price Increase" styleClass="stat-label"/>
+					<Label fx:id="avgPriceIncreaseLabel" text="0%" styleClass="stat-value"/>
+				</VBox>
+				<VBox GridPane.columnIndex="2" GridPane.rowIndex="1" styleClass="stat-box">
+					<Label text="Most Active User" styleClass="stat-label"/>
+					<Label fx:id="mostActiveUserLabel" text="-" styleClass="stat-value"/>
+				</VBox>
+				<VBox GridPane.columnIndex="3" GridPane.rowIndex="1" styleClass="stat-box">
+					<Label text="Success Rate" styleClass="stat-label"/>
+					<Label fx:id="successRateLabel" text="0%" styleClass="stat-value"/>
+				</VBox>
+			</GridPane>
+		</TitledPane>
+		<TabPane VBox.vgrow="ALWAYS">
+			<Tab text="Activity Over Time" closable="false">
+				<VBox spacing="10">
+					<HBox spacing="10" alignment="CENTER_LEFT">
+						<Label text="Time Period:"/>
+						<ComboBox fx:id="timeRangeCombo" promptText="Select Time Range" />
+					</HBox>
+					<LineChart fx:id="activityChart" VBox.vgrow="ALWAYS">
+						<xAxis>
+							<CategoryAxis label="Time Period"/>
+						</xAxis>
+						<yAxis>
+							<NumberAxis label="Number of Bets"/>
+						</yAxis>
+					</LineChart>
+				</VBox>
+			</Tab>
+			<Tab text="Price Distribution" closable="false">
+				<BarChart fx:id="priceDistChart" VBox.vgrow="ALWAYS">
+					<xAxis>
+						<CategoryAxis label="Price Range (ETH)"/>
+					</xAxis>
+					<yAxis>
+						<NumberAxis label="Number of Bets"/>
+					</yAxis>
+				</BarChart>
+			</Tab>
+			<Tab text="Top Users" closable="false">
+				<TableView fx:id="topUsersTable" VBox.vgrow="ALWAYS">
+					<columns>
+						<TableColumn fx:id="rankColumn" text="Rank" prefWidth="50"/>
+						<TableColumn fx:id="usernameColumn" text="Username" prefWidth="150"/>
+						<TableColumn fx:id="betCountColumn" text="Total Bets" prefWidth="100"/>
+						<TableColumn fx:id="valueColumn" text="Total Value (ETH)" prefWidth="120"/>
+						<TableColumn fx:id="winRateColumn" text="Win Rate" prefWidth="100"/>
+						<TableColumn fx:id="lastActivityColumn" text="Last Activity" prefWidth="150"/>
+					</columns>
+				</TableView>
+			</Tab>
+			<Tab text="Artwork Performance" closable="false">
+				<TableView fx:id="artworkTable" VBox.vgrow="ALWAYS">
+					<columns>
+						<TableColumn fx:id="artworkNameColumn" text="Artwork" prefWidth="150"/>
+						<TableColumn fx:id="artworkBetCountColumn" text="Bet Count" prefWidth="100"/>
+						<TableColumn fx:id="averagePriceColumn" text="Avg. Price (ETH)" prefWidth="120"/>
+						<TableColumn fx:id="priceRangeColumn" text="Price Range" prefWidth="120"/>
+						<TableColumn fx:id="popularityScoreColumn" text="Popularity Score" prefWidth="120"/>
+					</columns>
+				</TableView>
+			</Tab>
+		</TabPane>
+		<HBox alignment="CENTER_RIGHT" spacing="10">
+			<Button text="Export Data" fx:id="exportButton" onAction="#exportData" styleClass="button-primary"/>
+			<Button text="Print Report" fx:id="printButton" onAction="#printReport" styleClass="button-secondary"/>
+		</HBox>
+	</VBox>
+</AnchorPane>
