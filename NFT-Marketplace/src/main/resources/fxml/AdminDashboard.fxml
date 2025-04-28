@@ -37,6 +37,7 @@
 			</Label>
 			<Separator />
 			<Button maxWidth="Infinity" text="Users" onAction="#handleManageUsers" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="User Statistics" onAction="#handleUserStatistics" styleClass="sidebar-button" />
 			<Button maxWidth="Infinity" text="Categories" onAction="#handleManageCategories" styleClass="sidebar-button" />
 			<Button maxWidth="Infinity" text="Blog" onAction="#handleManageBlog" styleClass="sidebar-button" />
 			<Button maxWidth="Infinity" text="Raffles" onAction="#handleManageRaffles" styleClass="sidebar-button" />
@@ -89,7 +90,6 @@
 					</HBox>
 					<TableView fx:id="userTable" VBox.vgrow="ALWAYS">
 						<columns>
-							<TableColumn fx:id="idColumn" text="ID" prefWidth="50" />
 							<TableColumn fx:id="nameColumn" text="Name" prefWidth="150" />
 							<TableColumn fx:id="emailColumn" text="Email" prefWidth="200" />
 							<TableColumn fx:id="rolesColumn" text="Roles" prefWidth="150" />

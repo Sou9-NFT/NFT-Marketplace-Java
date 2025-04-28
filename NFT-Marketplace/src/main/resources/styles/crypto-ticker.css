@@ -2,10 +2,10 @@
 
 /* Ticker container */
 .crypto-ticker-container {
-  -fx-background-color: linear-gradient(to right, #090a1a, #1f1f41, #090a1a);
+  -fx-background-color: linear-gradient(to right, #2d2d2d, #404040, #2d2d2d);
   -fx-padding: 12px 0;
   -fx-border-width: 1px 0;
-  -fx-border-color: rgba(255, 255, 255, 0.1);
+  -fx-border-color: rgba(200, 200, 200, 0.1);
   -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 10, 0, 0, 3);
 }
 
@@ -33,26 +33,26 @@
   -fx-alignment: center-left;
 }
 
-/* Individual crypto item styling - with glass morphism effect */
+/* Individual crypto item styling - with grey theme */
 .crypto-item {
-  -fx-background-color: rgba(255, 255, 255, 0.08);
+  -fx-background-color: rgba(80, 80, 80, 0.9);
   -fx-background-radius: 12px;
   -fx-padding: 10px 16px;
   -fx-spacing: 12px;
   -fx-alignment: center;
-  -fx-border-color: rgba(255, 255, 255, 0.15);
+  -fx-border-color: rgba(120, 120, 120, 0.5);
   -fx-border-radius: 12px;
-  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 5, 0, 0, 1);
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 1);
   -fx-cursor: hand;
   -fx-min-height: 50px;
 }
 
 .crypto-item:hover {
-  -fx-background-color: rgba(255, 255, 255, 0.15);
+  -fx-background-color: rgba(100, 100, 100, 0.9);
   -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 10, 0, 0, 3);
   -fx-scale-x: 1.03;
   -fx-scale-y: 1.03;
-  -fx-border-color: rgba(255, 255, 255, 0.25);
+  -fx-border-color: rgba(150, 150, 150, 0.6);
 }
 
 /* Crypto symbol */
@@ -60,14 +60,14 @@
   -fx-font-family: "Jost", sans-serif;
   -fx-font-weight: bold;
   -fx-font-size: 14px;
-  -fx-text-fill: white;
+  -fx-text-fill: #e8e8e8;
 }
 
 /* Crypto name */
 .crypto-name {
   -fx-font-family: "Jost", sans-serif;
   -fx-font-size: 12px;
-  -fx-text-fill: rgba(255, 255, 255, 0.7);
+  -fx-text-fill: rgba(220, 220, 220, 0.7);
 }
 
 /* Crypto icon */
@@ -76,7 +76,7 @@
 }
 
 .crypto-icon-bg {
-  -fx-background-color: rgba(255, 255, 255, 0.15);
+  -fx-background-color: rgba(200, 200, 200, 0.2);
   -fx-background-radius: 50%;
   -fx-min-width: 32px;
   -fx-min-height: 32px;
@@ -91,7 +91,7 @@
   -fx-font-family: "Jost", sans-serif;
   -fx-font-weight: bold;
   -fx-font-size: 14px;
-  -fx-text-fill: white;
+  -fx-text-fill: #e8e8e8;
   -fx-alignment: center;
 }
 
@@ -100,7 +100,7 @@
   -fx-font-family: "Jost", sans-serif;
   -fx-font-size: 15px;
   -fx-font-weight: bold;
-  -fx-text-fill: #f8f9fa;
+  -fx-text-fill: #f0f0f0;
   -fx-padding: 0 8px 0 0;
 }
 
@@ -135,11 +135,11 @@
   -fx-font-family: "Jost", sans-serif;
   -fx-font-size: 13px;
   -fx-font-weight: bold;
-  -fx-text-fill: #7d8395;
-  -fx-background-color: rgba(125, 131, 149, 0.1);
+  -fx-text-fill: #a0a0a0;
+  -fx-background-color: rgba(160, 160, 160, 0.1);
   -fx-background-radius: 6px;
   -fx-padding: 4px 10px;
-  -fx-border-color: rgba(125, 131, 149, 0.3);
+  -fx-border-color: rgba(160, 160, 160, 0.3);
   -fx-border-radius: 6px;
 }
 
@@ -152,15 +152,15 @@
 .crypto-loading {
   -fx-font-family: "Jost", sans-serif;
   -fx-font-size: 14px;
-  -fx-text-fill: white;
+  -fx-text-fill: #e0e0e0;
   -fx-padding: 8px;
   /* Pulsating animation */
-  -fx-text-fill: linear-gradient(to right, white, #4528dc);
+  -fx-text-fill: linear-gradient(to right, #e0e0e0, #a0a0a0);
 }
 
 /* Separator between crypto items */
 .crypto-separator {
-  -fx-background-color: rgba(255, 255, 255, 0.2);
+  -fx-background-color: rgba(200, 200, 200, 0.2);
   -fx-pref-width: 1px;
   -fx-pref-height: 20px;
   -fx-opacity: 0.5;

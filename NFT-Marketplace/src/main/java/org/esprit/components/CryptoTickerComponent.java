@@ -45,17 +45,17 @@ public class CryptoTickerComponent {
         
         cryptoTickerBox = new HBox();
         cryptoTickerBox.setAlignment(Pos.CENTER_LEFT);
-        // Increase spacing between crypto items for better readability
-        cryptoTickerBox.setSpacing(120);
+        // Reduced spacing between crypto items for more visible items
+        cryptoTickerBox.setSpacing(30);
         cryptoTickerBox.getStyleClass().add("crypto-ticker");
         
         scrollPane = new ScrollPane(cryptoTickerBox);
         scrollPane.getStyleClass().add("crypto-ticker-scroll");
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setPannable(false);
+        scrollPane.setPannable(true); // Enable panning/dragging with mouse
         
-        // Create fancy container with gradient background
+        // Create container with white background
         StackPane container = new StackPane(scrollPane);
         container.getStyleClass().add("crypto-ticker-container");
         scrollPane.setContent(cryptoTickerBox);
@@ -118,12 +118,11 @@ public class CryptoTickerComponent {
     private HBox createCryptoTickerItem(CryptoCurrency crypto) {
         HBox item = new HBox();
         item.setAlignment(Pos.CENTER);
-        // Increase spacing within each crypto item
-        item.setSpacing(15);
+        item.setSpacing(20); // Increased spacing within each crypto item
         item.getStyleClass().add("crypto-item");
-        // Set minimum width to ensure text has enough space
-        item.setMinWidth(220);
-        item.setPrefWidth(220);
+        // Set wider minimum width for each crypto item
+        item.setMinWidth(300);
+        item.setPrefWidth(300);
         
         // Cryptocurrency icon
         StackPane iconContainer = createCryptoIconContainer(crypto.getId(), crypto.getSymbol());
@@ -131,17 +130,17 @@ public class CryptoTickerComponent {
         // Symbol with more space
         Label symbolLabel = new Label(crypto.getSymbol());
         symbolLabel.getStyleClass().add("crypto-symbol");
-        symbolLabel.setMinWidth(50);
+        symbolLabel.setMinWidth(65); // Fixed width for better alignment
         
         // Price
         Label priceLabel = new Label(crypto.getFormattedPrice());
         priceLabel.getStyleClass().add("crypto-price");
-        priceLabel.setMinWidth(80);
+        priceLabel.setMinWidth(100); // Fixed width for better alignment
         
-        // Change percentage with up/down arrow
-        HBox changeContainer = new HBox(5);
+        // Change percentage with up/down arrow - simplified
+        HBox changeContainer = new HBox(8); // More spacing between arrow and text
         changeContainer.setAlignment(Pos.CENTER);
-        changeContainer.setMinWidth(70);
+        changeContainer.setMinWidth(90); // Fixed width for better alignment
         
         Label changeLabel = new Label(crypto.getFormattedChange());
         
@@ -160,7 +159,7 @@ public class CryptoTickerComponent {
             changeContainer.getChildren().add(changeLabel);
         }
         
-        // Simplify the layout - just icon, symbol, price and change
+        // Simplified layout with just the essential elements
         item.getChildren().addAll(iconContainer, symbolLabel, priceLabel, changeContainer);
         return item;
     }
@@ -188,14 +187,14 @@ public class CryptoTickerComponent {
             return iconContainer;
         }
         
-        iconView.setFitWidth(24);
-        iconView.setFitHeight(24);
+        iconView.setFitWidth(32);  // Increased from 24px to 32px
+        iconView.setFitHeight(32); // Increased from 24px to 32px
         iconView.getStyleClass().add("crypto-icon");
         
-        // Add a clip to make the icon circular
-        Rectangle clip = new Rectangle(24, 24);
-        clip.setArcWidth(24);
-        clip.setArcHeight(24);
+        // Add a clip to make the icon circular with the new dimensions
+        Rectangle clip = new Rectangle(32, 32); // Updated to match new dimensions
+        clip.setArcWidth(32);
+        clip.setArcHeight(32);
         iconView.setClip(clip);
         
         iconContainer.getChildren().add(iconView);
@@ -209,8 +208,8 @@ public class CryptoTickerComponent {
      */
     private ImageView createArrowIcon(String svgUrl) {
         ImageView arrow = new ImageView(new Image(svgUrl));
-        arrow.setFitWidth(12);
-        arrow.setFitHeight(12);
+        arrow.setFitWidth(16);  // Increased from 12px to 16px
+        arrow.setFitHeight(16); // Increased from 12px to 16px
         arrow.getStyleClass().add("crypto-change-arrow");
         return arrow;
     }

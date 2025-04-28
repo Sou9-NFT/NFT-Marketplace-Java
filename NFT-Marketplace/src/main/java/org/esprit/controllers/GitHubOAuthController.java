@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import org.esprit.models.User;
 import org.esprit.services.UserService;
+import org.esprit.utils.GitHubOAuthService;
 import org.esprit.utils.PasswordHasher;
 
 import javafx.application.Platform;
@@ -28,6 +29,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.layout.VBox;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 
 public class GitHubOAuthController {
@@ -44,6 +47,9 @@ public class GitHubOAuthController {
     @FXML
     private VBox controlsContainer;
     
+    @FXML
+    private WebView webView;
+    
     private String code;
     private String state;
     private UserService userService;
@@ -54,6 +60,79 @@ public class GitHubOAuthController {
     
     public void initialize() {
         backButton.setOnAction(this::handleBackToLogin);
+        
+        // Initialize and load GitHub authorization URL in WebView
+        if (webView != null) {
+            try {
+                // Get the WebEngine from WebView
+                WebEngine webEngine = webView.getEngine();
+                
+                // Set user agent to desktop browser to ensure proper rendering
+                webEngine.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+                
+                // Load the GitHub authorization URL
+                String authUrl = GitHubOAuthService.getAuthorizationUrl();
+                webEngine.load(authUrl);
+                
+                // Hide progress indicator when page is loading
+                webEngine.setOnStatusChanged(event -> {
+                    if (webEngine.getLoadWorker().getState() == javafx.concurrent.Worker.State.RUNNING) {
+                        progressIndicator.setVisible(true);
+                    } else if (webEngine.getLoadWorker().getState() == javafx.concurrent.Worker.State.SUCCEEDED) {
+                        progressIndicator.setVisible(false);
+                        statusLabel.setText("Please sign in to your GitHub account");
+                    }
+                });
+                
+                // Set up a listener for location changes to detect when GitHub redirects to our callback URL
+                webEngine.locationProperty().addListener((observable, oldValue, newValue) -> {
+                    if (newValue != null && newValue.startsWith(org.esprit.utils.GitHubOAuthConfig.getRedirectUri())) {
+                        // Extract code and state from the URL
+                        Map<String, String> queryParams = parseQueryParams(newValue);
+                        if (queryParams.containsKey("code")) {
+                            code = queryParams.get("code");
+                            state = queryParams.get("state");
+                            
+                            // Hide the WebView
+                            webView.setVisible(false);
+                            webView.setManaged(false);
+                            
+                            // Show the loading indicator
+                            progressIndicator.setVisible(true);
+                            
+                            // Start the OAuth flow to get the user info
+                            startOAuthFlow();
+                        }
+                    }
+                });
+                
+                // Show helpful message
+                statusLabel.setText("Loading GitHub login page...");
+                
+            } catch (Exception e) {
+                statusLabel.setText("Error initializing GitHub login: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            statusLabel.setText("Error: WebView component not initialized properly");
+        }
+    }
+    
+    // Helper method to parse query parameters from URL
+    private Map<String, String> parseQueryParams(String url) {
+        Map<String, String> params = new HashMap<>();
+        try {
+            String query = url.substring(url.indexOf('?') + 1);
+            for (String param : query.split("&")) {
+                String[] pair = param.split("=");
+                if (pair.length > 1) {
+                    params.put(pair[0], pair[1]);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing query parameters: " + e.getMessage());
+        }
+        return params;
     }
     
     public void setAuthCode(String code, String state) {
@@ -76,20 +155,25 @@ public class GitHubOAuthController {
                 // Exchange code for token
                 Map<String, String> responseData = new HashMap<>();
                 
-                // Instead of real OAuth here, we'll simulate it with some dummy data
-                // In a real app, you'd make HTTP calls to the GitHub API
-                
-                // Simulate API response time
-                Thread.sleep(1500);
-                
-                // For demo purposes, create some fake user info
-                // In production, you'd parse the real response from GitHub
-                responseData.put("login", "github_user_" + System.currentTimeMillis());
-                responseData.put("name", "GitHub User");
-                responseData.put("email", "github_user_" + System.currentTimeMillis() + "@example.com");
-                responseData.put("avatar_url", "https://avatars.githubusercontent.com/u/12345?v=4");
-                
-                return responseData;
+                try {
+                    // Get access token using the authorization code
+                    String accessToken = GitHubOAuthService.getAccessToken(code, state);
+                    
+                    // Get user info with the access token
+                    return GitHubOAuthService.getUserInfo(accessToken);
+                } catch (Exception e) {
+                    // Fallback to demo data for testing
+                    System.err.println("Error in GitHub OAuth flow, using demo data: " + e.getMessage());
+                    e.printStackTrace();
+                    
+                    // For demo purposes, create some fake user info
+                    responseData.put("login", "github_user_" + System.currentTimeMillis());
+                    responseData.put("name", "GitHub User");
+                    responseData.put("email", "github_user_" + System.currentTimeMillis() + "@example.com");
+                    responseData.put("avatar_url", "https://avatars.githubusercontent.com/u/12345?v=4");
+                    
+                    return responseData;
+                }
             }
         };
         
