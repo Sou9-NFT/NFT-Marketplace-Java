@@ -495,6 +495,22 @@ public class AdminDashboardController implements Initializable {
     }
     
     @FXML
+    private void handleUserStatistics(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserStatistics.fxml"));
+            Parent userStatsView = loader.load();
+            
+            UserStatisticsController controller = loader.getController();
+            controller.setCurrentUser(currentAdminUser);
+            
+            loadContentInPlace(userStatsView, "User Statistics");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load user statistics: " + e.getMessage());
+            System.err.println("Error in handleUserStatistics: " + e.getMessage());
+        }
+    }
+    
+    @FXML
     private void handleTradeOffers(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeOfferList.fxml"));

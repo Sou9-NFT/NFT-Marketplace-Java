@@ -90,11 +90,27 @@
             <groupId>com.twitter</groupId>
             <artifactId>twitter-api-java-sdk</artifactId>
             <version>2.0.3</version>
-        </dependency>        <!-- JSON dependency for Twitter API -->
+        </dependency>
+        
+        <!-- Animated GIF support -->
         <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20231013</version>
+            <groupId>com.madgag</groupId>
+            <artifactId>animated-gif-lib</artifactId>
+            <version>1.4</version>
+        </dependency>
+        
+        <!-- HTTP Client for Stability API -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+        
+        <!-- GSON for JSON processing -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
         </dependency>        <!-- Twilio for SMS -->
         <dependency>
             <groupId>com.twilio.sdk</groupId>
