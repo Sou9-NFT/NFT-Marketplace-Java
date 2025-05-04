@@ -22,25 +22,17 @@ import java.nio.file.StandardCopyOption;
 import java.util.ResourceBundle;
 
 public class CreateBlogController implements Initializable {
-    
-    @FXML private TextField titleField;
+      @FXML private TextField titleField;
     @FXML private TextArea contentArea;
     @FXML private ImageView imagePreview;
-    @FXML private ComboBox<String> languageComboBox;
     
     private BlogService blogService;
     private User currentUser;
     private String selectedImagePath;
     private final String UPLOAD_DIR = "src/main/resources/uploads/";
-    
-    @Override
+      @Override
     public void initialize(URL url, ResourceBundle rb) {
         blogService = new BlogService();
-        
-        // Initialize language options
-        languageComboBox.setItems(FXCollections.observableArrayList(
-            "French", "Spanish", "German", "Italian", "Arabic"
-        ));
     }
     
     @FXML
@@ -81,21 +73,7 @@ public class CreateBlogController implements Initializable {
             }
         }
     }
-    
-    @FXML
-    private void handleTranslate() {
-        String selectedLanguage = languageComboBox.getValue();
-        if (selectedLanguage == null || selectedLanguage.isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Warning", "Please select a language first!");
-            return;
-        }
-        
-        // TODO: Implement translation logic
-        showAlert(Alert.AlertType.INFORMATION, "Information", 
-            "Translation feature will be implemented soon!");
-    }
-    
-    @FXML
+      @FXML
     private void handleSave() {
         if (currentUser == null) {
             showAlert(Alert.AlertType.ERROR, "Error", "You must be logged in to create a blog.");

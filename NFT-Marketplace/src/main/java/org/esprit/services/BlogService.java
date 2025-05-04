@@ -10,6 +10,7 @@ import java.util.List;
 import org.esprit.models.Blog;
 import org.esprit.models.User;
 import org.esprit.utils.DatabaseConnection;
+import org.esprit.utils.ProfanityFilter;
 
 public class BlogService implements IService<Blog> {
     
@@ -20,9 +21,14 @@ public class BlogService implements IService<Blog> {
         connection = DatabaseConnection.getInstance().getConnection();
         userService = new UserService();
     }
-    
-    @Override
+      @Override
     public void add(Blog blog) throws Exception {
+        // Filter profanity from blog title and content before saving
+        String filteredTitle = ProfanityFilter.filterText(blog.getTitle());
+        String filteredContent = ProfanityFilter.filterText(blog.getContent());
+        blog.setTitle(filteredTitle);
+        blog.setContent(filteredContent);
+
         String sql = "INSERT INTO blog (user_id, title, translated_title, content, date, " +
                     "translated_content, translation_language, image_filename) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -46,9 +52,14 @@ public class BlogService implements IService<Blog> {
             }
         }
     }
-    
-    @Override
+      @Override
     public void update(Blog blog) throws Exception {
+        // Filter profanity from blog title and content before updating
+        String filteredTitle = ProfanityFilter.filterText(blog.getTitle());
+        String filteredContent = ProfanityFilter.filterText(blog.getContent());
+        blog.setTitle(filteredTitle);
+        blog.setContent(filteredContent);
+
         String sql = "UPDATE blog SET user_id = ?, title = ?, translated_title = ?, " +
                     "content = ?, date = ?, translated_content = ?, translation_language = ?, " +
                     "image_filename = ? WHERE id = ?";

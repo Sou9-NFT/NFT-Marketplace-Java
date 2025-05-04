@@ -3,10 +3,12 @@ package org.esprit.models;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import org.esprit.utils.ProfanityFilter;
 
 public class Comment {
     private Integer id;
     private String content;
+    private String gifUrl;  // URL of the selected GIF from GIPHY
     private User user;
     private Blog blog;
     private LocalDateTime createdAt;
@@ -46,9 +48,7 @@ public class Comment {
         public Map<String, String> getErrors() {
             return errors;
         }
-    }
-
-    // Validation method
+    }    // Validation method
     public ValidationResult validate() {
         ValidationResult result = new ValidationResult();
 
@@ -59,6 +59,14 @@ public class Comment {
             result.addError("content", "Comment must be at least 2 characters long");
         } else if (content.length() > 1000) {
             result.addError("content", "Comment cannot be longer than 1000 characters");
+        } else {
+            try {
+                if (ProfanityFilter.containsProfanity(content)) {
+                    result.addError("content", "Comment contains inappropriate language");
+                }
+            } catch (Exception e) {
+                System.err.println("Failed to check profanity: " + e.getMessage());
+            }
         }
 
         // User validation
@@ -75,7 +83,7 @@ public class Comment {
     }
 
     // Getters and Setters
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
@@ -109,10 +117,16 @@ public class Comment {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
+    public String getGifUrl() {
+        return gifUrl;
+    }
+
+    public void setGifUrl(String gifUrl) {
+        this.gifUrl = gifUrl;
     }
 
     @Override
