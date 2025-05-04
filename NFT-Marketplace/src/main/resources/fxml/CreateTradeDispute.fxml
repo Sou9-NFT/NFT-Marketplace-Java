@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.CreateTradeDisputeController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Create Trade Dispute" style="-fx-font-size: 24px;"/>
+
+    <Label text="Trade Information" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+    
+    <GridPane vgap="10" hgap="10">
+        <Label text="Trade ID:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <Label fx:id="tradeIdLabel" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+        <Label text="Offered Item:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <Label fx:id="offeredItemLabel" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+        <Label text="Received Item:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <Label fx:id="receivedItemLabel" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+        <Label text="Reason for Dispute:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <TextArea fx:id="reasonTextArea" 
+                  wrapText="true" 
+                  prefRowCount="3" 
+                  GridPane.columnIndex="1" 
+                  GridPane.rowIndex="3"
+                  promptText="Explain why you are disputing this trade..."/>
+
+        <Label text="Evidence:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <ImageView fx:id="evidenceImageView" 
+                      fitWidth="200" 
+                      fitHeight="200" 
+                      preserveRatio="true"
+                      visible="false"/>
+            <HBox spacing="5">
+                <Button fx:id="uploadButton" text="Upload Image" onAction="#handleUploadImage"/>
+                <Button fx:id="removeButton" text="Remove" onAction="#handleRemoveImage" visible="false"/>
+            </HBox>
+        </VBox>
+    </GridPane>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="cancelButton" text="Cancel" onAction="#handleCancel"/>
+        <Button fx:id="submitButton" text="Submit" onAction="#handleSubmit" 
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+    </HBox>
+</VBox>

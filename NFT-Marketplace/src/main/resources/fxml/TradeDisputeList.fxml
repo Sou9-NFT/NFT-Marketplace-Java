@@ -7,11 +7,12 @@
 <VBox spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.TradeDisputeListController">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
-
-    <HBox alignment="CENTER_LEFT" spacing="10">
+    </padding>    <HBox alignment="CENTER_LEFT" spacing="10">
         <Label text="Trade Disputes" style="-fx-font-size: 24px;"/>
         <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="statsButton" text="Trade Statistics" 
+                style="-fx-background-color: #2196F3; -fx-text-fill: white;" 
+                onAction="#handleShowStatistics" />
     </HBox>
 
     <TableView fx:id="disputeTable" VBox.vgrow="ALWAYS">
