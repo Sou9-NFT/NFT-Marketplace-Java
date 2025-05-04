@@ -9,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.text.Text;
 import javafx.beans.property.SimpleStringProperty;
 import org.esprit.models.TradeDispute;
 import org.esprit.models.User;
@@ -53,17 +54,45 @@ public class TradeDisputeListController {
     @FXML
     private TableColumn<TradeDispute, Void> actionsColumn;
     
+    @FXML
+    private Button statsButton;
+    
     private User currentUser;
     private final TradeDisputeService disputeService = new TradeDisputeService();
     private final ObservableList<TradeDispute> disputes = FXCollections.observableArrayList();
     
     public void initialize() {
-        setupTableColumns();
-        loadDisputes();
+        // Configure column widths and alignment
+        tradeIdColumn.setPrefWidth(70);
+        reporterColumn.setPrefWidth(120);
+        offeredItemColumn.setPrefWidth(150);
+        receivedItemColumn.setPrefWidth(150);
+        reasonColumn.setPrefWidth(200);
+        statusColumn.setPrefWidth(100);
+        timestampColumn.setPrefWidth(150);
+        actionsColumn.setPrefWidth(250);  // Make actions column wider to fit all buttons
         
-        // Hide the trade ID and reporter columns
-        tradeIdColumn.setVisible(false);
-        reporterColumn.setVisible(false);
+        // Center align specific columns
+        tradeIdColumn.setStyle("-fx-alignment: CENTER;");
+        statusColumn.setStyle("-fx-alignment: CENTER;");
+        actionsColumn.setStyle("-fx-alignment: CENTER;");
+        timestampColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Make reason column wrap text
+        reasonColumn.setCellFactory(tc -> {
+            TableCell<TradeDispute, String> cell = new TableCell<>();
+            Text text = new Text();
+            cell.setGraphic(text);
+            cell.setPrefHeight(Control.USE_COMPUTED_SIZE);
+            text.wrappingWidthProperty().bind(reasonColumn.widthProperty());
+            text.textProperty().bind(cell.itemProperty());
+            return cell;
+        });
+
+        setupTableColumns();
+        
+        // Columns will be shown/hidden based on user role in setUser method
+        // We'll call loadDisputes() after setting the user
     }
     
     private void setupTableColumns() {
@@ -132,8 +161,22 @@ public class TradeDisputeListController {
     public void loadDisputes() {
         System.out.println("Starting to load disputes");
         disputes.clear();
+        
+        List<String> adminRoles = List.of("ROLE_USER", "ROLE_ADMIN");
+        boolean isAdmin = currentUser.getRoles().containsAll(adminRoles) && currentUser.getRoles().size() == adminRoles.size();
+        
         List<TradeDispute> loadedDisputes = disputeService.getAllDisputes();
         System.out.println("Loaded " + loadedDisputes.size() + " disputes from service");
+
+        if (!isAdmin) {
+            // Filter disputes to only show ones where current user is the reporter
+            loadedDisputes.removeIf(dispute -> 
+                currentUser == null || 
+                dispute.getReporter() != currentUser.getId()
+            );
+            System.out.println("Filtered to " + loadedDisputes.size() + " disputes for user");
+        }
+
         disputes.addAll(loadedDisputes);
         System.out.println("Added disputes to observable list. Size: " + disputes.size());
         disputeTable.setItems(disputes);
@@ -237,6 +280,18 @@ public class TradeDisputeListController {
     
     public void setUser(User user) {
         this.currentUser = user;
+        
+        // Check if user has admin role
+        List<String> adminRoles = List.of("ROLE_USER", "ROLE_ADMIN");
+        boolean isAdmin = user.getRoles().containsAll(adminRoles) && user.getRoles().size() == adminRoles.size();
+        
+        // Show or hide elements based on admin status
+        tradeIdColumn.setVisible(isAdmin);
+        reporterColumn.setVisible(isAdmin);
+        statsButton.setVisible(isAdmin);
+        
+        // Load disputes after setting columns visibility
+        loadDisputes();
     }
     
     private void showAlert(String title, String message) {
@@ -246,4 +301,50 @@ public class TradeDisputeListController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-} 
+    
+    private void showTradeStatistics() {
+        List<TradeDispute> allDisputes = disputeService.getAllDisputes();
+        
+        // Calculate statistics
+        int totalTrades = allDisputes.size();
+        long acceptedTrades = allDisputes.stream().filter(d -> "accepted".equalsIgnoreCase(d.getStatus())).count();
+        long rejectedTrades = allDisputes.stream().filter(d -> "rejected".equalsIgnoreCase(d.getStatus())).count();
+        long pendingTrades = allDisputes.stream().filter(d -> "pending".equalsIgnoreCase(d.getStatus())).count();
+
+        // Create statistics message
+        StringBuilder stats = new StringBuilder();
+        stats.append("Trade Statistics:\n\n");
+        stats.append("Total Trades: ").append(totalTrades).append("\n\n");
+        stats.append("Accepted Trades: ").append(acceptedTrades).append("\n");
+        stats.append("Rejected Trades: ").append(rejectedTrades).append("\n");
+        stats.append("Pending Trades: ").append(pendingTrades).append("\n\n");
+        
+        // Calculate and append percentages if there are any trades
+        if (totalTrades > 0) {
+            double acceptedPercent = (acceptedTrades * 100.0) / totalTrades;
+            double rejectedPercent = (rejectedTrades * 100.0) / totalTrades;
+            double pendingPercent = (pendingTrades * 100.0) / totalTrades;
+            
+            stats.append(String.format("Accepted: %.1f%%\n", acceptedPercent));
+            stats.append(String.format("Rejected: %.1f%%\n", rejectedPercent));
+            stats.append(String.format("Pending: %.1f%%", pendingPercent));
+        }
+
+        // Show statistics in a dialog
+        Alert statsDialog = new Alert(Alert.AlertType.INFORMATION);
+        statsDialog.setTitle("Trade Statistics");
+        statsDialog.setHeaderText(null);
+        statsDialog.setContentText(stats.toString());
+        
+        // Make the dialog resizable
+        statsDialog.getDialogPane().setMinHeight(300);
+        statsDialog.getDialogPane().setMinWidth(400);
+        
+        statsDialog.showAndWait();
+    }
+    
+    @FXML
+    private void handleShowStatistics() {
+        showTradeStatistics();
+    }
+}
