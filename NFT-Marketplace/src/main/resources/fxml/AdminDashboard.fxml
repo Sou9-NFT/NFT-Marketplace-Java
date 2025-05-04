@@ -45,9 +45,9 @@
 			<Button maxWidth="Infinity" text="Settings" onAction="#handleSettings" styleClass="sidebar-button" />
 			<Button maxWidth="Infinity" text="Reports" onAction="#handleReports" styleClass="sidebar-button" />
 			<Button maxWidth="Infinity" text="System Logs" onAction="#handleSystemLogs" styleClass="sidebar-button" />
-			<Button maxWidth="Infinity" text="Bet Sessions" onAction="#handleBetSessions" styleClass="sidebar-button" />
-			<Button maxWidth="Infinity" text="Artworks" onAction="#handleManageArtworks" styleClass="sidebar-button" />
-			<Button maxWidth="Infinity" text="Trade Disputes" onAction="#handleTradeDisputes" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Bet Sessions" onAction="#handleBetSessions" styleClass="sidebar-button" />			<Button maxWidth="Infinity" text="Artworks" onAction="#handleManageArtworks" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Trade Offers" onAction="#handleTradeOffers" styleClass="sidebar-button" />			<Button maxWidth="Infinity" text="Trade Disputes" onAction="#handleTradeDisputes" styleClass="sidebar-button" />
+			<Button maxWidth="Infinity" text="Trade Requests" onAction="#handleTradeRequests" styleClass="sidebar-button" />
 		</VBox>
 	</left>
 	<center>

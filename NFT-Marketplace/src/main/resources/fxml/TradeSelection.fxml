@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="20" alignment="CENTER" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.TradeSelectionController">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Trade Options" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <VBox spacing="15" alignment="CENTER" maxWidth="300">
+        <Button text="Trade Offers" onAction="#handleTradeOffers" 
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white;" 
+                maxWidth="Infinity"/>
+                
+        <Button text="Trade Requests" onAction="#handleTradeRequests" 
+                style="-fx-background-color: #2196F3; -fx-text-fill: white;" 
+                maxWidth="Infinity"/>
+                
+        <Button text="Trade Disputes" onAction="#handleTradeDisputes" 
+                style="-fx-background-color: #FFA500; -fx-text-fill: white;" 
+                maxWidth="Infinity"/>
+    </VBox>
+</VBox>
