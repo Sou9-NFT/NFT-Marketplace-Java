@@ -78,6 +78,68 @@
             <artifactId>javafx-graphics</artifactId>
             <version>21.0.2</version>
         </dependency>
+
+        <!-- Twitter4J Core -->
+        <dependency>
+            <groupId>org.twitter4j</groupId>
+            <artifactId>twitter4j-core</artifactId>
+            <version>4.1.2</version>
+        </dependency>
+        <!-- Twitter4J for Twitter API v2 -->
+        <dependency>
+            <groupId>com.twitter</groupId>
+            <artifactId>twitter-api-java-sdk</artifactId>
+            <version>2.0.3</version>
+        </dependency>
+        
+        <!-- Animated GIF support -->
+        <dependency>
+            <groupId>com.madgag</groupId>
+            <artifactId>animated-gif-lib</artifactId>
+            <version>1.4</version>
+        </dependency>
+        
+        <!-- HTTP Client for Stability API -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+        
+        <!-- GSON for JSON processing -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>        <!-- Twilio for SMS -->
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>9.14.1</version>
+        </dependency>
+          <!-- Apache HTTP Components (required by Twilio) -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.16</version>
+        </dependency>
+        
+        <!-- SLF4J Implementation -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.36</version>
+        </dependency>
     </dependencies>
 
     <properties>

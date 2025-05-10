@@ -42,6 +42,7 @@ public class RaffleDetailsController {
     @FXML private Button manageButton;
     @FXML private Button deleteButton;
     @FXML private Button downloadPdfButton;
+    @FXML private Button shareOnXButton;
 
     private Raffle raffle;
     private User currentUser;
@@ -49,6 +50,7 @@ public class RaffleDetailsController {
     private ArtworkService artworkService;
     private ParticipantService participantService;
     private UserService userService;
+    private TwitterService twitterService;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     private RaffleListController parentController;
     private javafx.animation.Timeline autoRefreshTimeline;
@@ -59,6 +61,7 @@ public class RaffleDetailsController {
         artworkService = new ArtworkService();
         participantService = new ParticipantService();
         userService = new UserService();
+        twitterService = new TwitterService();
         
         // Setup auto-refresh timeline
         autoRefreshTimeline = new javafx.animation.Timeline(
@@ -68,6 +71,103 @@ public class RaffleDetailsController {
             )
         );
         autoRefreshTimeline.setCycleCount(javafx.animation.Timeline.INDEFINITE);
+    }
+
+    private void loadRaffleDetails() {
+        titleLabel.setText(raffle.getTitle());
+        descriptionArea.setText(raffle.getRaffleDescription());
+        creatorLabel.setText(raffle.getCreator() != null ? raffle.getCreator().getName() : "Unknown");
+        
+        // Format dates with null checks
+        Date startDate = raffle.getStartTime();
+        startDateLabel.setText(startDate != null ? dateFormat.format(startDate) : "Not set");
+        
+        Date endDate = raffle.getEndTime();
+        endDateLabel.setText(endDate != null ? dateFormat.format(endDate) : "Not set");
+        
+        statusLabel.setText(raffle.getStatus());
+
+        // Clear and populate participants list
+        participantsListView.getItems().clear();
+        for (User participant : raffle.getParticipants()) {
+            participantsListView.getItems().add(participant.getName());
+        }
+
+        // Handle artwork display
+        try {
+            Artwork artwork = artworkService.getOne(raffle.getArtworkId());
+            if (artwork != null) {
+                loadArtworkImage(artwork);
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading artwork details: " + e.getMessage());
+        }
+
+        // Handle winner display and share button visibility
+        if (raffle.getStatus().equals("ended")) {
+            if (raffle.getWinnerId() != null) {
+                try {
+                    User winner = userService.getOne(raffle.getWinnerId());
+                    winnerLabel.setText("Winner: " + winner.getName());
+                    // Show share button only for the winner
+                    shareOnXButton.setVisible(currentUser != null && currentUser.getId() == raffle.getWinnerId());
+                } catch (Exception e) {
+                    winnerLabel.setText("Winner ID: " + raffle.getWinnerId());
+                }
+                winnerLabel.setVisible(true);
+            } else if (raffle.getParticipants().isEmpty()) {
+                winnerLabel.setText("No winner (no participants)");
+                shareOnXButton.setVisible(false);
+            }
+            winnerLabel.setVisible(true);
+        } else {
+            winnerLabel.setVisible(false);
+            shareOnXButton.setVisible(false);
+        }
+
+        updateButtons();
+    }
+
+    @FXML
+    private void handleShareOnX() {
+        try {
+            Artwork artwork = artworkService.getOne(raffle.getArtworkId());
+            if (artwork != null) {
+                // Try to find the artwork image file
+                String imagePath = null;
+                
+                // Try multiple possible paths for the image
+                File resourceImageFile = new File("src/main/resources/uploads/" + artwork.getImageName());
+                if (resourceImageFile.exists()) {
+                    imagePath = resourceImageFile.getAbsolutePath();
+                } else {
+                    File projectRoot = new File("").getAbsoluteFile();
+                    File uploadsDir = new File(projectRoot, "uploads");
+                    File directImageFile = new File(uploadsDir, artwork.getImageName());
+                    if (directImageFile.exists()) {
+                        imagePath = directImageFile.getAbsolutePath();
+                    }
+                }
+
+                if (imagePath == null) {
+                    throw new IOException("Could not find artwork image file");
+                }
+
+                String response = twitterService.shareWin(raffle.getTitle(), artwork.getTitle(), imagePath);
+                
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Successfully shared your win on X!");
+                alert.showAndWait();
+            }
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText(null);
+            alert.setContentText("Failed to share on X: " + e.getMessage());
+            alert.showAndWait();
+        }
     }
 
     private void refreshRaffle() {
@@ -125,57 +225,6 @@ public class RaffleDetailsController {
             e.printStackTrace();
             autoRefreshTimeline.stop(); // Stop on critical errors
         }
-    }
-
-    private void loadRaffleDetails() {
-        titleLabel.setText(raffle.getTitle());
-        descriptionArea.setText(raffle.getRaffleDescription());
-        creatorLabel.setText(raffle.getCreator() != null ? raffle.getCreator().getName() : "Unknown");
-        
-        // Format dates with null checks
-        Date startDate = raffle.getStartTime();
-        startDateLabel.setText(startDate != null ? dateFormat.format(startDate) : "Not set");
-        
-        Date endDate = raffle.getEndTime();
-        endDateLabel.setText(endDate != null ? dateFormat.format(endDate) : "Not set");
-        
-        statusLabel.setText(raffle.getStatus());
-
-        // Clear and populate participants list
-        participantsListView.getItems().clear();
-        for (User participant : raffle.getParticipants()) {
-            participantsListView.getItems().add(participant.getName());
-        }
-
-        // Handle artwork display
-        try {
-            artworkIdLabel.setText("Artwork ID: " + raffle.getArtworkId());
-            Artwork artwork = artworkService.getOne(raffle.getArtworkId());
-            if (artwork != null) {
-                loadArtworkImage(artwork);
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading artwork details: " + e.getMessage());
-        }
-
-        // Handle winner display
-        if (raffle.getStatus().equals("ended")) {
-            if (raffle.getWinnerId() != null) {
-                try {
-                    User winner = userService.getOne(raffle.getWinnerId());
-                    winnerLabel.setText("Winner: " + winner.getName());
-                } catch (Exception e) {
-                    winnerLabel.setText("Winner ID: " + raffle.getWinnerId());
-                }
-            } else if (raffle.getParticipants().isEmpty()) {
-                winnerLabel.setText("No winner (no participants)");
-            }
-            winnerLabel.setVisible(true);
-        } else {
-            winnerLabel.setVisible(false);
-        }
-
-        updateButtons();
     }
 
     private void loadArtworkImage(Artwork artwork) {

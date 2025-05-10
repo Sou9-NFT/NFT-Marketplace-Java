@@ -6,6 +6,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import javafx.collections.FXCollections;
 import javafx.scene.Node;
@@ -115,36 +116,124 @@ public class BlogListController implements Initializable {
                     
                     // Add all sections to main container
                     container.getChildren().addAll(authorInfo, contentBox);
+                    
+                    // Add hover effect
+                    container.setOnMouseEntered(e -> container.setStyle("-fx-background-color: #f0f0f0;"));
+                    container.setOnMouseExited(e -> container.setStyle(""));
+                    
+                    // Add click handler for the entire container
+                    container.setOnMouseClicked(e -> {
+                        System.out.println("Blog clicked: " + blog.getTitle());
+                        showBlogDetails(blog);
+                        e.consume(); // Prevent event bubbling
+                    });
+                    
                     setGraphic(container);
                 }
             }
         });
         
-        // Add click handler for blog items
+        // Add click handler for the ListView itself as a backup
         blogListView.setOnMouseClicked(event -> {
             Blog selectedBlog = blogListView.getSelectionModel().getSelectedItem();
-            if (selectedBlog != null && event.getClickCount() == 2) {
+            if (selectedBlog != null && event.getClickCount() == 1) {
+                System.out.println("ListView clicked, selected blog: " + selectedBlog.getTitle());
                 showBlogDetails(selectedBlog);
             }
         });
     }
-    
+
     private void showBlogDetails(Blog blog) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/Blog.fxml"));
-            Parent detailView = loader.load();
+            if (blog == null) {
+                System.err.println("Error: Attempted to open details for null blog");
+                showAlert(Alert.AlertType.ERROR, "Error", "Cannot open blog details: Blog data is missing");
+                return;
+            }
+
+            System.out.println("Opening blog details for blog ID: " + blog.getId());
             
+            // Create new stage for blog details
+            Stage detailStage = new Stage();            // Load the FXML
+            System.out.println("Current working directory: " + System.getProperty("user.dir"));
+            
+            // Try multiple ways to load the FXML
+            URL fxmlUrl = getClass().getResource("/fxml/BlogDetail.fxml");
+            if (fxmlUrl == null) {
+                fxmlUrl = getClass().getClassLoader().getResource("fxml/BlogDetail.fxml");
+            }
+            if (fxmlUrl == null) {
+                // Try absolute path as last resort
+                String absolutePath = System.getProperty("user.dir") + "/src/main/resources/fxml/BlogDetail.fxml";
+                System.err.println("Trying absolute path: " + absolutePath);
+                File fxmlFile = new File(absolutePath);
+                if (fxmlFile.exists()) {
+                    fxmlUrl = fxmlFile.toURI().toURL();
+                }
+            }
+            
+            if (fxmlUrl == null) {
+                System.err.println("Could not find BlogDetail.fxml resource");
+                System.err.println("Class loader paths:");
+                ClassLoader cl = getClass().getClassLoader();
+                while (cl != null) {
+                    System.err.println("ClassLoader: " + cl);
+                    if (cl instanceof java.net.URLClassLoader) {
+                        java.net.URL[] urls = ((java.net.URLClassLoader) cl).getURLs();
+                        for (java.net.URL url : urls) {
+                            System.err.println("  " + url);
+                        }
+                    }
+                    cl = cl.getParent();
+                }
+                showAlert(Alert.AlertType.ERROR, "Error", "Could not find blog details view file. Check console for details.");
+                return;
+            }
+            
+            System.out.println("Loading FXML from: " + fxmlUrl);
+            
+            FXMLLoader loader = new FXMLLoader(fxmlUrl);
+            Parent detailView;
+            try {
+                detailView = loader.load();
+            } catch (IOException e) {
+                System.err.println("Failed to load BlogDetail.fxml: " + e.getMessage());
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Error", "Could not load blog details view: " + e.getMessage());
+                return;
+            }
+            
+            // Get and initialize the controller
             BlogDetailController controller = loader.getController();
+            if (controller == null) {
+                System.err.println("Failed to get BlogDetailController");
+                showAlert(Alert.AlertType.ERROR, "Error", "Could not initialize blog details controller");
+                return;
+            }
+            
+            // Set up the controller with required data
+            System.out.println("Setting up BlogDetailController...");
             controller.setCurrentUser(currentUser);
             controller.setBlog(blog);
             
-            Scene currentScene = blogListView.getScene();
-            Stage stage = (Stage) currentScene.getWindow();
+            // Create and configure the scene
+            Scene scene = new Scene(detailView, 900, 700);
             
-            stage.setScene(new Scene(detailView));
-            stage.setTitle("NFT Marketplace - " + blog.getTitle());
-            stage.show();
-        } catch (IOException e) {
+            // Configure the stage
+            detailStage.setScene(scene);
+            detailStage.setTitle(blog.getTitle());
+            detailStage.initOwner(blogListView.getScene().getWindow());
+            detailStage.setResizable(true);
+            
+            // Center the window on screen
+            detailStage.centerOnScreen();
+            
+            System.out.println("Showing blog details window");
+            detailStage.show();
+            
+        } catch (Exception e) {
+            System.err.println("Unexpected error showing blog details: " + e.getMessage());
+            e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Error", "Could not open blog details: " + e.getMessage());
         }
     }
@@ -197,7 +286,9 @@ public class BlogListController implements Initializable {
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Could not return to dashboard: " + e.getMessage());
         }
-    }    @FXML
+    }
+
+    @FXML
     private void handleCreateBlog() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CreateBlog.fxml"));

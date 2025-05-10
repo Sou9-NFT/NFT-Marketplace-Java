@@ -1,0 +1,1 @@
+ALTER TABLE comment ADD COLUMN gif_url VARCHAR(255);

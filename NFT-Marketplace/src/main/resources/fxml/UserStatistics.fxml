@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<VBox spacing="20" stylesheets="@../styles/main.css" 
+	xmlns="http://javafx.com/javafx" 
+	xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.UserStatisticsController">
+	<padding>
+		<Insets top="20" right="20" bottom="20" left="20"/>
+	</padding>
+	<!-- Header Section -->
+	<HBox alignment="CENTER_LEFT" spacing="10">
+		<Text text="User Statistics Dashboard" styleClass="section-title">
+			<font>
+				<Font name="System Bold" size="24.0" />
+			</font>
+		</Text>
+		<Region HBox.hgrow="ALWAYS" />
+		<Button text="Refresh Data" onAction="#handleRefreshData" styleClass="button-primary" />
+	</HBox>
+	<Separator />
+	<!-- Key Metrics Section -->
+	<HBox spacing="15" alignment="CENTER">
+		<!-- Total Users Card -->
+		<VBox styleClass="stats-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+			<padding>
+				<Insets top="15" right="15" bottom="15" left="15"/>
+			</padding>
+			<Label text="Total Users" styleClass="stats-label">
+				<font>
+					<Font size="16.0" />
+				</font>
+			</Label>
+			<Label fx:id="totalUsersLabel" text="0" styleClass="stats-number">
+				<font>
+					<Font name="System Bold" size="32.0" />
+				</font>
+			</Label>
+		</VBox>
+		<!-- GitHub Connected Users Card -->
+		<VBox styleClass="stats-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+			<padding>
+				<Insets top="15" right="15" bottom="15" left="15"/>
+			</padding>
+			<Label text="GitHub Connected" styleClass="stats-label">
+				<font>
+					<Font size="16.0" />
+				</font>
+			</Label>
+			<Label fx:id="githubUsersLabel" text="0" styleClass="stats-number">
+				<font>
+					<Font name="System Bold" size="32.0" />
+				</font>
+			</Label>
+		</VBox>
+		<!-- Active Users Card -->
+		<VBox styleClass="stats-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+			<padding>
+				<Insets top="15" right="15" bottom="15" left="15"/>
+			</padding>
+			<Label text="Active Users" styleClass="stats-label">
+				<font>
+					<Font size="16.0" />
+				</font>
+			</Label>
+			<Label fx:id="activeUsersLabel" text="0" styleClass="stats-number">
+				<font>
+					<Font name="System Bold" size="32.0" />
+				</font>
+			</Label>
+		</VBox>
+		<!-- New Users This Month Card -->
+		<VBox styleClass="stats-card" HBox.hgrow="ALWAYS" alignment="CENTER">
+			<padding>
+				<Insets top="15" right="15" bottom="15" left="15"/>
+			</padding>
+			<Label text="New This Month" styleClass="stats-label">
+				<font>
+					<Font size="16.0" />
+				</font>
+			</Label>
+			<Label fx:id="newUsersLabel" text="0" styleClass="stats-number">
+				<font>
+					<Font name="System Bold" size="32.0" />
+				</font>
+			</Label>
+		</VBox>
+	</HBox>
+	<!-- Charts Section -->
+	<HBox spacing="20" VBox.vgrow="ALWAYS">
+		<!-- User Roles Distribution Chart -->
+		<VBox spacing="10" HBox.hgrow="ALWAYS">
+			<Label text="User Roles Distribution" styleClass="chart-title">
+				<font>
+					<Font name="System Bold" size="16.0" />
+				</font>
+			</Label>
+			<PieChart fx:id="userRolesChart" VBox.vgrow="ALWAYS" />
+		</VBox>
+		<!-- User Registration Trend Chart -->
+		<VBox spacing="10" HBox.hgrow="ALWAYS">
+			<Label text="User Registration Trend" styleClass="chart-title">
+				<font>
+					<Font name="System Bold" size="16.0" />
+				</font>
+			</Label>
+			<BarChart fx:id="userRegistrationChart" VBox.vgrow="ALWAYS">
+				<xAxis>
+					<CategoryAxis label="Month" />
+				</xAxis>
+				<yAxis>
+					<NumberAxis label="Users" />
+				</yAxis>
+			</BarChart>
+		</VBox>
+	</HBox>
+	<!-- User Details Section -->
+	<VBox spacing="10">
+		<Label text="User Details" styleClass="stats-title">
+			<font>
+				<Font name="System Bold" size="18.0" />
+			</font>
+		</Label>
+		<HBox spacing="10">
+			<Button text="Export Data" onAction="#handleExportData" styleClass="button-secondary" />
+			<ComboBox fx:id="filterComboBox" promptText="Filter by..." />
+			<Region HBox.hgrow="ALWAYS" />
+			<TextField fx:id="searchTextField" promptText="Search users..." />
+			<Button text="Search" onAction="#handleSearch" />
+		</HBox>
+		<TableView fx:id="userStatsTable" VBox.vgrow="ALWAYS">
+			<columns>
+				<TableColumn fx:id="nameColumn" text="Name" prefWidth="150" />
+				<TableColumn fx:id="emailColumn" text="Email" prefWidth="180" />
+				<TableColumn fx:id="rolesColumn" text="Roles" prefWidth="120" />
+				<TableColumn fx:id="githubConnectedColumn" text="GitHub" prefWidth="80" />
+				<TableColumn fx:id="createdAtColumn" text="Joined Date" prefWidth="120" />
+				<TableColumn fx:id="lastLoginColumn" text="Last Activity" prefWidth="120" />
+			</columns>
+		</TableView>
+	</VBox>
+</VBox>

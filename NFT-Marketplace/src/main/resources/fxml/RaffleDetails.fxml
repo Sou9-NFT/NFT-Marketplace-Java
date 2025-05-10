@@ -21,7 +21,6 @@
     <Label fx:id="startDateLabel"/>
     <Label fx:id="endDateLabel"/>
     <Label fx:id="statusLabel"/>
-    <Label fx:id="artworkIdLabel"/>
     <Label fx:id="winnerLabel" visible="false"/>
     
     <ImageView fx:id="artworkImageView" fitWidth="300" fitHeight="200" preserveRatio="true"/>
@@ -33,6 +32,7 @@
         <Button fx:id="manageButton" text="Manage" onAction="#handleManage"/>
         <Button fx:id="deleteButton" text="Delete" onAction="#handleDelete"/>
         <Button fx:id="downloadPdfButton" text="Download PDF" onAction="#handleDownloadPdf"/>
+        <Button fx:id="shareOnXButton" text="Share on X" onAction="#handleShareOnX" visible="false"/>
         <Button text="Close" onAction="#handleClose"/>
     </HBox>
 </VBox>

@@ -8,8 +8,12 @@
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
+      <Label text="Trade Offers" style="-fx-font-size: 18px;"/>
     
-    <Label text="Trade Offers" style="-fx-font-size: 18px;"/>
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Search by sender:" style="-fx-font-size: 14px;"/>
+        <TextField fx:id="searchField" promptText="Search by sender name..." prefWidth="250"/>
+    </HBox>
     
     <TableView fx:id="tradeTable" prefHeight="400">
         <columns>
@@ -19,11 +23,13 @@
             <TableColumn fx:id="offeredItemColumn" text="Offered Item" prefWidth="150"/>
             <TableColumn fx:id="requestedItemColumn" text="Requested Item" prefWidth="150"/>
             <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
-            <TableColumn fx:id="actionColumn" text="Action" prefWidth="100"/>
+            <TableColumn fx:id="actionColumn" text="Actions" prefWidth="300"/>
         </columns>
     </TableView>
-    
-    <HBox spacing="10" alignment="CENTER">
-        <Button text="Create Trade" onAction="#handleCreateTrade"/>
+      <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="statsButton" text="Trade Statistics" onAction="#handleShowStatistics"
+                style="-fx-background-color: #2196F3; -fx-text-fill: white;"/>
+        <Button text="Create Trade" onAction="#handleCreateTrade"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
     </HBox>
 </VBox>

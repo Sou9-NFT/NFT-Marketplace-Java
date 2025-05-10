@@ -494,6 +494,54 @@ public class AdminDashboardController implements Initializable {
         }
     }
     
+    @FXML
+    private void handleUserStatistics(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserStatistics.fxml"));
+            Parent userStatsView = loader.load();
+            
+            UserStatisticsController controller = loader.getController();
+            controller.setCurrentUser(currentAdminUser);
+            
+            loadContentInPlace(userStatsView, "User Statistics");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load user statistics: " + e.getMessage());
+            System.err.println("Error in handleUserStatistics: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleTradeOffers(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeOfferList.fxml"));
+            Parent tradeOffersView = loader.load();
+            
+            TradeOfferListController controller = loader.getController();
+            controller.setUser(currentAdminUser);
+            
+            loadContentInPlace(tradeOffersView, "Trade Offers");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade offers: " + e.getMessage());
+            System.err.println("Error in handleTradeOffers: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleTradeRequests(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeRequestList.fxml"));
+            Parent tradeRequestsView = loader.load();
+            
+            TradeRequestListController controller = loader.getController();
+            controller.setUser(currentAdminUser);
+            
+            loadContentInPlace(tradeRequestsView, "Trade Requests");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade requests: " + e.getMessage());
+            System.err.println("Error in handleTradeRequests: " + e.getMessage());
+        }
+    }
+    
     /**
      * Show a "Coming Soon" message in the content area
      */

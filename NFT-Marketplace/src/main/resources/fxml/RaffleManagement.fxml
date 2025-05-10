@@ -4,6 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.SVGPath?>
 
 <VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
       fx:controller="org.esprit.controllers.RaffleManagementController"
@@ -22,6 +23,17 @@
             </font>
         </Label>
         <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="statisticsButton" styleClass="stats-button">
+            <graphic>
+                <HBox spacing="5" alignment="CENTER">
+                    <StackPane>
+                        <SVGPath content="M4.5 12a7.5 7.5 0 0015 0 7.5 7.5 0 00-15 0zm9.78-5.72a.75.75 0 00-1.06 1.06l.72.72-3.94 3.94-2.72-2.72a.75.75 0 00-1.06 1.06l3.25 3.25a.75.75 0 001.06 0l4.47-4.47.72.72a.75.75 0 101.06-1.06l-2.5-2.5z" 
+                              styleClass="stats-icon"/>
+                    </StackPane>
+                    <Label text="Statistics" styleClass="stats-text" />
+                </HBox>
+            </graphic>
+        </Button>
         <ToggleButton fx:id="rafflesToggle" text="Raffles" selected="true" styleClass="toggle-button"/>
         <ToggleButton fx:id="participantsToggle" text="Participants" styleClass="toggle-button"/>
         <Button text="Create New Raffle" onAction="#handleCreateRaffle" styleClass="button-primary"/>
@@ -40,7 +52,6 @@
         <!-- Raffles Table -->
         <TableView fx:id="raffleTable" visible="true" managed="true">
             <columns>
-                <TableColumn fx:id="idColumn" text="ID" prefWidth="0" visible="false"/>
                 <TableColumn fx:id="titleColumn" text="Title" prefWidth="220"/>
                 <TableColumn fx:id="artworkColumn" text="Artwork" prefWidth="170"/>
                 <TableColumn fx:id="startDateColumn" text="Start Date" prefWidth="130"/>

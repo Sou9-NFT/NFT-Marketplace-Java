@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.canvas.Canvas?>
 <?import javafx.geometry.Insets?>
 
 <VBox spacing="10" alignment="CENTER" xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.CreateTradeController">
@@ -23,12 +24,21 @@
         
         <Label text="Description:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
         <TextArea fx:id="descriptionField" GridPane.columnIndex="1" GridPane.rowIndex="3" prefRowCount="3" wrapText="true"/>
+        
+        <Label text="CAPTCHA:" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <VBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="4">
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Canvas fx:id="captchaCanvas" width="150" height="50"/>
+                <Button fx:id="refreshCaptchaButton" text="↻" onAction="#refreshCaptcha" style="-fx-font-size: 14px;"/>
+            </HBox>
+            <TextField fx:id="captchaField" promptText="Enter the text shown above" prefWidth="200"/>
+        </VBox>
     </GridPane>
     
-    <Label fx:id="statusLabel" visible="false" wrapText="true"/>
+    <Label fx:id="statusLabel" visible="false" wrapText="true" style="-fx-text-fill: red;"/>
     
     <HBox spacing="10" alignment="CENTER">
-        <Button text="Create Trade" onAction="#handleCreateTrade"/>
-        <Button text="Cancel" onAction="#handleCancel"/>
+        <Button text="Create Trade" onAction="#handleCreateTrade" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        <Button text="Cancel" onAction="#handleCancel" style="-fx-background-color: #f44336; -fx-text-fill: white;"/>
     </HBox>
 </VBox>

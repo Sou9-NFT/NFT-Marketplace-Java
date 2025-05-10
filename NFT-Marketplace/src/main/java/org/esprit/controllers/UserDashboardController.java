@@ -17,61 +17,26 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class UserDashboardController {
-
-    @FXML
-    private Label userNameLabel;
-    
-    @FXML
-    private Label userNameSidebarLabel;
-    
-    @FXML
-    private Button logoutButton;
-    
-    @FXML
-    private Button logoutSidebarButton;
-    
-    @FXML
-    private Button profileButton;
-    
-    @FXML
-    private Button rafflesButton;
-    
-    @FXML
-    private Button artworksButton;
-    
-    @FXML
-    private Button marketplaceButton;
-    
-    @FXML
-    private Button walletButton;
-    
-    @FXML
-    private Button notificationsButton;
-    
-    @FXML
-    private Button betSessionButton;
-    
-    @FXML
-    private Button blogsButton;
-    
-    @FXML
-    private Button tradeOfferButton;
-    
-    @FXML
-    private Button tradeDisputeButton;
-    
-    @FXML
-    private StackPane contentArea;
-    
-    @FXML
-    private Label pageTitleLabel;
+    @FXML private Label userNameLabel;
+    @FXML private Label userNameSidebarLabel;
+    @FXML private Button logoutButton;
+    @FXML private Button logoutSidebarButton;
+    @FXML private Button profileButton;
+    @FXML private Button rafflesButton;
+    @FXML private Button artworksButton;
+    @FXML private Button marketplaceButton;
+    @FXML private Button walletButton;
+    @FXML private Button notificationsButton;
+    @FXML private Button betSessionButton;
+    @FXML private Button blogsButton;
+    @FXML private Button tradeButton;
+    @FXML private StackPane contentArea;
+    @FXML private Label pageTitleLabel;
     
     private User currentUser;
-    
     private Button lastActiveButton;
-    
     private ProfileController profileController;
-    
+
     // This method is called automatically when the FXML is loaded
     public void initialize() {
         // Initialize the controller - set default active button
@@ -338,35 +303,20 @@ public class UserDashboardController {
     }
     
     @FXML
-    private void handleTradeOfferButton(ActionEvent event) {
+    private void handleTradeButton(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeOfferList.fxml"));
-            Parent tradeOfferView = loader.load();
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeSelection.fxml"));
+            Parent tradeView = loader.load();
             
-            TradeOfferListController controller = loader.getController();
+            TradeSelectionController controller = loader.getController();
             controller.setUser(currentUser);
+            controller.setDashboardController(this);
             
-            loadContentInPlace(tradeOfferView, "Trade Offers");
+            loadContentInPlace(tradeView, "Trade Options");
+            setActiveButton(tradeButton);
         } catch (IOException e) {
-            showAlert("Error", "Could not load trade offers: " + e.getMessage());
-            System.err.println("Error in handleTradeOfferButton: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-    
-    @FXML
-    private void handleTradeDisputeButton(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeDisputeList.fxml"));
-            Parent tradeDisputeView = loader.load();
-            
-            TradeDisputeListController controller = loader.getController();
-            controller.setUser(currentUser);
-            
-            loadContentInPlace(tradeDisputeView, "Trade Disputes");
-        } catch (IOException e) {
-            showAlert("Error", "Could not load trade disputes: " + e.getMessage());
-            System.err.println("Error in handleTradeDisputeButton: " + e.getMessage());
+            showAlert("Error", "Could not load trade options: " + e.getMessage());
+            System.err.println("Error in handleTradeButton: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -487,5 +437,11 @@ public class UserDashboardController {
             // Alternative: true fullscreen (hides taskbar)
             // stage.setFullScreen(true);
         }
+    }
+    
+    // Public method to load content - can be called from other controllers
+    public void loadContent(Parent view, String title) {
+        loadContentInPlace(view, title);
+        setActiveButton(tradeButton); // Keep trade button highlighted
     }
 }
