@@ -21,6 +21,9 @@ public class CategoryService implements IService<Category> {
     
     @Override
     public void add(Category category) throws Exception {
+        // Validate the category including profanity check before adding
+        category.validate();
+        
         String sql = "INSERT INTO category (manager_id, name, type, description, allowed_mime_types) " +
                      "VALUES (?, ?, ?, ?, ?)";
                      
@@ -56,6 +59,9 @@ public class CategoryService implements IService<Category> {
     
     @Override
     public void update(Category category) throws Exception {
+        // Validate the category including profanity check before updating
+        category.validate();
+        
         String sql = "UPDATE category SET manager_id = ?, name = ?, type = ?, description = ?, " +
                      "allowed_mime_types = ? WHERE id = ?";
                      
