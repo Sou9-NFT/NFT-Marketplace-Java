@@ -69,9 +69,7 @@ public class NftMarketplaceApplication extends Application {
         scene.getStylesheets().add(NftMarketplaceApplication.class.getResource("/styles/main.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.setTitle("NFT Marketplace - Reset Password");
-    }
-
-    public static void showRaffleList(User user) throws IOException {
+    }    public static void showRaffleList(User user) throws IOException {
         FXMLLoader loader = new FXMLLoader(NftMarketplaceApplication.class.getResource("/fxml/RaffleList.fxml"));
         Parent root = loader.load();
         
@@ -83,6 +81,9 @@ public class NftMarketplaceApplication extends Application {
         scene.getStylesheets().add(NftMarketplaceApplication.class.getResource("/styles/main.css").toExternalForm());
         primaryStage.setScene(scene);
         primaryStage.setTitle("NFT Marketplace - Raffles");
+        
+        // Set the stage to fullscreen
+        primaryStage.setMaximized(true);
     }
 
     public static void main(String[] args) {
