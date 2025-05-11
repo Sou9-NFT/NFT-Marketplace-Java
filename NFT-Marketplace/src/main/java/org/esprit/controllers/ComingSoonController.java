@@ -46,8 +46,7 @@ public class ComingSoonController {
             isAdmin = user.getRoles().contains("ROLE_ADMIN");
         }
     }
-    
-    @FXML
+      @FXML
     private void handleBack(ActionEvent event) {
         try {
             // Check if currentUser is null - if it is, default to the user dashboard
@@ -77,7 +76,19 @@ public class ComingSoonController {
             
             stage.setScene(new Scene(dashboardView));
             stage.setTitle("NFT Marketplace - " + (isAdmin ? "Admin" : "User") + " Dashboard");
+            
+            // Set the stage to fullscreen before showing it
+            stage.setMaximized(true);
             stage.show();
+            
+            // Call the controller's method to ensure fullscreen is set
+            if (isAdmin) {
+                AdminDashboardController controller = loader.getController();
+                controller.setStageFullScreen();
+            } else {
+                UserDashboardController controller = loader.getController();
+                controller.setStageFullScreen();
+            }
         } catch (IOException e) {
             System.err.println("Error returning to dashboard: " + e.getMessage());
             e.printStackTrace();

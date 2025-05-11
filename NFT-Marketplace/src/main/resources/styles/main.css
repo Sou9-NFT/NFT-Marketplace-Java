@@ -1170,3 +1170,87 @@
 .default-color0.chart-bar {
   -fx-bar-fill: #4528dc;
 }
+
+/* --- Raffle List Dark Theme Overrides --- */
+.raffle-list-root, .raffle-list-root .scroll-pane, .raffle-list-root .viewport {
+  -fx-background-color: #ffffff !important;
+}
+
+.title-label {
+  -fx-font-size: 64px !important;
+  -fx-font-weight: bold !important;
+  -fx-text-fill: #6c4cff !important;
+  -fx-padding: 30 0 30 40 !important;
+  -fx-font-family: 'Montserrat', 'Arial', sans-serif !important;
+}
+
+.primary-button, .button-primary {
+  -fx-background-color: #6c4cff !important;
+  -fx-text-fill: white !important;
+  -fx-font-size: 18px !important;
+  -fx-font-weight: bold !important;
+  -fx-background-radius: 20px !important;
+  -fx-padding: 10 25 10 25 !important;
+  -fx-effect: dropshadow(gaussian, #6c4cff, 10, 0.5, 0, 2) !important;
+}
+
+.raffle-card {
+  -fx-background-color: #232228 !important;
+  -fx-background-radius: 20px !important;
+  -fx-effect: dropshadow(gaussian, #00000088, 10, 0.2, 0, 4) !important;
+  -fx-padding: 20 !important;
+  -fx-min-width: 350px !important;
+  -fx-max-width: 350px !important;
+  -fx-min-height: 500px !important;
+  -fx-max-height: 500px !important;
+  -fx-spacing: 15 !important;
+  -fx-border-color: transparent !important;
+}
+
+.raffle-card:hover {
+  -fx-effect: dropshadow(gaussian, #6c4cff88, 20, 0.3, 0, 8) !important;
+}
+
+.raffle-title {
+  -fx-font-size: 24px !important;
+  -fx-font-weight: bold !important;
+  -fx-text-fill: white !important;
+  -fx-padding: 10 0 0 0 !important;
+}
+
+.raffle-details, .raffle-card .label {
+  -fx-text-fill: #bdbdbd !important;
+  -fx-font-size: 16px !important;
+  -fx-padding: 5 0 0 0 !important;
+}
+
+.ended-label {
+  -fx-background-color: #e74c3c !important;
+  -fx-text-fill: white !important;
+  -fx-font-size: 14px !important;
+  -fx-font-weight: bold !important;
+  -fx-background-radius: 10px !important;
+  -fx-padding: 3 12 3 12 !important;
+  -fx-alignment: center !important;
+  -fx-max-width: 70px !important;
+}
+
+.active-label {
+  -fx-background-color: #27ae60 !important;
+  -fx-text-fill: white !important;
+  -fx-font-size: 14px !important;
+  -fx-font-weight: bold !important;
+  -fx-background-radius: 10px !important;
+  -fx-padding: 3 12 3 12 !important;
+  -fx-alignment: center !important;
+  -fx-max-width: 70px !important;
+}
+
+.raffle-card ImageView, .raffle-image {
+  -fx-background-radius: 15px !important;
+  -fx-min-height: 180px !important;
+  -fx-max-height: 180px !important;
+  -fx-min-width: 100% !important;
+  -fx-object-fit: cover !important;
+  -fx-effect: dropshadow(gaussian, #00000044, 8, 0.2, 0, 2) !important;
+}

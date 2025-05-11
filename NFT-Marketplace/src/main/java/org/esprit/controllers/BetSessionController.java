@@ -216,8 +216,7 @@ public class BetSessionController implements Initializable {
             alert.setContentText("Failed to load bet sessions from the database.");
             alert.showAndWait();
         }
-    }
-      @FXML
+    }    @FXML
     private void showAddDialog() {
         // Check if a user is logged in
         if (currentUser == null) {
@@ -231,45 +230,98 @@ public class BetSessionController implements Initializable {
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Add New Bet Session");
         
-        // Create form components
+        // Create form components with styling
+        Label titleLabel = new Label("Create New Bet Session");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        
         Label authorInfoLabel = new Label("Author: " + currentUser.getName() + " (ID: " + currentUser.getId() + ")");
+        authorInfoLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #3498db;");
+        
         TextField artworkIdField = new TextField();
+        artworkIdField.setPromptText("Enter artwork ID");
+        artworkIdField.setStyle("-fx-background-radius: 4;");
+        
         DatePicker startDatePicker = new DatePicker();
+        startDatePicker.setStyle("-fx-background-radius: 4;");
+        
         DatePicker endDatePicker = new DatePicker();
+        endDatePicker.setStyle("-fx-background-radius: 4;");
+        
         TextField initialPriceField = new TextField();
+        initialPriceField.setPromptText("Enter initial price");
+        initialPriceField.setStyle("-fx-background-radius: 4;");
+        
         Label statusLabel = new Label("Status: pending (automatically set)");
+        statusLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #7f8c8d;");
         
-        // Layout
+        // Styled field labels
+        Label authorLabel = new Label("Author:");
+        Label artworkIdLabel = new Label("Artwork ID:");
+        Label startDateLabel = new Label("Start Date:");
+        Label endDateLabel = new Label("End Date:");
+        Label initialPriceLabel = new Label("Initial Price:");
+        Label statusTitleLabel = new Label("Status:");
+        Label mysteryModeLabel = new Label("Mystery Mode:");
+        
+        // Apply common style to all labels
+        String labelStyle = "-fx-font-weight: bold; -fx-text-fill: #2c3e50;";
+        authorLabel.setStyle(labelStyle);
+        artworkIdLabel.setStyle(labelStyle);
+        startDateLabel.setStyle(labelStyle);
+        endDateLabel.setStyle(labelStyle);
+        initialPriceLabel.setStyle(labelStyle);
+        statusTitleLabel.setStyle(labelStyle);
+        mysteryModeLabel.setStyle(labelStyle);
+        
+        // Layout with styled background
         GridPane formLayout = new GridPane();
-        formLayout.setPadding(new Insets(10));
-        formLayout.setHgap(10);
-        formLayout.setVgap(10);
+        formLayout.setPadding(new Insets(20));
+        formLayout.setHgap(15);
+        formLayout.setVgap(15);
+        formLayout.setStyle("-fx-background-color: linear-gradient(to bottom right, #f5f7fa, #e0e6ed); -fx-background-radius: 8;");
         
-        formLayout.add(new Label("Author:"), 0, 0);
+        formLayout.add(authorLabel, 0, 0);
         formLayout.add(authorInfoLabel, 1, 0);
-        formLayout.add(new Label("Artwork ID:"), 0, 1);
+        formLayout.add(artworkIdLabel, 0, 1);
         formLayout.add(artworkIdField, 1, 1);
-        formLayout.add(new Label("Start Date:"), 0, 2);
+        formLayout.add(startDateLabel, 0, 2);
         formLayout.add(startDatePicker, 1, 2);
-        formLayout.add(new Label("End Date:"), 0, 3);
-        formLayout.add(endDatePicker, 1, 3);        formLayout.add(new Label("Initial Price:"), 0, 4);
+        formLayout.add(endDateLabel, 0, 3);
+        formLayout.add(endDatePicker, 1, 3);
+        formLayout.add(initialPriceLabel, 0, 4);
         formLayout.add(initialPriceField, 1, 4);
-        formLayout.add(new Label("Status:"), 0, 5);
+        formLayout.add(statusTitleLabel, 0, 5);
         formLayout.add(statusLabel, 1, 5);
         
-        // Add Mystery Mode checkbox
+        // Add Mystery Mode checkbox with styling
         CheckBox mysteryModeCheckBox = new CheckBox("Enable Mystery Mode");
-        formLayout.add(new Label("Mystery Mode:"), 0, 6);
-        formLayout.add(mysteryModeCheckBox, 1, 6);
-          // Buttons
-        Button saveButton = new Button("Save");
-        Button cancelButton = new Button("Cancel");
+        mysteryModeCheckBox.setStyle("-fx-text-fill: #e74c3c;");
         
-        HBox buttonLayout = new HBox(10, saveButton, cancelButton);
+        // Container for checkbox with special styling
+        HBox mysteryContainer = new HBox(10, mysteryModeCheckBox);
+        mysteryContainer.setStyle("-fx-padding: 5; -fx-background-color: rgba(231, 76, 60, 0.1); -fx-background-radius: 4;");
+        
+        formLayout.add(mysteryModeLabel, 0, 6);
+        formLayout.add(mysteryContainer, 1, 6);
+        
+        // Styled buttons
+        Button saveButton = new Button("Save");
+        saveButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;");
+        
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;");
+        
+        // Button hover effects
+        saveButton.setOnMouseEntered(e -> saveButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;"));
+        saveButton.setOnMouseExited(e -> saveButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;"));
+        
+        cancelButton.setOnMouseEntered(e -> cancelButton.setStyle("-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;"));
+        cancelButton.setOnMouseExited(e -> cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;"));
+        
+        HBox buttonLayout = new HBox(15, saveButton, cancelButton);
         buttonLayout.setAlignment(Pos.CENTER_RIGHT);
         buttonLayout.setPadding(new Insets(10));
-        
-        saveButton.setOnAction(e -> {
+          saveButton.setOnAction(e -> {
             try {
                 // Create new BetSession from form data
                 BetSession newBetSession = new BetSession();
@@ -341,14 +393,17 @@ public class BetSessionController implements Initializable {
         
         cancelButton.setOnAction(e -> dialog.close());
         
-        // Create scene
-        VBox root = new VBox(10, formLayout, buttonLayout);
+        // Create scene with styled background
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(25));
+        root.setStyle("-fx-background-color: #ecf0f1;");
+        root.getChildren().addAll(titleLabel, formLayout, buttonLayout);
+        
         Scene scene = new Scene(root);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
-    
-    @FXML
+      @FXML
     private void showUpdateDialog() {
         BetSession selectedBetSession = tableView.getSelectionModel().getSelectedItem();
         if (selectedBetSession == null) {
@@ -372,12 +427,25 @@ public class BetSessionController implements Initializable {
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Update Bet Session");
         
-        // Create form components - only for editable fields
+        // Create title label with styling
+        Label titleLabel = new Label("Update Bet Session");
+        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        
+        // Create form components with styling
         DatePicker startDatePicker = new DatePicker();
+        startDatePicker.setStyle("-fx-background-radius: 4;");
+        
         DatePicker endDatePicker = new DatePicker();
+        endDatePicker.setStyle("-fx-background-radius: 4;");
+        
         TextField initialPriceField = new TextField();
+        initialPriceField.setStyle("-fx-background-radius: 4;");
+        
         TextField currentPriceField = new TextField();
+        currentPriceField.setStyle("-fx-background-radius: 4;");
+        
         ComboBox<String> statusComboBox = new ComboBox<>();
+        statusComboBox.setStyle("-fx-background-radius: 4;");
         
         // Display author and artwork information (read-only)
         String authorInfo = selectedBetSession.getAuthor() != null ? 
@@ -393,7 +461,10 @@ public class BetSessionController implements Initializable {
                             "N/A";
         
         Label authorLabel = new Label(authorInfo);
+        authorLabel.setStyle("-fx-text-fill: #3498db; -fx-font-weight: bold;");
+        
         Label artworkLabel = new Label(artworkInfo);
+        artworkLabel.setStyle("-fx-text-fill: #3498db; -fx-font-weight: bold;");
         
         // Status options - restrict to relevant statuses
         statusComboBox.getItems().addAll("pending", "active");
@@ -411,36 +482,65 @@ public class BetSessionController implements Initializable {
         currentPriceField.setText(String.valueOf(selectedBetSession.getCurrentPrice()));
         statusComboBox.setValue(selectedBetSession.getStatus());
         
-        // Layout
-        GridPane formLayout = new GridPane();
-        formLayout.setPadding(new Insets(10));
-        formLayout.setHgap(10);
-        formLayout.setVgap(10);
+        // Create styled labels
+        Label authorTitleLabel = new Label("Author (read-only):");
+        Label artworkTitleLabel = new Label("Artwork (read-only):");
+        Label startDateLabel = new Label("Start Date:");
+        Label endDateLabel = new Label("End Date:");
+        Label initialPriceLabel = new Label("Initial Price:");
+        Label currentPriceLabel = new Label("Current Price:");
+        Label statusLabel = new Label("Status:");
         
-        formLayout.add(new Label("Author (read-only):"), 0, 0);
+        // Apply common style to all labels
+        String labelStyle = "-fx-font-weight: bold; -fx-text-fill: #2c3e50;";
+        authorTitleLabel.setStyle(labelStyle);
+        artworkTitleLabel.setStyle(labelStyle);
+        startDateLabel.setStyle(labelStyle);
+        endDateLabel.setStyle(labelStyle);
+        initialPriceLabel.setStyle(labelStyle);
+        currentPriceLabel.setStyle(labelStyle);
+        statusLabel.setStyle(labelStyle);
+        
+        // Layout with styled background
+        GridPane formLayout = new GridPane();
+        formLayout.setPadding(new Insets(20));
+        formLayout.setHgap(15);
+        formLayout.setVgap(15);
+        formLayout.setStyle("-fx-background-color: linear-gradient(to bottom right, #f5f7fa, #e0e6ed); -fx-background-radius: 8;");
+        
+        formLayout.add(authorTitleLabel, 0, 0);
         formLayout.add(authorLabel, 1, 0);
-        formLayout.add(new Label("Artwork (read-only):"), 0, 1);
+        formLayout.add(artworkTitleLabel, 0, 1);
         formLayout.add(artworkLabel, 1, 1);
-        formLayout.add(new Label("Start Date:"), 0, 2);
+        formLayout.add(startDateLabel, 0, 2);
         formLayout.add(startDatePicker, 1, 2);
-        formLayout.add(new Label("End Date:"), 0, 3);
+        formLayout.add(endDateLabel, 0, 3);
         formLayout.add(endDatePicker, 1, 3);
-        formLayout.add(new Label("Initial Price:"), 0, 4);
+        formLayout.add(initialPriceLabel, 0, 4);
         formLayout.add(initialPriceField, 1, 4);
-        formLayout.add(new Label("Current Price:"), 0, 5);
+        formLayout.add(currentPriceLabel, 0, 5);
         formLayout.add(currentPriceField, 1, 5);
-        formLayout.add(new Label("Status:"), 0, 6);
+        formLayout.add(statusLabel, 0, 6);
         formLayout.add(statusComboBox, 1, 6);
         
-        // Buttons
+        // Styled buttons
         Button updateButton = new Button("Update");
-        Button cancelButton = new Button("Cancel");
+        updateButton.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;");
         
-        HBox buttonLayout = new HBox(10, updateButton, cancelButton);
+        Button cancelButton = new Button("Cancel");
+        cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;");
+        
+        // Button hover effects
+        updateButton.setOnMouseEntered(e -> updateButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;"));
+        updateButton.setOnMouseExited(e -> updateButton.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;"));
+        
+        cancelButton.setOnMouseEntered(e -> cancelButton.setStyle("-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;"));
+        cancelButton.setOnMouseExited(e -> cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 20; -fx-background-radius: 4;"));
+        
+        HBox buttonLayout = new HBox(15, updateButton, cancelButton);
         buttonLayout.setAlignment(Pos.CENTER_RIGHT);
         buttonLayout.setPadding(new Insets(10));
-        
-        updateButton.setOnAction(e -> {
+          updateButton.setOnAction(e -> {
             try {
                 // Author and Artwork remain unchanged
                 // Only update time, price and status
@@ -497,7 +597,9 @@ public class BetSessionController implements Initializable {
         cancelButton.setOnAction(e -> dialog.close());
         
         // Create scene
-        VBox root = new VBox(10, formLayout, buttonLayout);
+        VBox root = new VBox(10, titleLabel, formLayout, buttonLayout);
+        root.setPadding(new Insets(25));
+        root.setStyle("-fx-background-color: #ecf0f1;");
         Scene scene = new Scene(root);
         dialog.setScene(scene);
         dialog.showAndWait();
@@ -750,8 +852,11 @@ public class BetSessionController implements Initializable {
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/styles/main.css").toExternalForm());
             scene.getStylesheets().add(getClass().getResource("/styles/bet-session.css").toExternalForm());
+              detailStage.setScene(scene);
             
-            detailStage.setScene(scene);
+            // Set the stage to fullscreen
+            detailStage.setMaximized(true);
+            
             detailStage.show();
         } catch (Exception e) {
             Alert alert = new Alert(AlertType.ERROR, 

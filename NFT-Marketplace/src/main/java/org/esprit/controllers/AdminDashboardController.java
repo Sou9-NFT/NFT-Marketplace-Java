@@ -1015,4 +1015,20 @@ public class AdminDashboardController implements Initializable {
         alert.setContentText(content);
         alert.showAndWait();
     }
+
+    /**
+     * This method is called to configure the stage after the scene is fully initialized.
+     * It sets the stage to fullscreen and applies other window-specific settings.
+     */
+    public void setStageFullScreen() {
+        if (contentArea.getScene() != null && contentArea.getScene().getWindow() != null) {
+            Stage stage = (Stage) contentArea.getScene().getWindow();
+            
+            // Set to maximized (takes full screen but keeps taskbar visible)
+            stage.setMaximized(true);
+            
+            // Alternative: true fullscreen (hides taskbar)
+            // stage.setFullScreen(true);
+        }
+    }
 }

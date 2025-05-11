@@ -218,8 +218,7 @@ public class BlogListController implements Initializable {
             
             // Create and configure the scene
             Scene scene = new Scene(detailView, 900, 700);
-            
-            // Configure the stage
+              // Configure the stage
             detailStage.setScene(scene);
             detailStage.setTitle(blog.getTitle());
             detailStage.initOwner(blogListView.getScene().getWindow());
@@ -227,6 +226,9 @@ public class BlogListController implements Initializable {
             
             // Center the window on screen
             detailStage.centerOnScreen();
+            
+            // Set the stage to fullscreen
+            detailStage.setMaximized(true);
             
             System.out.println("Showing blog details window");
             detailStage.show();
@@ -266,8 +268,7 @@ public class BlogListController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Error", "Failed to load blogs: " + e.getMessage());
         }
     }
-    
-    @FXML
+      @FXML
     private void handleBackToHome(ActionEvent event) {
         try {
             String fxmlPath = "/fxml/UserDashboard.fxml";
@@ -282,13 +283,17 @@ public class BlogListController implements Initializable {
             
             stage.setScene(new Scene(dashboardView));
             stage.setTitle("NFT Marketplace - User Dashboard");
+            
+            // Set the stage to fullscreen before showing it
+            stage.setMaximized(true);
             stage.show();
+            
+            // Call the controller's method to ensure fullscreen is set
+            controller.setStageFullScreen();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Error", "Could not return to dashboard: " + e.getMessage());
         }
-    }
-
-    @FXML
+    }    @FXML
     private void handleCreateBlog() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CreateBlog.fxml"));
@@ -302,7 +307,10 @@ public class BlogListController implements Initializable {
             createStage.setScene(new Scene(createView));
             createStage.setTitle("Create New Blog");
             createStage.initOwner(blogListView.getScene().getWindow());
-            createStage.setResizable(false);
+            createStage.setResizable(true);
+            
+            // Set the stage to fullscreen
+            createStage.setMaximized(true);
             
             // Show the dialog and wait for it to close
             createStage.showAndWait();
