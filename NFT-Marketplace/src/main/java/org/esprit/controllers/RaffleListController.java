@@ -29,6 +29,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.application.Platform;
 
@@ -376,66 +377,57 @@ public class RaffleListController {
         }
         
         // Add a border and vbox for card contents
-        VBox contentBox = new VBox(8);
-        contentBox.setPadding(new Insets(10, 0, 0, 0));
-        
+        VBox contentBox = new VBox(4); // even less spacing
+        contentBox.setPadding(new Insets(8, 0, 0, 0));
+        contentBox.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+
+        // Status label (Ended or Active)
+        Label statusLabel = null;
+        if ("ended".equalsIgnoreCase(raffle.getStatus())) {
+            statusLabel = new Label("Ended");
+            statusLabel.getStyleClass().add("ended-label");
+        } else if ("active".equalsIgnoreCase(raffle.getStatus())) {
+            statusLabel = new Label("Active");
+            statusLabel.getStyleClass().add("active-label");
+        }
+        if (statusLabel != null) {
+            statusLabel.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            VBox.setMargin(statusLabel, new Insets(0, 0, 0, 0));
+            contentBox.getChildren().add(statusLabel);
+        }
+
         Label titleLabel = new Label(raffle.getTitle());
         titleLabel.getStyleClass().add("raffle-title");
         titleLabel.setWrapText(true);
-        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-        
+
         Label artworkLabel = new Label("Artwork: " + (raffle.getArtworkTitle() != null ? raffle.getArtworkTitle() : ""));
+        artworkLabel.getStyleClass().add("raffle-details");
         artworkLabel.setWrapText(true);
-        
-        Label descLabel = new Label(raffle.getRaffleDescription());
-        descLabel.setWrapText(true);
-        descLabel.setMaxHeight(60);
-        
-        // Status with color coding
-        String statusColor = raffle.getStatus().equals("active") ? "#2E7D32" : "#C62828";
-        Label statusLabel = new Label("Status: " + raffle.getStatus());
-        statusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + statusColor + ";");
-        
-        // Create badge for status
-        javafx.scene.layout.HBox statusBox = new javafx.scene.layout.HBox();
-        javafx.scene.layout.StackPane statusBadge = new javafx.scene.layout.StackPane();
-        statusBadge.setStyle("-fx-background-color: " + statusColor + "; -fx-background-radius: 3;");
-        statusBadge.setPrefWidth(10);
-        statusBadge.setPrefHeight(10);
-        statusBadge.setMaxWidth(10);
-        statusBadge.setMaxHeight(10);
-        
-        statusBox.getChildren().addAll(statusBadge, statusLabel);
-        statusBox.setSpacing(5);
-        statusBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        
-        Label creatorLabel = new Label("Creator: " + raffle.getCreatorName());
-        
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Label endDateLabel = new Label("Ends: " + dateFormat.format(raffle.getEndTime()));
-        
+
+        Label creatorLabel = new Label("Created by: " + (raffle.getCreatorName() != null ? raffle.getCreatorName() : ""));
+        creatorLabel.getStyleClass().add("raffle-details");
+        creatorLabel.setWrapText(true);
+
+        contentBox.getChildren().addAll(titleLabel, artworkLabel, creatorLabel);
+
+        // Spacer to push the button to the bottom
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+        contentBox.getChildren().add(spacer);
+
         Button detailsButton = new Button("View Details");
         detailsButton.getStyleClass().add("primary-button");
-        detailsButton.setMaxWidth(Double.MAX_VALUE);
-        detailsButton.setStyle("-fx-background-color: #1976D2; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 3;");
-        
+        detailsButton.setPrefWidth(160);
+        detailsButton.setMinWidth(120);
+        detailsButton.setMaxWidth(180);
+        detailsButton.setStyle("-fx-font-size: 16px; -fx-background-radius: 16px; -fx-padding: 6 0 6 0;");
         detailsButton.setOnAction(e -> showRaffleDetails(raffle));
-        
-        contentBox.getChildren().addAll(
-            titleLabel,
-            artworkLabel,
-            descLabel,
-            statusBox,
-            creatorLabel,
-            endDateLabel
-        );
-        
-        card.getChildren().addAll(
-            imageContainer,
-            contentBox,
-            detailsButton
-        );
-        
+        VBox.setMargin(detailsButton, new Insets(8, 0, 0, 0));
+        contentBox.getChildren().add(detailsButton);
+
+        card.getChildren().clear();
+        card.getChildren().addAll(imageContainer, contentBox);
+        card.setStyle("-fx-background-color: #232228; -fx-background-radius: 20px; -fx-effect: dropshadow(gaussian, #00000088, 10, 0.2, 0, 4); -fx-padding: 20; -fx-border-color: #383848; -fx-border-width: 1.5; -fx-border-radius: 20px;");
         return card;
     }
     
@@ -515,5 +507,11 @@ public class RaffleListController {
             showError("Failed to return to dashboard: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    // Helper method to get artwork value (dummy for now)
+    private String getArtworkValue(Integer artworkId) {
+        // You can implement actual logic to fetch artwork value if needed
+        return "300";
     }
 }
