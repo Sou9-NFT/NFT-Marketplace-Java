@@ -94,8 +94,7 @@ public class RaffleListController {
         // Refresh raffles again after user is set
         refreshRaffles();
     }
-    
-    @FXML
+      @FXML
     private void handleCreateRaffle(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CreateRaffle.fxml"));
@@ -108,6 +107,10 @@ public class RaffleListController {
             Stage stage = new Stage();
             stage.setScene(new Scene(createRaffleView));
             stage.setTitle("Create New Raffle");
+            
+            // Set the stage to fullscreen
+            stage.setMaximized(true);
+            
             stage.show();
             
         } catch (IOException e) {

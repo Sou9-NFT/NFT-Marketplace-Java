@@ -983,8 +983,7 @@ public class ArtworkManagementController {
             }
         }
     }
-    
-    @FXML
+      @FXML
     private void handleBackButton(ActionEvent event) {
         try {
             String fxmlPath;
@@ -1017,6 +1016,18 @@ public class ArtworkManagementController {
             
             scene.setRoot(dashboardView);
             stage.setTitle(title);
+            
+            // Ensure the stage is fullscreen
+            stage.setMaximized(true);
+            
+            // Call the appropriate controller method to set fullscreen
+            if (isFromAdminDashboard) {
+                AdminDashboardController controller = loader.getController();
+                controller.setStageFullScreen();
+            } else {
+                UserDashboardController controller = loader.getController();
+                controller.setStageFullScreen();
+            }
         } catch (IOException e) {
             showAlert(AlertType.ERROR, "Navigation Error", 
                      "Failed to return to dashboard: " + e.getMessage());
