@@ -405,75 +405,79 @@ public class MyBetSessionsController implements Initializable {
         
         // Ensure image panel has a fixed size
         imagePanel.setMinSize(320, 320);
-        
-        // Make sure image is displayed by adjusting settings
+          // Make sure image is displayed by adjusting settings
         artworkImageView.setCache(true);
         artworkImageView.setSmooth(true);
         imageContainer.setMinSize(280, 280);
         imageContainer.setPrefSize(280, 280);
-
+        
         if (session.getArtwork() != null && session.getArtwork().getImageName() != null) {
-            // Try multiple possible paths for the image
-            String imageName = session.getArtwork().getImageName();
-            System.out.println("Trying to load image: " + imageName);
+            // Get the image URL directly from the imageName field
+            String imageUrl = session.getArtwork().getImageName();
+            System.out.println("Trying to load image from URL: " + imageUrl);
             
-            // Path 1: Direct path in src/main/resources
-            String imagePath1 = "src/main/resources/uploads/" + imageName;
-            // Path 2: Runtime classpath path
-            String imagePath2 = "/uploads/" + imageName;
-            // Path 3: Absolute path to target directory
-            String imagePath3 = "target/classes/uploads/" + imageName;
-            
-            java.io.File imageFile1 = new java.io.File(imagePath1);
             boolean loaded = false;
             
-            // Try first path (direct file access)
-            if (imageFile1.exists()) {
-                System.out.println("Image found at: " + imagePath1);
+            // Check if the URL is absolute (starts with http:// or https://)
+            if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
                 try {
-                    javafx.scene.image.Image image = new javafx.scene.image.Image(imageFile1.toURI().toString());
+                    // Load image directly from the web URL
+                    javafx.scene.image.Image image = new javafx.scene.image.Image(imageUrl, 
+                            true);  // true enables background loading
+                    
+                    // Add a loading indicator
+                    javafx.scene.control.ProgressIndicator progressIndicator = new javafx.scene.control.ProgressIndicator();
+                    progressIndicator.setMaxSize(50, 50);
+                    imageContainer.getChildren().add(progressIndicator);
+                      // Handle image loading errors
+                    image.errorProperty().addListener((observable, oldValue, newValue) -> {
+                        if (newValue) {
+                            System.err.println("Error loading image from URL: " + imageUrl);
+                            // Remove progress indicator
+                            imageContainer.getChildren().remove(progressIndicator);
+                            
+                            // Load default image
+                            try {
+                                java.net.URL defaultImageUrl = getClass().getResource("/assets/default/artwork-placeholder.png");
+                                if (defaultImageUrl != null) {
+                                    javafx.scene.image.Image defaultImage = new javafx.scene.image.Image(defaultImageUrl.toString());
+                                    artworkImageView.setImage(defaultImage);
+                                    System.out.println("Default image loaded successfully after URL load failure");
+                                }
+                            } catch (Exception ex) {
+                                System.err.println("Failed to load default image: " + ex.getMessage());
+                            }
+                        }
+                    });
+                    
+                    // Handle image load completion
+                    image.progressProperty().addListener((observable, oldValue, newValue) -> {
+                        if (newValue.doubleValue() == 1.0) {
+                            imageContainer.getChildren().remove(progressIndicator);
+                        }
+                    });
+                    
+                    artworkImageView.setImage(image);
+                    loaded = true;                    System.out.println("Image loading started from web URL");
+                } catch (Exception e) {
+                    System.err.println("Error setting up image loading from URL: " + e.getMessage());
+                    // Don't print stack trace to avoid warnings
+                }
+            } else {
+                // If it doesn't start with http:// or https://, assume it's a relative path
+                // and try to resolve it as a web URL by adding a prefix
+                try {
+                    String fullUrl = "https://example.com/images/" + imageUrl; // Replace with your actual base URL
+                    System.out.println("Converting relative path to URL: " + fullUrl);
+                    
+                    javafx.scene.image.Image image = new javafx.scene.image.Image(fullUrl, true);
                     artworkImageView.setImage(image);
                     loaded = true;
-                    System.out.println("Image loaded successfully from path 1");
                 } catch (Exception e) {
-                    System.err.println("Error loading image from path 1: " + e.getMessage());
+                    System.err.println("Error loading image from constructed URL: " + e.getMessage());
                 }
             }
-            
-            // Try second path (resource stream)
-            if (!loaded) {
-                try {
-                    java.net.URL resourceUrl = getClass().getResource(imagePath2);
-                    if (resourceUrl != null) {
-                        javafx.scene.image.Image image = new javafx.scene.image.Image(resourceUrl.toString());
-                        artworkImageView.setImage(image);
-                        loaded = true;
-                        System.out.println("Image loaded successfully from path 2");
-                    } else {
-                        System.out.println("Resource not found at: " + imagePath2);
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error loading image from path 2: " + e.getMessage());
-                }
-            }
-            
-            // Try third path (target directory)
-            if (!loaded) {
-                java.io.File imageFile3 = new java.io.File(imagePath3);
-                if (imageFile3.exists()) {
-                    System.out.println("Image found at: " + imagePath3);
-                    try {
-                        javafx.scene.image.Image image = new javafx.scene.image.Image(imageFile3.toURI().toString());
-                        artworkImageView.setImage(image);
-                        loaded = true;
-                        System.out.println("Image loaded successfully from path 3");
-                    } catch (Exception e) {
-                        System.err.println("Error loading image from path 3: " + e.getMessage());
-                    }
-                }
-            }
-            
-            // If the image was loaded successfully, apply effects if needed
+              // If the image was loaded successfully, apply effects if needed
             if (loaded) {
                 // Apply blur effect for mystery mode items
                 if (session.isMysteriousMode()) {
@@ -495,7 +499,7 @@ public class MyBetSessionsController implements Initializable {
                     }
                 }
             } else {
-                // If image wasn't loaded from any path, try to load a default image
+                // If image wasn't loaded from any URL, load a default image
                 System.out.println("Attempting to load default image");
                 try {
                     java.net.URL defaultImageUrl = getClass().getResource("/assets/default/artwork-placeholder.png");
