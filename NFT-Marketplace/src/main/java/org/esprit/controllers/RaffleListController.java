@@ -29,8 +29,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 import javafx.application.Platform;
+import javafx.scene.web.WebView;
 
 public class RaffleListController {
     
@@ -224,137 +226,158 @@ public class RaffleListController {
             Artwork artwork = artworkService.getOne(raffle.getArtworkId());
             
             if (artwork != null && artwork.getImageName() != null) {
-                // DEBUG: List available files in uploads directory
-                try {
-                    File uploadsDir = new File("src/main/resources/uploads");
-                    if (uploadsDir.exists() && uploadsDir.isDirectory()) {
-                        System.out.println("Available files in uploads directory:");
-                        File[] files = uploadsDir.listFiles();
-                        if (files != null) {
-                            for (File file : files) {
-                                System.out.println("  - " + file.getName());
-                            }
-                        } else {
-                            System.out.println("  No files found or cannot list files");
-                        }
-                    } else {
-                        System.out.println("Uploads directory not found at: " + uploadsDir.getAbsolutePath());
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error listing files in uploads directory: " + e.getMessage());
-                }
-                
-                System.out.println("Attempting to load image: " + artwork.getImageName());
-                
-                // Try multiple approaches to load the image
-                
-                // 1. Try absolute path with src/main/resources
-                File imageFile = new File("src/main/resources/uploads/" + artwork.getImageName());
-                if (imageFile.exists()) {
-                    try {
-                        Image image = new Image(imageFile.toURI().toString());
-                        if (!image.isError()) {
-                            artworkImage.setImage(image);
-                            imageLoaded = true;
-                            System.out.println("Loaded image from src/main/resources/uploads: " + artwork.getImageName());
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Failed to load image from src/main/resources path: " + e.getMessage());
-                    }
-                }
-                
-                // 2. Try using the class resource loader
-                if (!imageLoaded) {
-                    try {
-                        String imagePath = "/uploads/" + artwork.getImageName();
-                        java.io.InputStream is = getClass().getResourceAsStream(imagePath);
-                        if (is != null) {
-                            Image image = new Image(is);
-                            if (!image.isError()) {
-                                artworkImage.setImage(image);
-                                imageLoaded = true;
-                                System.out.println("Loaded image from resource stream: " + artwork.getImageName());
-                            }
-                        } else {
-                            System.out.println("Resource stream is null for: " + imagePath);
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Failed to load image from resource stream: " + e.getMessage());
-                    }
-                }
-                
-                // 3. Try absolute path with direct project path
-                if (!imageLoaded) {
-                    try {
-                        File projectRoot = new File("").getAbsoluteFile();
-                        File uploadsDir = new File(projectRoot, "uploads");
-                        File directImageFile = new File(uploadsDir, artwork.getImageName());
-                        
-                        if (directImageFile.exists()) {
-                            Image image = new Image(directImageFile.toURI().toString());
-                            if (!image.isError()) {
-                                artworkImage.setImage(image);
-                                imageLoaded = true;
-                                System.out.println("Loaded image from direct project path: " + directImageFile.getPath());
-                            }
-                        } else {
-                            System.out.println("Image file not found at path: " + directImageFile.getPath());
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Failed to load image from direct project path: " + e.getMessage());
-                    }
-                }
-                
-                // 4. Try using the file class loader
-                if (!imageLoaded) {
-                    try {
-                        ClassLoader classLoader = getClass().getClassLoader();
-                        java.net.URL imageUrl = classLoader.getResource("uploads/" + artwork.getImageName());
-                        if (imageUrl != null) {
-                            Image image = new Image(imageUrl.toString());
-                            if (!image.isError()) {
-                                artworkImage.setImage(image);
-                                imageLoaded = true;
-                                System.out.println("Loaded image using class loader: " + imageUrl);
-                            }
-                        } else {
-                            System.out.println("Image URL not found using class loader");
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Failed to load image using class loader: " + e.getMessage());
-                    }
-                }
-                
-                // 5. Fallback: Try to find any image in uploads directory to use as a fallback
-                if (!imageLoaded) {
+                // Check if the image name is an Imgur URL
+                if (artwork.getImageName().startsWith("http")) {
+                    // Create a WebView to load the Imgur image with referrerpolicy
+                    javafx.scene.web.WebView webView = new javafx.scene.web.WebView();
+                    webView.setPrefWidth(280);
+                    webView.setPrefHeight(200);
+                    webView.setMaxWidth(280);
+                    webView.setMaxHeight(200);
+                    
+                    // Create HTML content with referrerpolicy
+                    String htmlContent = String.format(
+                        "<html><body style='margin:0;padding:0;'><img src='%s' style='width:100%%;height:100%%;object-fit:cover;' referrerpolicy='no-referrer'/></body></html>",
+                        artwork.getImageName()
+                    );
+                    
+                    webView.getEngine().loadContent(htmlContent);
+                    imageContainer.getChildren().add(webView);
+                    imageLoaded = true;
+                } else {
+                    // Handle local images as before
+                    // DEBUG: List available files in uploads directory
                     try {
                         File uploadsDir = new File("src/main/resources/uploads");
                         if (uploadsDir.exists() && uploadsDir.isDirectory()) {
-                            File[] imageFiles = uploadsDir.listFiles((dir, name) -> 
-                                name.toLowerCase().endsWith(".png") || 
-                                name.toLowerCase().endsWith(".jpg") || 
-                                name.toLowerCase().endsWith(".jpeg")
-                            );
-                            
-                            if (imageFiles != null && imageFiles.length > 0) {
-                                // Use the first image found as a fallback
-                                File fallbackFile = imageFiles[0];
-                                System.out.println("Using fallback image: " + fallbackFile.getName());
-                                
-                                try {
-                                    Image image = new Image(fallbackFile.toURI().toString());
-                                    if (!image.isError()) {
-                                        artworkImage.setImage(image);
-                                        imageLoaded = true;
-                                        System.out.println("Loaded fallback image: " + fallbackFile.getName());
-                                    }
-                                } catch (Exception e) {
-                                    System.err.println("Failed to load fallback image: " + e.getMessage());
+                            System.out.println("Available files in uploads directory:");
+                            File[] files = uploadsDir.listFiles();
+                            if (files != null) {
+                                for (File file : files) {
+                                    System.out.println("  - " + file.getName());
                                 }
+                            } else {
+                                System.out.println("  No files found or cannot list files");
                             }
+                        } else {
+                            System.out.println("Uploads directory not found at: " + uploadsDir.getAbsolutePath());
                         }
                     } catch (Exception e) {
-                        System.err.println("Error finding fallback image: " + e.getMessage());
+                        System.err.println("Error listing files in uploads directory: " + e.getMessage());
+                    }
+                    
+                    System.out.println("Attempting to load image: " + artwork.getImageName());
+                    
+                    // Try multiple approaches to load the image
+                    
+                    // 1. Try absolute path with src/main/resources
+                    File imageFile = new File("src/main/resources/uploads/" + artwork.getImageName());
+                    if (imageFile.exists()) {
+                        try {
+                            Image image = new Image(imageFile.toURI().toString());
+                            if (!image.isError()) {
+                                artworkImage.setImage(image);
+                                imageLoaded = true;
+                                System.out.println("Loaded image from src/main/resources/uploads: " + artwork.getImageName());
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Failed to load image from src/main/resources path: " + e.getMessage());
+                        }
+                    }
+                    
+                    // 2. Try using the class resource loader
+                    if (!imageLoaded) {
+                        try {
+                            String imagePath = "/uploads/" + artwork.getImageName();
+                            java.io.InputStream is = getClass().getResourceAsStream(imagePath);
+                            if (is != null) {
+                                Image image = new Image(is);
+                                if (!image.isError()) {
+                                    artworkImage.setImage(image);
+                                    imageLoaded = true;
+                                    System.out.println("Loaded image from resource stream: " + artwork.getImageName());
+                                }
+                            } else {
+                                System.out.println("Resource stream is null for: " + imagePath);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Failed to load image from resource stream: " + e.getMessage());
+                        }
+                    }
+                    
+                    // 3. Try absolute path with direct project path
+                    if (!imageLoaded) {
+                        try {
+                            File projectRoot = new File("").getAbsoluteFile();
+                            File uploadsDir = new File(projectRoot, "uploads");
+                            File directImageFile = new File(uploadsDir, artwork.getImageName());
+                            
+                            if (directImageFile.exists()) {
+                                Image image = new Image(directImageFile.toURI().toString());
+                                if (!image.isError()) {
+                                    artworkImage.setImage(image);
+                                    imageLoaded = true;
+                                    System.out.println("Loaded image from direct project path: " + directImageFile.getPath());
+                                }
+                            } else {
+                                System.out.println("Image file not found at path: " + directImageFile.getPath());
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Failed to load image from direct project path: " + e.getMessage());
+                        }
+                    }
+                    
+                    // 4. Try using the file class loader
+                    if (!imageLoaded) {
+                        try {
+                            ClassLoader classLoader = getClass().getClassLoader();
+                            java.net.URL imageUrl = classLoader.getResource("uploads/" + artwork.getImageName());
+                            if (imageUrl != null) {
+                                Image image = new Image(imageUrl.toString());
+                                if (!image.isError()) {
+                                    artworkImage.setImage(image);
+                                    imageLoaded = true;
+                                    System.out.println("Loaded image using class loader: " + imageUrl);
+                                }
+                            } else {
+                                System.out.println("Image URL not found using class loader");
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Failed to load image using class loader: " + e.getMessage());
+                        }
+                    }
+                    
+                    // 5. Fallback: Try to find any image in uploads directory to use as a fallback
+                    if (!imageLoaded) {
+                        try {
+                            File uploadsDir = new File("src/main/resources/uploads");
+                            if (uploadsDir.exists() && uploadsDir.isDirectory()) {
+                                File[] imageFiles = uploadsDir.listFiles((dir, name) -> 
+                                    name.toLowerCase().endsWith(".png") || 
+                                    name.toLowerCase().endsWith(".jpg") || 
+                                    name.toLowerCase().endsWith(".jpeg")
+                                );
+                                
+                                if (imageFiles != null && imageFiles.length > 0) {
+                                    // Use the first image found as a fallback
+                                    File fallbackFile = imageFiles[0];
+                                    System.out.println("Using fallback image: " + fallbackFile.getName());
+                                    
+                                    try {
+                                        Image image = new Image(fallbackFile.toURI().toString());
+                                        if (!image.isError()) {
+                                            artworkImage.setImage(image);
+                                            imageLoaded = true;
+                                            System.out.println("Loaded fallback image: " + fallbackFile.getName());
+                                        }
+                                    } catch (Exception e) {
+                                        System.err.println("Failed to load fallback image: " + e.getMessage());
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Error finding fallback image: " + e.getMessage());
+                        }
                     }
                 }
             }
@@ -363,13 +386,8 @@ public class RaffleListController {
             e.printStackTrace();
         }
         
-        // If image loaded, add it to container
-        if (imageLoaded) {
-            // Center the image
-            artworkImage.setTranslateX(0);
-            artworkImage.setTranslateY(0);
-            imageContainer.getChildren().add(artworkImage);
-        } else {
+        // If image not loaded, add placeholder
+        if (!imageLoaded) {
             // Create placeholder text
             Label placeholderLabel = new Label("Artwork\nImage");
             placeholderLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: #3F51B5; -fx-font-weight: bold; -fx-alignment: center;");
@@ -379,66 +397,57 @@ public class RaffleListController {
         }
         
         // Add a border and vbox for card contents
-        VBox contentBox = new VBox(8);
-        contentBox.setPadding(new Insets(10, 0, 0, 0));
-        
+        VBox contentBox = new VBox(4); // even less spacing
+        contentBox.setPadding(new Insets(8, 0, 0, 0));
+        contentBox.setAlignment(javafx.geometry.Pos.TOP_CENTER);
+
+        // Status label (Ended or Active)
+        Label statusLabel = null;
+        if ("ended".equalsIgnoreCase(raffle.getStatus())) {
+            statusLabel = new Label("Ended");
+            statusLabel.getStyleClass().add("ended-label");
+        } else if ("active".equalsIgnoreCase(raffle.getStatus())) {
+            statusLabel = new Label("Active");
+            statusLabel.getStyleClass().add("active-label");
+        }
+        if (statusLabel != null) {
+            statusLabel.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            VBox.setMargin(statusLabel, new Insets(0, 0, 0, 0));
+            contentBox.getChildren().add(statusLabel);
+        }
+
         Label titleLabel = new Label(raffle.getTitle());
         titleLabel.getStyleClass().add("raffle-title");
         titleLabel.setWrapText(true);
-        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-        
+
         Label artworkLabel = new Label("Artwork: " + (raffle.getArtworkTitle() != null ? raffle.getArtworkTitle() : ""));
+        artworkLabel.getStyleClass().add("raffle-details");
         artworkLabel.setWrapText(true);
-        
-        Label descLabel = new Label(raffle.getRaffleDescription());
-        descLabel.setWrapText(true);
-        descLabel.setMaxHeight(60);
-        
-        // Status with color coding
-        String statusColor = raffle.getStatus().equals("active") ? "#2E7D32" : "#C62828";
-        Label statusLabel = new Label("Status: " + raffle.getStatus());
-        statusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: " + statusColor + ";");
-        
-        // Create badge for status
-        javafx.scene.layout.HBox statusBox = new javafx.scene.layout.HBox();
-        javafx.scene.layout.StackPane statusBadge = new javafx.scene.layout.StackPane();
-        statusBadge.setStyle("-fx-background-color: " + statusColor + "; -fx-background-radius: 3;");
-        statusBadge.setPrefWidth(10);
-        statusBadge.setPrefHeight(10);
-        statusBadge.setMaxWidth(10);
-        statusBadge.setMaxHeight(10);
-        
-        statusBox.getChildren().addAll(statusBadge, statusLabel);
-        statusBox.setSpacing(5);
-        statusBox.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-        
-        Label creatorLabel = new Label("Creator: " + raffle.getCreatorName());
-        
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Label endDateLabel = new Label("Ends: " + dateFormat.format(raffle.getEndTime()));
-        
+
+        Label creatorLabel = new Label("Created by: " + (raffle.getCreatorName() != null ? raffle.getCreatorName() : ""));
+        creatorLabel.getStyleClass().add("raffle-details");
+        creatorLabel.setWrapText(true);
+
+        contentBox.getChildren().addAll(titleLabel, artworkLabel, creatorLabel);
+
+        // Spacer to push the button to the bottom
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+        contentBox.getChildren().add(spacer);
+
         Button detailsButton = new Button("View Details");
         detailsButton.getStyleClass().add("primary-button");
-        detailsButton.setMaxWidth(Double.MAX_VALUE);
-        detailsButton.setStyle("-fx-background-color: #1976D2; -fx-text-fill: white; -fx-cursor: hand; -fx-background-radius: 3;");
-        
+        detailsButton.setPrefWidth(160);
+        detailsButton.setMinWidth(120);
+        detailsButton.setMaxWidth(180);
+        detailsButton.setStyle("-fx-font-size: 16px; -fx-background-radius: 16px; -fx-padding: 6 0 6 0;");
         detailsButton.setOnAction(e -> showRaffleDetails(raffle));
-        
-        contentBox.getChildren().addAll(
-            titleLabel,
-            artworkLabel,
-            descLabel,
-            statusBox,
-            creatorLabel,
-            endDateLabel
-        );
-        
-        card.getChildren().addAll(
-            imageContainer,
-            contentBox,
-            detailsButton
-        );
-        
+        VBox.setMargin(detailsButton, new Insets(8, 0, 0, 0));
+        contentBox.getChildren().add(detailsButton);
+
+        card.getChildren().clear();
+        card.getChildren().addAll(imageContainer, contentBox);
+        card.setStyle("-fx-background-color: #232228; -fx-background-radius: 20px; -fx-effect: dropshadow(gaussian, #00000088, 10, 0.2, 0, 4); -fx-padding: 20; -fx-border-color: #383848; -fx-border-width: 1.5; -fx-border-radius: 20px;");
         return card;
     }
     
@@ -518,5 +527,11 @@ public class RaffleListController {
             showError("Failed to return to dashboard: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    // Helper method to get artwork value (dummy for now)
+    private String getArtworkValue(Integer artworkId) {
+        // You can implement actual logic to fetch artwork value if needed
+        return "300";
     }
 }

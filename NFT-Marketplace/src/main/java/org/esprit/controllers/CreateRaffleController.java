@@ -79,7 +79,7 @@ public class CreateRaffleController {
                 if (empty || artwork == null) {
                     setText(null);
                 } else {
-                    setText(artwork.getTitle() + " (ID: " + artwork.getId() + ")");
+                    setText(artwork.getTitle());
                 }
             }
         });
@@ -91,7 +91,7 @@ public class CreateRaffleController {
                 if (artwork == null) {
                     return null;
                 }
-                return artwork.getTitle() + " (ID: " + artwork.getId() + ")";
+                return artwork.getTitle();
             }
             
             @Override
