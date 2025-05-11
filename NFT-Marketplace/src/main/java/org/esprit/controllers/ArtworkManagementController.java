@@ -756,64 +756,65 @@ public class ArtworkManagementController {
             detailsImageView.setPreserveRatio(true);
             
             boolean imageLoaded = false;
-            
-            // Try to load image from multiple possible locations
             try {
-                // First try: Check upload directory
-                File imageFile = new File(UPLOAD_DIRECTORY + artwork.getImageName());
-                if (imageFile.exists()) {
-                    Image image = new Image(imageFile.toURI().toString());
+                String imageName = artwork.getImageName();
+                if (imageName != null && (imageName.startsWith("http://") || imageName.startsWith("https://"))) {
+                    // Load from URL (e.g., Imgur)
+                    Image image = new Image(imageName, true);
                     if (!image.isError()) {
                         detailsImageView.setImage(image);
                         imageLoaded = true;
                     }
-                }
-                
-                // Second try: Check class resources
-                if (!imageLoaded) {
-                    ClassLoader classLoader = getClass().getClassLoader();
-                    java.net.URL imageUrl = classLoader.getResource("uploads/" + artwork.getImageName());
-                    if (imageUrl != null) {
-                        Image image = new Image(imageUrl.toString());
+                } else {
+                    // First try: Check upload directory
+                    File imageFile = new File(UPLOAD_DIRECTORY + imageName);
+                    if (imageFile.exists()) {
+                        Image image = new Image(imageFile.toURI().toString());
                         if (!image.isError()) {
                             detailsImageView.setImage(image);
                             imageLoaded = true;
                         }
                     }
-                }
-                
-                // Third try: Check target directory
-                if (!imageLoaded) {
-                    File targetFile = new File("target/classes/uploads/" + artwork.getImageName());
-                    if (targetFile.exists()) {
-                        Image image = new Image(targetFile.toURI().toString());
-                        if (!image.isError()) {
-                            detailsImageView.setImage(image);
-                            imageLoaded = true;
+                    // Second try: Check class resources
+                    if (!imageLoaded) {
+                        ClassLoader classLoader = getClass().getClassLoader();
+                        java.net.URL imageUrl = classLoader.getResource("uploads/" + imageName);
+                        if (imageUrl != null) {
+                            Image image = new Image(imageUrl.toString());
+                            if (!image.isError()) {
+                                detailsImageView.setImage(image);
+                                imageLoaded = true;
+                            }
+                        }
+                    }
+                    // Third try: Check target directory
+                    if (!imageLoaded) {
+                        File targetFile = new File("target/classes/uploads/" + imageName);
+                        if (targetFile.exists()) {
+                            Image image = new Image(targetFile.toURI().toString());
+                            if (!image.isError()) {
+                                detailsImageView.setImage(image);
+                                imageLoaded = true;
+                            }
                         }
                     }
                 }
-                
             } catch (Exception e) {
                 System.err.println("Error loading image: " + e.getMessage());
             }
-            
             // Create a container for the image
             StackPane imageContainer = new StackPane();
             imageContainer.getChildren().add(detailsImageView);
             imageContainer.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #cccccc; -fx-border-radius: 3;");
             imageContainer.setMinHeight(300);
-            
             // If image wasn't loaded, show placeholder
             if (!imageLoaded) {
                 Label placeholderLabel = new Label("Image Not Available");
                 placeholderLabel.setStyle("-fx-font-size: 18px; -fx-text-fill: #757575; -fx-font-weight: bold;");
                 imageContainer.getChildren().add(placeholderLabel);
             }
-            
             // Add image container to content
             content.getChildren().add(imageContainer);
-            
             // Get category name
             String categoryName = "Unknown";
             try {
@@ -824,7 +825,6 @@ public class ArtworkManagementController {
             } catch (Exception e) {
                 // Use default "Unknown" if category can't be found
             }
-            
             // Add artwork details
             content.getChildren().addAll(
                 new Label("Title: " + artwork.getTitle()),
@@ -835,22 +835,18 @@ public class ArtworkManagementController {
                     artwork.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) : "Unknown")),
                 new Label("Description:")
             );
-            
             // Add description text area
             TextArea descArea = new TextArea(artwork.getDescription());
             descArea.setEditable(false);
             descArea.setWrapText(true);
             descArea.setPrefRowCount(4);
             content.getChildren().add(descArea);
-            
             // Resize dialog to fit content better
             dialog.getDialogPane().setPrefWidth(500);
             dialog.getDialogPane().setMinHeight(550);
-            
             // Set content and show dialog
             dialog.getDialogPane().setContent(content);
             dialog.showAndWait();
-            
         } catch (Exception e) {
             showAlert(AlertType.ERROR, "Error", "Could not display artwork details: " + e.getMessage());
             e.printStackTrace();
@@ -1151,28 +1147,33 @@ public class ArtworkManagementController {
         artworkImage.setPreserveRatio(true);
         
         try {
-            File imageFile = new File(UPLOAD_DIRECTORY + artwork.getImageName());
-            if (imageFile.exists()) {
-                Image image = new Image(imageFile.toURI().toString());
+            String imageName = artwork.getImageName();
+            if (imageName != null && (imageName.startsWith("http://") || imageName.startsWith("https://"))) {
+                // Load from URL (e.g., Imgur)
+                Image image = new Image(imageName, true);
                 artworkImage.setImage(image);
             } else {
-                // Try alternative paths
-                ClassLoader classLoader = getClass().getClassLoader();
-                java.net.URL imageUrl = classLoader.getResource("uploads/" + artwork.getImageName());
-                
-                if (imageUrl != null) {
-                    Image image = new Image(imageUrl.toString());
+                File imageFile = new File(UPLOAD_DIRECTORY + imageName);
+                if (imageFile.exists()) {
+                    Image image = new Image(imageFile.toURI().toString());
                     artworkImage.setImage(image);
                 } else {
-                    // Create placeholder text if image not found
-                    Label placeholderLabel = new Label("Image\nNot Found");
-                    placeholderLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #757575; -fx-font-weight: bold; -fx-alignment: center;");
-                    placeholderLabel.setWrapText(true);
-                    placeholderLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
-                    imageContainer.getChildren().add(placeholderLabel);
+                    // Try alternative paths
+                    ClassLoader classLoader = getClass().getClassLoader();
+                    java.net.URL imageUrl = classLoader.getResource("uploads/" + imageName);
+                    if (imageUrl != null) {
+                        Image image = new Image(imageUrl.toString());
+                        artworkImage.setImage(image);
+                    } else {
+                        // Create placeholder text if image not found
+                        Label placeholderLabel = new Label("Image\nNot Found");
+                        placeholderLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #757575; -fx-font-weight: bold; -fx-alignment: center;");
+                        placeholderLabel.setWrapText(true);
+                        placeholderLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+                        imageContainer.getChildren().add(placeholderLabel);
+                    }
                 }
             }
-            
             imageContainer.getChildren().add(artworkImage);
         } catch (Exception e) {
             System.err.println("Error loading artwork image: " + e.getMessage());
