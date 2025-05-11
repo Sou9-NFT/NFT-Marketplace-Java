@@ -280,8 +280,7 @@ public class TradeOfferListController {
         
         refreshTrades();
     }
-    
-    @FXML
+      @FXML
     private void handleCreateTrade(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/CreateTrade.fxml"));
@@ -294,6 +293,10 @@ public class TradeOfferListController {
             Stage stage = new Stage();
             stage.setScene(new Scene(createTradeView));
             stage.setTitle("Create New Trade Offer");
+            
+            // Set the stage to fullscreen
+            stage.setMaximized(true);
+            
             stage.show();
             
         } catch (IOException e) {
@@ -340,8 +343,7 @@ public class TradeOfferListController {
             e.printStackTrace();
         }
     }
-    
-    private void handleEditTrade(TradeOffer tradeOffer) {
+      private void handleEditTrade(TradeOffer tradeOffer) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/EditTrade.fxml"));
             Parent editTradeView = loader.load();
@@ -353,6 +355,10 @@ public class TradeOfferListController {
             Stage stage = new Stage();
             stage.setScene(new Scene(editTradeView));
             stage.setTitle("Edit Trade Offer");
+            
+            // Set the stage to fullscreen
+            stage.setMaximized(true);
+            
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

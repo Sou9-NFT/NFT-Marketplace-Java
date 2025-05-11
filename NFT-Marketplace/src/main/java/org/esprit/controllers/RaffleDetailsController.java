@@ -232,145 +232,181 @@ public class RaffleDetailsController {
 
         if (artwork != null && artwork.getImageName() != null) {
             try {
-                // Try multiple approaches to load the image
-                
-                // 1. Try absolute path with src/main/resources
-                File imageFile = new File("src/main/resources/uploads/" + artwork.getImageName());
-                if (imageFile.exists()) {
-                    try {
-                        Image image = new Image(imageFile.toURI().toString());
-                        if (!image.isError()) {
-                            artworkImageView.setImage(image);
-                            artworkImageView.setFitWidth(250);
-                            artworkImageView.setFitHeight(150);
-                            artworkImageView.setPreserveRatio(true);
-                            imageLoaded = true;
-                            System.out.println("Details: Loaded image from src/main/resources/uploads: " + artwork.getImageName());
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Details: Failed to load image from src/main/resources path: " + e.getMessage());
-                    }
-                }
-                
-                // 2. Try using the class resource loader
-                if (!imageLoaded) {
-                    try {
-                        String imagePath = "/uploads/" + artwork.getImageName();
-                        java.io.InputStream is = getClass().getResourceAsStream(imagePath);
+                // Check if the image name is an Imgur URL
+                if (artwork.getImageName().startsWith("http")) {
+                    // Create a WebView to load the Imgur image with referrerpolicy
+                    javafx.scene.web.WebView webView = new javafx.scene.web.WebView();
+                    webView.setPrefWidth(300);
+                    webView.setPrefHeight(200);
+                    webView.setMaxWidth(300);
+                    webView.setMaxHeight(200);
+                    
+                    // Create HTML content with referrerpolicy
+                    String htmlContent = String.format(
+                        "<html><body style='margin:0;padding:0;'><img src='%s' style='width:100%%;height:100%%;object-fit:contain;' referrerpolicy='no-referrer'/></body></html>",
+                        artwork.getImageName()
+                    );
+                    
+                    webView.getEngine().loadContent(htmlContent);
+                    
+                    // Get parent container of artworkImageView and replace it with the WebView
+                    javafx.scene.layout.VBox parentContainer = (javafx.scene.layout.VBox) artworkImageView.getParent();
+                    int imageViewIndex = parentContainer.getChildren().indexOf(artworkImageView);
+                    
+                    if (imageViewIndex >= 0) {
+                        // Hide the original ImageView but keep it in the scene graph
+                        artworkImageView.setVisible(false);
                         
-                        if (is != null) {
-                            try {
-                                Image image = new Image(is);
-                                if (!image.isError()) {
-                                    artworkImageView.setImage(image);
-                                    artworkImageView.setFitWidth(250);
-                                    artworkImageView.setFitHeight(150);
-                                    artworkImageView.setPreserveRatio(true);
-                                    imageLoaded = true;
-                                    System.out.println("Details: Loaded image from resource stream: " + artwork.getImageName());
-                                }
-                            } catch (Exception e) {
-                                System.err.println("Details: Failed to load image from resource stream: " + e.getMessage());
-                            }
-                        } else {
-                            System.out.println("Details: Resource stream is null for: " + imagePath);
+                        // Insert the WebView at the same index
+                        if (!parentContainer.getChildren().contains(webView)) {
+                            parentContainer.getChildren().add(imageViewIndex, webView);
                         }
-                    } catch (Exception e) {
-                        System.err.println("Details: Failed to create resource stream: " + e.getMessage());
                     }
-                }
-                
-                // 3. Try absolute path with direct project path
-                if (!imageLoaded) {
-                    try {
-                        File projectRoot = new File("").getAbsoluteFile();
-                        File uploadsDir = new File(projectRoot, "uploads");
-                        File directImageFile = new File(uploadsDir, artwork.getImageName());
-                        
-                        if (directImageFile.exists()) {
-                            Image image = new Image(directImageFile.toURI().toString());
+                    
+                    imageLoaded = true;
+                    System.out.println("Details: Loaded Imgur image: " + artwork.getImageName());
+                } else {
+                    // Handle local images as before
+                    // Try multiple approaches to load the image
+                    
+                    // 1. Try absolute path with src/main/resources
+                    File imageFile = new File("src/main/resources/uploads/" + artwork.getImageName());
+                    if (imageFile.exists()) {
+                        try {
+                            Image image = new Image(imageFile.toURI().toString());
                             if (!image.isError()) {
                                 artworkImageView.setImage(image);
                                 artworkImageView.setFitWidth(250);
                                 artworkImageView.setFitHeight(150);
                                 artworkImageView.setPreserveRatio(true);
                                 imageLoaded = true;
-                                System.out.println("Details: Loaded image from direct project path: " + directImageFile.getPath());
+                                System.out.println("Details: Loaded image from src/main/resources/uploads: " + artwork.getImageName());
                             }
-                        } else {
-                            System.out.println("Details: Image file not found at path: " + directImageFile.getPath());
+                        } catch (Exception e) {
+                            System.err.println("Details: Failed to load image from src/main/resources path: " + e.getMessage());
                         }
-                    } catch (Exception e) {
-                        System.err.println("Details: Failed to load image from direct project path: " + e.getMessage());
                     }
-                }
-                
-                // 4. Try using the file class loader
-                if (!imageLoaded) {
-                    try {
-                        ClassLoader classLoader = getClass().getClassLoader();
-                        java.net.URL imageUrl = classLoader.getResource("uploads/" + artwork.getImageName());
-                        if (imageUrl != null) {
-                            Image image = new Image(imageUrl.toString());
-                            if (!image.isError()) {
-                                artworkImageView.setImage(image);
-                                artworkImageView.setFitWidth(250);
-                                artworkImageView.setFitHeight(150);
-                                artworkImageView.setPreserveRatio(true);
-                                imageLoaded = true;
-                                System.out.println("Details: Loaded image using class loader: " + imageUrl);
-                            }
-                        } else {
-                            System.out.println("Details: Image URL not found using class loader");
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Details: Failed to load image using class loader: " + e.getMessage());
-                    }
-                }
-                
-                // 5. Fallback: Try to find any image in uploads directory to use as a fallback
-                if (!imageLoaded) {
-                    try {
-                        File uploadsDir = new File("src/main/resources/uploads");
-                        if (uploadsDir.exists() && uploadsDir.isDirectory()) {
-                            // List available files for debugging
-                            System.out.println("Details: Available files in uploads directory:");
-                            File[] allFiles = uploadsDir.listFiles();
-                            if (allFiles != null) {
-                                for (File file : allFiles) {
-                                    System.out.println("  - " + file.getName());
-                                }
-                            }
+                    
+                    // 2. Try using the class resource loader
+                    if (!imageLoaded) {
+                        try {
+                            String imagePath = "/uploads/" + artwork.getImageName();
+                            java.io.InputStream is = getClass().getResourceAsStream(imagePath);
                             
-                            // Find image files
-                            File[] imageFiles = uploadsDir.listFiles((dir, name) -> 
-                                name.toLowerCase().endsWith(".png") || 
-                                name.toLowerCase().endsWith(".jpg") || 
-                                name.toLowerCase().endsWith(".jpeg")
-                            );
-                            
-                            if (imageFiles != null && imageFiles.length > 0) {
-                                // Use the first image found as a fallback
-                                File fallbackFile = imageFiles[0];
-                                System.out.println("Details: Using fallback image: " + fallbackFile.getName());
-                                
+                            if (is != null) {
                                 try {
-                                    Image image = new Image(fallbackFile.toURI().toString());
+                                    Image image = new Image(is);
                                     if (!image.isError()) {
                                         artworkImageView.setImage(image);
                                         artworkImageView.setFitWidth(250);
                                         artworkImageView.setFitHeight(150);
                                         artworkImageView.setPreserveRatio(true);
                                         imageLoaded = true;
-                                        System.out.println("Details: Loaded fallback image: " + fallbackFile.getName());
+                                        System.out.println("Details: Loaded image from resource stream: " + artwork.getImageName());
                                     }
                                 } catch (Exception e) {
-                                    System.err.println("Details: Failed to load fallback image: " + e.getMessage());
+                                    System.err.println("Details: Failed to load image from resource stream: " + e.getMessage());
+                                }
+                            } else {
+                                System.out.println("Details: Resource stream is null for: " + imagePath);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Details: Failed to create resource stream: " + e.getMessage());
+                        }
+                    }
+                    
+                    // 3. Try absolute path with direct project path
+                    if (!imageLoaded) {
+                        try {
+                            File projectRoot = new File("").getAbsoluteFile();
+                            File uploadsDir = new File(projectRoot, "uploads");
+                            File directImageFile = new File(uploadsDir, artwork.getImageName());
+                            
+                            if (directImageFile.exists()) {
+                                Image image = new Image(directImageFile.toURI().toString());
+                                if (!image.isError()) {
+                                    artworkImageView.setImage(image);
+                                    artworkImageView.setFitWidth(250);
+                                    artworkImageView.setFitHeight(150);
+                                    artworkImageView.setPreserveRatio(true);
+                                    imageLoaded = true;
+                                    System.out.println("Details: Loaded image from direct project path: " + directImageFile.getPath());
+                                }
+                            } else {
+                                System.out.println("Details: Image file not found at path: " + directImageFile.getPath());
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Details: Failed to load image from direct project path: " + e.getMessage());
+                        }
+                    }
+                    
+                    // 4. Try using the file class loader
+                    if (!imageLoaded) {
+                        try {
+                            ClassLoader classLoader = getClass().getClassLoader();
+                            java.net.URL imageUrl = classLoader.getResource("uploads/" + artwork.getImageName());
+                            if (imageUrl != null) {
+                                Image image = new Image(imageUrl.toString());
+                                if (!image.isError()) {
+                                    artworkImageView.setImage(image);
+                                    artworkImageView.setFitWidth(250);
+                                    artworkImageView.setFitHeight(150);
+                                    artworkImageView.setPreserveRatio(true);
+                                    imageLoaded = true;
+                                    System.out.println("Details: Loaded image using class loader: " + imageUrl);
+                                }
+                            } else {
+                                System.out.println("Details: Image URL not found using class loader");
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Details: Failed to load image using class loader: " + e.getMessage());
+                        }
+                    }
+                    
+                    // 5. Fallback: Try to find any image in uploads directory to use as a fallback
+                    if (!imageLoaded) {
+                        try {
+                            File uploadsDir = new File("src/main/resources/uploads");
+                            if (uploadsDir.exists() && uploadsDir.isDirectory()) {
+                                // List available files for debugging
+                                System.out.println("Details: Available files in uploads directory:");
+                                File[] allFiles = uploadsDir.listFiles();
+                                if (allFiles != null) {
+                                    for (File file : allFiles) {
+                                        System.out.println("  - " + file.getName());
+                                    }
+                                }
+                                
+                                // Find image files
+                                File[] imageFiles = uploadsDir.listFiles((dir, name) -> 
+                                    name.toLowerCase().endsWith(".png") || 
+                                    name.toLowerCase().endsWith(".jpg") || 
+                                    name.toLowerCase().endsWith(".jpeg")
+                                );
+                                
+                                if (imageFiles != null && imageFiles.length > 0) {
+                                    // Use the first image found as a fallback
+                                    File fallbackFile = imageFiles[0];
+                                    System.out.println("Details: Using fallback image: " + fallbackFile.getName());
+                                    
+                                    try {
+                                        Image image = new Image(fallbackFile.toURI().toString());
+                                        if (!image.isError()) {
+                                            artworkImageView.setImage(image);
+                                            artworkImageView.setFitWidth(250);
+                                            artworkImageView.setFitHeight(150);
+                                            artworkImageView.setPreserveRatio(true);
+                                            imageLoaded = true;
+                                            System.out.println("Details: Loaded fallback image: " + fallbackFile.getName());
+                                        }
+                                    } catch (Exception e) {
+                                        System.err.println("Details: Failed to load fallback image: " + e.getMessage());
+                                    }
                                 }
                             }
+                        } catch (Exception e) {
+                            System.err.println("Details: Error finding fallback image: " + e.getMessage());
                         }
-                    } catch (Exception e) {
-                        System.err.println("Details: Error finding fallback image: " + e.getMessage());
                     }
                 }
             } catch (Exception e) {

@@ -121,8 +121,7 @@ public class UserManagementController implements Initializable {
     private void handleAddUser() {
         openAddUserForm();
     }
-    
-    @FXML
+      @FXML
     private void handleBackToDashboard(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminDashboard.fxml"));
@@ -136,7 +135,13 @@ public class UserManagementController implements Initializable {
             
             stage.setScene(new Scene(dashboardView));
             stage.setTitle("NFT Marketplace - Admin Dashboard");
+            
+            // Set the stage to fullscreen before showing it
+            stage.setMaximized(true);
             stage.show();
+            
+            // Call the controller's method to ensure fullscreen is set
+            controller.setStageFullScreen();
         } catch (IOException e) {
             showAlert(Alert.AlertType.ERROR, "Navigation Error", 
                 "Could not navigate back to dashboard: " + e.getMessage());
