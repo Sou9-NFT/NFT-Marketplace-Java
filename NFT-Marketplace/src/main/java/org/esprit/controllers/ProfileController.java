@@ -93,37 +93,22 @@ public class ProfileController {
         try {
             String profilePicPath = currentUser.getProfilePicture();
             if (profilePicPath == null || profilePicPath.isEmpty()) {
-                // If null or empty, use default image
                 profilePicPath = "/assets/default/default_profile.jpg";
             }
-
             Image profileImage;
-            
-            // Check if the profile picture is a URL (GitHub avatar) or a local resource
             if (profilePicPath.startsWith("http://") || profilePicPath.startsWith("https://")) {
-                // For remote URLs (like GitHub avatars)
                 profileImage = new Image(profilePicPath);
-                System.out.println("Loading remote profile image from: " + profilePicPath);
             } else {
-                // For local resource paths
                 profileImage = new Image(getClass().getResourceAsStream(profilePicPath));
-                System.out.println("Loading local profile image from: " + profilePicPath);
             }
-            
             profileImageView.setImage(profileImage);
-
-            // Apply styling to make the image circular
             profileImageView.setStyle(
                     "-fx-background-radius: 50%; " +
                             "-fx-background-color: white; " +
                             "-fx-border-radius: 50%; " +
                             "-fx-border-color: #dddddd; " +
                             "-fx-border-width: 2px;");
-
         } catch (Exception e) {
-            System.err.println("Error loading profile picture: " + e.getMessage());
-            e.printStackTrace();
-            // Load default image on error
             try {
                 Image defaultImage = new Image(getClass().getResourceAsStream("/assets/default/default_profile.jpg"));
                 profileImageView.setImage(defaultImage);
