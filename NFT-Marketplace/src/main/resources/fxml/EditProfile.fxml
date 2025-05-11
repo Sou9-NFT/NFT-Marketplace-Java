@@ -31,12 +31,15 @@
 						</padding>
 						<HBox spacing="20">
 							<!-- First half: Profile Picture -->
-							<VBox alignment="CENTER" spacing="10" prefWidth="200">
-								<ImageView fx:id="profileImageView" fitWidth="150" fitHeight="150" preserveRatio="true" styleClass="profile-image">
-									<Image url="@../assets/default/default_profile.jpg"/>
-								</ImageView>
-								<Button fx:id="changeProfilePicButton" text="Change Profile Picture" onAction="#handleChangeProfilePic" styleClass="button-secondary" maxWidth="180"/>
-							</VBox>
+							<StackPane>
+								<VBox alignment="CENTER" spacing="10" prefWidth="200">
+									<ImageView fx:id="profileImageView" fitWidth="150" fitHeight="150" preserveRatio="true" styleClass="profile-image">
+										<Image url="@../assets/default/default_profile.jpg"/>
+									</ImageView>
+									<Button fx:id="changeProfilePicButton" text="Change Profile Picture" onAction="#handleChangeProfilePic" styleClass="button-secondary" maxWidth="180"/>
+									<ProgressIndicator fx:id="uploadProgressIndicator" visible="false"/>
+								</VBox>
+							</StackPane>
 							<!-- Second half: Form fields -->
 							<VBox spacing="15" prefWidth="300">
 								<GridPane hgap="10" vgap="15">
