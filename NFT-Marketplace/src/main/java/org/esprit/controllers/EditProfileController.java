@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.esprit.models.User;
 import org.esprit.services.UserService;
+import org.esprit.utils.PasswordHasher;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -180,15 +181,13 @@ public class EditProfileController {
             updatedUser.setRoles(currentUser.getRoles());
             updatedUser.setBalance(currentUser.getBalance());
             updatedUser.setCreatedAt(currentUser.getCreatedAt());
-            updatedUser.setProfilePicture(currentUser.getProfilePicture());
-
-            // Password handling - special case that requires controller-level validation
+            updatedUser.setProfilePicture(currentUser.getProfilePicture());            // Password handling - special case that requires controller-level validation
             boolean passwordChanged = false;
             // Check if password fields exist in the form
             if (newPassword != null && currentPassword != null && confirmPassword != null) {
                 if (!newPassword.getText().isEmpty()) {
-                    // Verify current password
-                    if (!currentUser.getPassword().equals(currentPassword.getText())) {
+                    // Verify current password using BCrypt
+                    if (!PasswordHasher.verifyPassword(currentPassword.getText(), currentUser.getPassword())) {
                         showStatus("Current password is incorrect.");
                         return;
                     }
@@ -199,8 +198,8 @@ public class EditProfileController {
                         return;
                     }
 
-                    // Set the new password for validation
-                    updatedUser.setPassword(newPassword.getText());
+                    // Set the new password (hashed) for validation
+                    updatedUser.setPassword(PasswordHasher.hashPassword(newPassword.getText()));
                     passwordChanged = true;
                 } else {
                     // Skip password validation by setting a placeholder
