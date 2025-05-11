@@ -1,16 +1,9 @@
 package org.esprit.controllers;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.esprit.models.Artwork;
@@ -19,10 +12,9 @@ import org.esprit.models.User;
 import org.esprit.services.ArtworkService;
 import org.esprit.services.CategoryService;
 import org.esprit.services.StabilityAIService;
+import org.esprit.services.ImgurService;
 
 import javafx.application.Platform;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -41,20 +33,18 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.scene.control.TableColumn;
 
 public class ArtworkManagementController {
     // Existing fields for upload tab
@@ -101,16 +91,17 @@ public class ArtworkManagementController {
     
     // Service fields
     private User currentUser;
-    private File selectedFile;
     private ArtworkService artworkService;
     private CategoryService categoryService;
     private StabilityAIService stabilityAIService;
     private ObservableList<Artwork> userArtworks;
-    private final String UPLOAD_DIRECTORY = "src/main/resources/uploads/";
     private boolean isFromAdminDashboard = false; // Track if accessed from admin dashboard
     
     // New field for AI-generated image
     private String generatedImageName;
+    
+    // Add a field to store the selected file for upload
+    private java.io.File selectedFileForUpload;
     
     public void initialize() {
         artworkService = new ArtworkService();
@@ -153,123 +144,6 @@ public class ArtworkManagementController {
     }
     
     // Existing methods...
-    
-    private void setupTableColumns() {
-        idColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getId()));
-        titleColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getTitle()));
-        priceColumn.setCellValueFactory(cellData -> new SimpleObjectProperty<>(cellData.getValue().getPrice()));
-        
-        // For category name, we need to fetch the category
-        categoryColumn.setCellValueFactory(cellData -> {
-            try {
-                Category category = categoryService.getOne(cellData.getValue().getCategoryId());
-                return new SimpleStringProperty(category != null ? category.getName() : "Unknown");
-            } catch (Exception e) {
-                return new SimpleStringProperty("Error");
-            }
-        });
-        
-        // Format date
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        createdAtColumn.setCellValueFactory(cellData -> 
-            new SimpleObjectProperty<>(cellData.getValue().getCreatedAt()));
-        createdAtColumn.setCellFactory(column -> new TableCell<Artwork, LocalDateTime>() {
-            @Override
-            protected void updateItem(LocalDateTime item, boolean empty) {
-                super.updateItem(item, empty);
-                
-                if (item == null || empty) {
-                    setText(null);
-                } else {
-                    setText(formatter.format(item));
-                }
-            }
-        });
-        
-        // Image preview column
-        imageColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getImageName()));
-        imageColumn.setCellFactory(column -> new TableCell<Artwork, String>() {
-            private final ImageView imageView = new ImageView();
-            
-            {
-                imageView.setFitHeight(80);
-                imageView.setFitWidth(100);
-                imageView.setPreserveRatio(true);
-            }
-            
-            @Override
-            protected void updateItem(String imageName, boolean empty) {
-                super.updateItem(imageName, empty);
-                
-                if (imageName == null || empty) {
-                    setGraphic(null);
-                } else {
-                    try {
-                        File imageFile = new File(UPLOAD_DIRECTORY + imageName);
-                        if (imageFile.exists()) {
-                            Image image = new Image(imageFile.toURI().toString());
-                            imageView.setImage(image);
-                            setGraphic(imageView);
-                        } else {
-                            setGraphic(null);
-                            setText("Image not found");
-                        }
-                    } catch (Exception e) {
-                        setGraphic(null);
-                        setText("Error loading");
-                    }
-                }
-            }
-        });
-        
-        // Actions column with buttons - EXACTLY matching CategoryManagementController implementation
-        actionsColumn.setCellFactory(column -> new TableCell<Artwork, Artwork>() {
-            private final Button viewBtn = new Button("View");
-            private final Button updateBtn = new Button("Update");
-            private final Button deleteBtn = new Button("Delete");
-            private final HBox buttonsBox = new HBox(5, viewBtn, updateBtn, deleteBtn);
-
-            {
-                // View button action
-                viewBtn.setOnAction((ActionEvent event) -> {
-                    int index = getIndex();
-                    if (index >= 0 && index < getTableView().getItems().size()) {
-                        Artwork artwork = getTableView().getItems().get(index);
-                        viewArtwork(artwork);
-                    }
-                });
-                
-                // Update button action
-                updateBtn.setOnAction((ActionEvent event) -> {
-                    int index = getIndex();
-                    if (index >= 0 && index < getTableView().getItems().size()) {
-                        Artwork artwork = getTableView().getItems().get(index);
-                        updateArtwork(artwork);
-                    }
-                });
-                
-                // Delete button action
-                deleteBtn.setOnAction((ActionEvent event) -> {
-                    int index = getIndex();
-                    if (index >= 0 && index < getTableView().getItems().size()) {
-                        Artwork artwork = getTableView().getItems().get(index);
-                        deleteArtwork(artwork);
-                    }
-                });
-            }
-
-            @Override
-            public void updateItem(Artwork item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(buttonsBox);
-                }
-            }
-        });
-    }
     
     private void loadCategories() throws Exception {
         List<Category> categories = categoryService.getAll();
@@ -329,13 +203,9 @@ public class ArtworkManagementController {
             showAlert(AlertType.WARNING, "Category Required", "Please select a category before uploading a file.");
             return;
         }
-        
         List<String> allowedExtensions = selectedCategory.getAllowedMimeTypes();
-        
-        // Create file chooser with filters based on allowed types
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Artwork File");
-        
         // Add filters based on allowed MIME types
         if (allowedExtensions.contains("image/jpeg") || allowedExtensions.contains("image/jpg")) {
             fileChooser.getExtensionFilters().add(
@@ -352,63 +222,19 @@ public class ArtworkManagementController {
                 new FileChooser.ExtensionFilter("GIF Images", "*.gif")
             );
         }
-        
-        // Show open file dialog
+        // Actually show the file chooser and handle the result
         Stage stage = (Stage) uploadButton.getScene().getWindow();
-        selectedFile = fileChooser.showOpenDialog(stage);
-        
+        java.io.File selectedFile = fileChooser.showOpenDialog(stage);
         if (selectedFile != null) {
-            // Update the file name label
             fileNameLabel.setText(selectedFile.getName());
-            
-            // Validate file type
-            String fileExtension = getExtension(selectedFile.getName()).toLowerCase();
-            boolean isValid = false;
-            
-            for (String mimeType : allowedExtensions) {
-                if ((mimeType.equals("image/jpeg") || mimeType.equals("image/jpg")) && 
-                    (fileExtension.equals("jpg") || fileExtension.equals("jpeg"))) {
-                    isValid = true;
-                    break;
-                }
-                if (mimeType.equals("image/png") && fileExtension.equals("png")) {
-                    isValid = true;
-                    break;
-                }
-                if (mimeType.equals("image/gif") && fileExtension.equals("gif")) {
-                    isValid = true;
-                    break;
-                }
-            }
-            
-            if (!isValid) {
-                showAlert(AlertType.ERROR, "Invalid File", 
-                          "The selected file type is not allowed for this category. Allowed types: " 
-                          + String.join(", ", allowedExtensions));
-                selectedFile = null;
-                fileNameLabel.setText("No file selected");
-                return;
-            }
-            
-            // Show preview if it's an image
-            try {
-                if (fileExtension.matches("jpg|jpeg|png|gif")) {
-                    Image image = new Image(selectedFile.toURI().toString());
-                    previewImageView.setImage(image);
-                }
-            } catch (Exception e) {
-                showAlert(AlertType.WARNING, "Preview Error", 
-                          "Could not preview the image: " + e.getMessage());
-            }
+            previewImageView.setImage(new Image(selectedFile.toURI().toString()));
+            // Store the selected file for later upload
+            this.selectedFileForUpload = selectedFile;
+        } else {
+            fileNameLabel.setText("No file selected");
+            previewImageView.setImage(null);
+            this.selectedFileForUpload = null;
         }
-    }
-    
-    private String getExtension(String filename) {
-        int lastDotIndex = filename.lastIndexOf('.');
-        if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
-            return "";
-        }
-        return filename.substring(lastDotIndex + 1);
     }
     
     /**
@@ -448,22 +274,17 @@ public class ArtworkManagementController {
             Platform.runLater(() -> {
                 try {
                     // Update preview with the generated image
-                    File imageFile = new File(UPLOAD_DIRECTORY + imageName);
-                    if (imageFile.exists()) {
-                        Image image = new Image(imageFile.toURI().toString());
-                        aiPreviewImageView.setImage(image);
-                        
-                        // Store the generated image name
-                        generatedImageName = imageName;
-                        
-                        // Show success status
-                        generationStatusLabel.setText("Image generated successfully!");
-                        
-                        // Enable submit button
-                        aiSubmitButton.setDisable(false);
-                    } else {
-                        generationStatusLabel.setText("Error: Generated image not found");
-                    }
+                    Image image = new Image(imageName, true);
+                    aiPreviewImageView.setImage(image);
+                    
+                    // Store the generated image name
+                    generatedImageName = imageName;
+                    
+                    // Show success status
+                    generationStatusLabel.setText("Image generated successfully!");
+                    
+                    // Enable submit button
+                    aiSubmitButton.setDisable(false);
                 } catch (Exception e) {
                     generationStatusLabel.setText("Error displaying generated image");
                     e.printStackTrace();
@@ -648,7 +469,7 @@ public class ArtworkManagementController {
             }
             
             // Check file
-            if (selectedFile == null) {
+            if (fileNameLabel.getText().equals("No file selected")) {
                 errorMessageLabel.setText("You must upload a file.");
                 return false;
             }
@@ -670,21 +491,15 @@ public class ArtworkManagementController {
         if (!validateForm()) {
             return;
         }
-        
         try {
-            // Create upload directory if it doesn't exist
-            File uploadDir = new File(UPLOAD_DIRECTORY);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
+            if (selectedFileForUpload == null) {
+                showAlert(AlertType.ERROR, "File Error", "No file selected for upload.");
+                return;
             }
-            
-            // Generate a unique file name
-            String uniqueFileName = generateUniqueFileName(selectedFile.getName());
-            Path destination = Paths.get(UPLOAD_DIRECTORY + uniqueFileName);
-            
-            // Copy the file to the uploads directory
-            Files.copy(selectedFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
-            
+            // Upload the image to Imgur
+            ImgurService imgurService = new ImgurService();
+            String imgurUrl = imgurService.uploadImage(selectedFileForUpload);
+
             // Create the artwork object
             Artwork artwork = new Artwork();
             artwork.setTitle(titleField.getText().trim());
@@ -693,26 +508,25 @@ public class ArtworkManagementController {
             artwork.setCategoryId(categoryComboBox.getValue().getId());
             artwork.setCreatorId(currentUser.getId());
             artwork.setOwnerId(currentUser.getId()); // Initially creator is also the owner
-            artwork.setImageName(uniqueFileName);
+            artwork.setImageName(imgurUrl); // Store the Imgur URL
             artwork.setCreatedAt(LocalDateTime.now());
             artwork.setUpdatedAt(LocalDateTime.now());
-            
+
             // Perform final validation
             artwork.validate();
-            
+
             // Save to the database
             artworkService.add(artwork);
-            
+
             // Show success message
             showAlert(AlertType.INFORMATION, "Success", 
                      "Artwork '" + artwork.getTitle() + "' created successfully.");
-            
+
             // Clear form
             clearForm();
-            
+
             // Refresh the table
             loadUserArtworks();
-            
         } catch (IllegalArgumentException e) {
             showAlert(AlertType.ERROR, "Validation Error", e.getMessage());
         } catch (Exception e) {
@@ -726,16 +540,10 @@ public class ArtworkManagementController {
         priceField.clear();
         descriptionArea.clear();
         categoryComboBox.getSelectionModel().clearSelection();
-        selectedFile = null;
         fileNameLabel.setText("No file selected");
         previewImageView.setImage(null);
         errorMessageLabel.setText("");
-    }
-    
-    private String generateUniqueFileName(String originalName) {
-        String extension = getExtension(originalName);
-        return "user_" + currentUser.getId() + "_" + UUID.randomUUID().toString().substring(0, 8) + 
-               (extension.isEmpty() ? "" : "." + extension);
+        selectedFileForUpload = null;
     }
     
     private void viewArtwork(Artwork artwork) {
@@ -764,39 +572,6 @@ public class ArtworkManagementController {
                     if (!image.isError()) {
                         detailsImageView.setImage(image);
                         imageLoaded = true;
-                    }
-                } else {
-                    // First try: Check upload directory
-                    File imageFile = new File(UPLOAD_DIRECTORY + imageName);
-                    if (imageFile.exists()) {
-                        Image image = new Image(imageFile.toURI().toString());
-                        if (!image.isError()) {
-                            detailsImageView.setImage(image);
-                            imageLoaded = true;
-                        }
-                    }
-                    // Second try: Check class resources
-                    if (!imageLoaded) {
-                        ClassLoader classLoader = getClass().getClassLoader();
-                        java.net.URL imageUrl = classLoader.getResource("uploads/" + imageName);
-                        if (imageUrl != null) {
-                            Image image = new Image(imageUrl.toString());
-                            if (!image.isError()) {
-                                detailsImageView.setImage(image);
-                                imageLoaded = true;
-                            }
-                        }
-                    }
-                    // Third try: Check target directory
-                    if (!imageLoaded) {
-                        File targetFile = new File("target/classes/uploads/" + imageName);
-                        if (targetFile.exists()) {
-                            Image image = new Image(targetFile.toURI().toString());
-                            if (!image.isError()) {
-                                detailsImageView.setImage(image);
-                                imageLoaded = true;
-                            }
-                        }
                     }
                 }
             } catch (Exception e) {
@@ -886,20 +661,31 @@ public class ArtworkManagementController {
                 System.err.println("Error loading categories: " + e.getMessage());
             }
             
-            // Preview current image
+            // Preview current image (support Imgur URLs)
             ImageView imagePreview = new ImageView();
             imagePreview.setFitHeight(150);
             imagePreview.setPreserveRatio(true);
-            
-            File imageFile = new File(UPLOAD_DIRECTORY + artwork.getImageName());
-            if (imageFile.exists()) {
-                Image image = new Image(imageFile.toURI().toString());
+            String imageName = artwork.getImageName();
+            if (imageName != null && (imageName.startsWith("http://") || imageName.startsWith("https://"))) {
+                Image image = new Image(imageName, true);
                 imagePreview.setImage(image);
             }
-            
             Label currentImageLabel = new Label("Current Image:");
             HBox imageBox = new HBox(10, currentImageLabel, imagePreview);
             imageBox.setAlignment(Pos.CENTER_LEFT);
+            
+            // Add 'Change Image' button
+            Button changeImageButton = new Button("Change Image");
+            Label newImageLabel = new Label();
+            changeImageButton.setOnAction(ev -> {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Select New Artwork Image");
+                fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.jpeg", "*.png", "*.gif")
+                );
+            });
+            HBox changeImageBox = new HBox(10, changeImageButton, newImageLabel);
+            changeImageBox.setAlignment(Pos.CENTER_LEFT);
             
             // Add all fields to the content
             content.getChildren().addAll(
@@ -907,7 +693,8 @@ public class ArtworkManagementController {
                 new Label("Price:"), priceField,
                 new Label("Category:"), categoryComboBox,
                 new Label("Description:"), descriptionArea,
-                imageBox
+                imageBox,
+                changeImageBox
             );
             
             // Set dialog content and buttons
@@ -924,6 +711,18 @@ public class ArtworkManagementController {
                     artwork.setDescription(descriptionArea.getText().trim());
                     artwork.setCategoryId(categoryComboBox.getValue().getId());
                     artwork.setUpdatedAt(LocalDateTime.now());
+                    
+                    // If a new image was selected, upload to Imgur
+                    if (!newImageLabel.getText().isEmpty()) {
+                        try {
+                            ImgurService imgurService = new ImgurService();
+                            String imgurUrl = imgurService.uploadImage(null);
+                            artwork.setImageName(imgurUrl);
+                        } catch (Exception ex) {
+                            showAlert(AlertType.ERROR, "Imgur Upload Error", "Failed to upload new image to Imgur: " + ex.getMessage());
+                            return;
+                        }
+                    }
                     
                     // Final validation
                     artwork.validate();
@@ -959,13 +758,6 @@ public class ArtworkManagementController {
             try {
                 // Delete artwork from the database
                 artworkService.delete(artwork);
-                
-                // Try to delete the file
-                try {
-                    Files.deleteIfExists(Paths.get(UPLOAD_DIRECTORY + artwork.getImageName()));
-                } catch (IOException e) {
-                    System.err.println("Warning: Could not delete file: " + e.getMessage());
-                }
                 
                 // Refresh the list
                 loadUserArtworks();
@@ -1013,7 +805,7 @@ public class ArtworkManagementController {
             
             scene.setRoot(dashboardView);
             stage.setTitle(title);
-        } catch (IOException e) {
+        } catch (Exception e) {
             showAlert(AlertType.ERROR, "Navigation Error", 
                      "Failed to return to dashboard: " + e.getMessage());
             e.printStackTrace();
@@ -1153,26 +945,12 @@ public class ArtworkManagementController {
                 Image image = new Image(imageName, true);
                 artworkImage.setImage(image);
             } else {
-                File imageFile = new File(UPLOAD_DIRECTORY + imageName);
-                if (imageFile.exists()) {
-                    Image image = new Image(imageFile.toURI().toString());
-                    artworkImage.setImage(image);
-                } else {
-                    // Try alternative paths
-                    ClassLoader classLoader = getClass().getClassLoader();
-                    java.net.URL imageUrl = classLoader.getResource("uploads/" + imageName);
-                    if (imageUrl != null) {
-                        Image image = new Image(imageUrl.toString());
-                        artworkImage.setImage(image);
-                    } else {
-                        // Create placeholder text if image not found
-                        Label placeholderLabel = new Label("Image\nNot Found");
-                        placeholderLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #757575; -fx-font-weight: bold; -fx-alignment: center;");
-                        placeholderLabel.setWrapText(true);
-                        placeholderLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
-                        imageContainer.getChildren().add(placeholderLabel);
-                    }
-                }
+                // Create placeholder text if image not found
+                Label placeholderLabel = new Label("Image\nNot Found");
+                placeholderLabel.setStyle("-fx-font-size: 16px; -fx-text-fill: #757575; -fx-font-weight: bold; -fx-alignment: center;");
+                placeholderLabel.setWrapText(true);
+                placeholderLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+                imageContainer.getChildren().add(placeholderLabel);
             }
             imageContainer.getChildren().add(artworkImage);
         } catch (Exception e) {
