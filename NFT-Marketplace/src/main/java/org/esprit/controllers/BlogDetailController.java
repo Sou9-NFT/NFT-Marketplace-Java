@@ -183,13 +183,17 @@ public class BlogDetailController implements Initializable {
             try {
                 System.out.println("Loading blog details for blog ID: " + currentBlog.getId());
                 System.out.println("Author: " + currentBlog.getUser().getName());
-                System.out.println("Title: " + currentBlog.getTitle());
-
-                // Load author profile picture
+                System.out.println("Title: " + currentBlog.getTitle());                // Load author profile picture
                 String profilePicPath = UPLOAD_DIR + "user_" + currentBlog.getUser().getId() + "_icon.png";
                 System.out.println("Looking for profile picture at: " + profilePicPath);
-                Image profileImage = new Image(new File(profilePicPath).toURI().toString());
-                authorProfilePicture.setImage(profileImage);
+                try {
+                    // For now, load from local path - in future this could check for URL-based profile pictures
+                    Image profileImage = new Image(new File(profilePicPath).toURI().toString());
+                    authorProfilePicture.setImage(profileImage);
+                } catch (Exception e) {
+                    // Use default profile picture if local file not found
+                    authorProfilePicture.setImage(new Image(getClass().getResourceAsStream("/assets/default/profile.png")));
+                }
             } catch (Exception e) {
                 authorProfilePicture.setImage(new Image(getClass().getResourceAsStream("/assets/default/profile.png")));
             }
@@ -201,13 +205,20 @@ public class BlogDetailController implements Initializable {
             // Set blog content
             blogTitleText.setText(currentBlog.getTitle());
             blogContentText.setText(currentBlog.getContent());
-            
-            // Load blog image if exists
+              // Load blog image if exists
             if (currentBlog.getImageFilename() != null) {
                 try {
-                    String imagePath = UPLOAD_DIR + currentBlog.getImageFilename();
-                    blogImage.setImage(new Image(new File(imagePath).toURI().toString()));
+                    // Check if the imageFilename is an Imgur URL
+                    if (currentBlog.getImageFilename().startsWith("http")) {
+                        // Directly load from URL
+                        blogImage.setImage(new Image(currentBlog.getImageFilename()));
+                    } else {
+                        // Legacy approach for local files
+                        String imagePath = UPLOAD_DIR + currentBlog.getImageFilename();
+                        blogImage.setImage(new Image(new File(imagePath).toURI().toString()));
+                    }
                 } catch (Exception e) {
+                    System.err.println("Failed to load blog image: " + e.getMessage());
                     blogImage.setImage(null);
                 }
             }
@@ -400,11 +411,11 @@ public class BlogDetailController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Error", "Could not return to blog list: " + e.getMessage());
         }
     }
-    
-    private void updateCurrentUserProfilePicture() {
+      private void updateCurrentUserProfilePicture() {
         if (currentUserProfilePicture != null && currentUser != null) {
             String profilePicPath = UPLOAD_DIR + "user_" + currentUser.getId() + "_icon.png";
             try {
+                // For now, load from local path - in future this could check for URL-based profile pictures
                 Image image = new Image(new File(profilePicPath).toURI().toString());
                 currentUserProfilePicture.setImage(image);
             } catch (Exception e) {

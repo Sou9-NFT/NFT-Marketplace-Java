@@ -6,31 +6,44 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javafx.scene.layout.Region;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.esprit.models.Blog;
 import org.esprit.models.Comment;
 import org.esprit.models.User;
 import org.esprit.services.BlogService;
 import org.esprit.services.CommentService;
 import org.esprit.utils.TranslationService;
+import org.json.JSONObject;
 
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -48,13 +61,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
-import javafx.event.ActionEvent;
-import javafx.scene.Node;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
 import javafx.scene.shape.Circle;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 public class BlogController implements Initializable {
     @FXML private ListView<Blog> blogListView;
@@ -85,6 +96,7 @@ public class BlogController implements Initializable {
     private final ObservableList<String> languages = FXCollections.observableArrayList(
             "French", "Spanish", "German", "Italian", "Arabic"
     );
+    private static final Logger LOGGER = Logger.getLogger(BlogController.class.getName());
 
     public void setAdminMode(boolean isAdmin) {
         this.isAdminMode = isAdmin;
@@ -125,13 +137,13 @@ public class BlogController implements Initializable {
                         // Profile picture
                         ImageView profilePic = new ImageView();
                         profilePic.setFitHeight(50);
-                        profilePic.setFitWidth(50);
-                        profilePic.setPreserveRatio(true);
+                        profilePic.setFitWidth(50);                        profilePic.setPreserveRatio(true);
                         profilePic.getStyleClass().add("profile-picture");
 
                         // Load profile picture
                         String profilePicPath = UPLOAD_DIR + "user_" + blog.getUser().getId() + "_icon.png";
                         try {
+                            // For now, load from local path - in future this could check for URL-based profile pictures
                             Image image = new Image(new File(profilePicPath).toURI().toString());
                             profilePic.setImage(image);
                         } catch (Exception e) {
@@ -454,7 +466,42 @@ public class BlogController implements Initializable {
                 }
             });
         }
-    }    @FXML
+    }    private String uploadImageToImgur(String imagePath) {
+        String clientId = "117e88e67ef5f48"; // Imgur client ID from config.properties
+        Path path = Paths.get(imagePath);
+        try {
+            byte[] imageBytes = Files.readAllBytes(path);
+            String encodedImage = Base64.getEncoder().encodeToString(imageBytes);
+
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            HttpPost uploadRequest = new HttpPost("https://api.imgur.com/3/image");
+            uploadRequest.setHeader("Authorization", "Client-ID " + clientId);
+
+            Map<String, String> jsonMap = new HashMap<>();
+            jsonMap.put("image", encodedImage);
+            String json = new JSONObject(jsonMap).toString();
+
+            uploadRequest.setEntity(new StringEntity(json));
+            uploadRequest.setHeader("Content-Type", "application/json");
+
+            try (CloseableHttpResponse response = httpClient.execute(uploadRequest)) {
+                String responseString = EntityUtils.toString(response.getEntity());
+                JSONObject jsonResponse = new JSONObject(responseString);
+                if (jsonResponse.getBoolean("success")) {
+                    return jsonResponse.getJSONObject("data").getString("link");
+                } else {
+                    System.err.println("Imgur upload failed: " + jsonResponse.toString());
+                }
+            }
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(Level.WARNING, "Invalid argument", ex);
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Unexpected error", ex);
+        }
+        return null;
+    }
+
+    @FXML
     private void handleChooseImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.getExtensionFilters().add(
@@ -464,42 +511,27 @@ public class BlogController implements Initializable {
         File selectedFile = fileChooser.showOpenDialog(null);
         if (selectedFile != null) {
             try {
-                // Create upload directory if it doesn't exist
-                Path uploadPath = Paths.get(UPLOAD_DIR);
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
+                // Upload image to Imgur
+                String imgurUrl = uploadImageToImgur(selectedFile.getAbsolutePath());
+
+                if (imgurUrl != null) {
+                    // Update blog and image view
+                    if (currentBlog == null) {
+                        currentBlog = new Blog();
+                    }
+                    currentBlog.setImageFilename(imgurUrl);
+
+                    // Load and display the image
+                    Image image = new Image(imgurUrl);
+                    blogImageView.setImage(image);
+
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Image uploaded successfully to Imgur!");
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to upload image to Imgur.");
                 }
-
-                // Generate unique filename
-                String originalFileName = selectedFile.getName();
-                String extension = originalFileName.substring(originalFileName.lastIndexOf("."));
-                String fileName = "blog_" + System.currentTimeMillis() + extension;
-
-                // Create full destination path
-                Path destination = uploadPath.resolve(fileName);
-
-                // Copy file with overwrite
-                Files.copy(selectedFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
-
-                // Update blog and image view
-                if (currentBlog == null) {
-                    currentBlog = new Blog();
-                }
-                currentBlog.setImageFilename(fileName);
-
-                // Load and display the image
-                Image image = new Image(destination.toUri().toString());
-                blogImageView.setImage(image);
-
-                showAlert(Alert.AlertType.INFORMATION, "Success", "Image uploaded successfully!");
-            } catch (IOException e) {
-                e.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Error",
-                        "Failed to upload image: " + e.getMessage() + "\nPlease make sure you have write permissions to " + UPLOAD_DIR);
             } catch (Exception e) {
                 e.printStackTrace();
-                showAlert(Alert.AlertType.ERROR, "Error",
-                        "Unexpected error while uploading image: " + e.getMessage());
+                showAlert(Alert.AlertType.ERROR, "Error", "Unexpected error while uploading image: " + e.getMessage());
             }
         }
     }    @FXML
@@ -645,11 +677,10 @@ public class BlogController implements Initializable {
                             ImageView profilePic = new ImageView();
                             profilePic.setFitHeight(32);
                             profilePic.setFitWidth(32);
-                            profilePic.setPreserveRatio(true);
-
-                            // Load commenter's profile picture
+                            profilePic.setPreserveRatio(true);                            // Load commenter's profile picture
                             String profilePicPath = UPLOAD_DIR + "user_" + comment.getUser().getId() + "_icon.png";
                             try {
+                                // For now, load from local path - in future this could check for URL-based profile pictures
                                 Image image = new Image(new File(profilePicPath).toURI().toString());
                                 profilePic.setImage(image);
                             } catch (Exception e) {
@@ -714,9 +745,17 @@ public class BlogController implements Initializable {
 
         if (blog.getImageFilename() != null) {
             try {
-                Path imagePath = Paths.get(UPLOAD_DIR + blog.getImageFilename());
-                blogImageView.setImage(new Image(imagePath.toUri().toString()));
+                // Check if the imageFilename is an Imgur URL
+                if (blog.getImageFilename().startsWith("http")) {
+                    // Directly load from URL
+                    blogImageView.setImage(new Image(blog.getImageFilename()));
+                } else {
+                    // Legacy approach for local files
+                    Path imagePath = Paths.get(UPLOAD_DIR + blog.getImageFilename());
+                    blogImageView.setImage(new Image(imagePath.toUri().toString()));
+                }
             } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to load blog image", e);
                 blogImageView.setImage(null);
             }
         } else {
@@ -942,13 +981,12 @@ public class BlogController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Error", "Could not navigate back to dashboard: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    private void updateCurrentUserProfilePicture() {
+    }    private void updateCurrentUserProfilePicture() {
         if (currentUserProfilePicture != null && currentUser != null) {
             // Load current user's profile picture
             String profilePicPath = UPLOAD_DIR + "user_" + currentUser.getId() + "_icon.png";
             try {
+                // For now, load from local path - in future this could check for URL-based profile pictures
                 Image image = new Image(new File(profilePicPath).toURI().toString());
                 currentUserProfilePicture.setImage(image);
             } catch (Exception e) {
