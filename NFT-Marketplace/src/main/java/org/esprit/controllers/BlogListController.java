@@ -115,13 +115,30 @@ public class BlogListController implements Initializable {
                     contentBox.getChildren().addAll(titleLabel, previewLabel);
                     
                     // Add all sections to main container
-                    container.getChildren().addAll(authorInfo, contentBox);
+                    container.getChildren().addAll(authorInfo, contentBox);                    // Create actions box for buttons
+                    HBox actions = new HBox(10);
+                    actions.setAlignment(Pos.CENTER_RIGHT);
+                    
+                    // Only show delete button if user is authorized
+                    if (currentUser != null && (currentUser.getId() == blog.getUser().getId() || 
+                            currentUser.getRoles().contains("ROLE_ADMIN"))) {
+                        Button deleteButton = new Button("Delete");
+                        deleteButton.getStyleClass().add("button-danger");
+                        deleteButton.setOnAction(e -> {
+                            handleDeleteBlog(blog);
+                            e.consume(); // Prevent event bubbling
+                        });
+                        actions.getChildren().add(deleteButton);
+                    }
+                    
+                    // Add actions to container
+                    container.getChildren().add(actions);
                     
                     // Add hover effect
                     container.setOnMouseEntered(e -> container.setStyle("-fx-background-color: #f0f0f0;"));
                     container.setOnMouseExited(e -> container.setStyle(""));
                     
-                    // Add click handler for the entire container
+                    // Add click handler for the container (excluding the delete button)
                     container.setOnMouseClicked(e -> {
                         System.out.println("Blog clicked: " + blog.getTitle());
                         showBlogDetails(blog);
@@ -324,5 +341,41 @@ public class BlogListController implements Initializable {
         alert.setTitle(title);
         alert.setContentText(content);
         alert.showAndWait();
+    }    private void handleDeleteBlog(Blog blog) {
+        if (blog == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "No blog selected.");
+            return;
+        }
+
+        if (currentUser == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", "You must be logged in to delete a blog.");
+            return;
+        }
+
+        // Check if the current user is either the blog creator or an admin
+        boolean isAdmin = currentUser.getRoles().contains("ROLE_ADMIN");
+        boolean isCreator = currentUser.getId() == blog.getUser().getId();
+        
+        if (!isAdmin && !isCreator) {
+            showAlert(Alert.AlertType.ERROR, "Error", "You can only delete your own blogs.");
+            return;
+        }
+
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Delete Blog");
+        confirmation.setHeaderText("Delete Blog");
+        confirmation.setContentText("Are you sure you want to delete this blog?");
+
+        confirmation.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                try {
+                    blogService.delete(blog);
+                    refreshBlogList();
+                    showAlert(Alert.AlertType.INFORMATION, "Success", "Blog deleted successfully!");
+                } catch (Exception e) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to delete blog: " + e.getMessage());
+                }
+            }
+        });
     }
 }
