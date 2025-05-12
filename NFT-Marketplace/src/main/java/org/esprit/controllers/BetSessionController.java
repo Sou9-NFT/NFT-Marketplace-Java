@@ -644,8 +644,7 @@ public class BetSessionController implements Initializable {
             warning.showAndWait();
         }
     }
-    
-    @FXML
+      @FXML
     private void viewBetSessionDetails() {
         BetSession selectedBetSession = tableView.getSelectionModel().getSelectedItem();
         if (selectedBetSession == null) {
@@ -681,76 +680,75 @@ public class BetSessionController implements Initializable {
             artworkImageView.setFitWidth(300);
             artworkImageView.setFitHeight(300);
             artworkImageView.setPreserveRatio(true);
-              // Try to load artwork image
+            
+            // Try to load artwork image
             if (selectedBetSession.getArtwork() != null && selectedBetSession.getArtwork().getImageName() != null) {
-                // Load image using the same path format as in MyBetSessionsController
-                String imagePath = "src/main/resources/uploads/" + selectedBetSession.getArtwork().getImageName();
-                java.io.File imageFile = new java.io.File(imagePath);
+                String imageName = selectedBetSession.getArtwork().getImageName();
                 
                 try {
-                    // Load image if file exists
-                    if (imageFile.exists()) {
-                        Image image = new Image(imageFile.toURI().toString());
+                    Image image = null;
+                    
+                    // Check if the image name is a URL (starts with http:// or https://)
+                    if (imageName.startsWith("http://") || imageName.startsWith("https://")) {
+                        // Directly load from URL
+                        System.out.println("Debug - Loading image from URL: " + imageName);
+                        image = new Image(imageName);
                         artworkImageView.setImage(image);
-                        
-                        System.out.println("Debug - Loading image: " + imagePath);
-                        System.out.println("Debug - Mystery Mode: " + selectedBetSession.isMysteriousMode());
-                        System.out.println("Debug - Number of Bids: " + selectedBetSession.getNumberOfBids());
-                        
-                        // Apply blur effect only if the session is in mystery mode
-                        if (selectedBetSession.isMysteriousMode()) {
-                            // Apply blur effect based on number of bids
-                            // 0 bids = full blur (100%), 10+ bids = no blur (0%)
-                            int numberOfBids = selectedBetSession.getNumberOfBids();
-                            if (numberOfBids < 10) {
-                                // Calculate blur amount (from 10 to 0)
-                                double blurAmount = 10.0 - numberOfBids;
-                                // Scale it to a reasonable range (10 = very blurry, 0 = clear)
-                                blurAmount = Math.max(blurAmount * 2.5, 1.0); // Ensure at least some blur
-                                
-                                // Apply Gaussian blur effect
-                                javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(blurAmount);
-                                artworkImageView.setEffect(blur);
-                                System.out.println("Debug - Applied blur with strength: " + blurAmount);
-                                
-                                // Add a label showing the number of bids
-                                Label blurLabel = new Label("Mystery Mode - Current bids: " + numberOfBids + "/10");
-                                blurLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #444;");
-                                root.getChildren().add(4, blurLabel); // Insert after the image
-                            }
-                        }
                     } else {
-                        // If file doesn't exist, try using resource stream as fallback
-                        System.out.println("Debug - Image file not found at: " + imagePath + ", trying fallback methods");
+                        // Legacy approach - load from local file
+                        String imagePath = "src/main/resources/uploads/" + imageName;
+                        java.io.File imageFile = new java.io.File(imagePath);
                         
-                        // Try with different extensions and using resource stream
-                        int artworkId = selectedBetSession.getArtwork().getId();
-                        String resourcePath = "/uploads/artwork_" + artworkId + ".jpg";
-                        Image image = new Image(getClass().getResourceAsStream(resourcePath));
-                        
-                        if (image.getWidth() == 0) {
-                            resourcePath = "/uploads/artwork_" + artworkId + ".png";
+                        // Load image if file exists
+                        if (imageFile.exists()) {
+                            image = new Image(imageFile.toURI().toString());
+                            artworkImageView.setImage(image);
+                            System.out.println("Debug - Loading image from local path: " + imagePath);
+                        } else {
+                            // If file doesn't exist, try using resource stream as fallback
+                            System.out.println("Debug - Image file not found at: " + imagePath + ", trying fallback methods");
+                            
+                            // Try with different extensions and using resource stream
+                            int artworkId = selectedBetSession.getArtwork().getId();
+                            String resourcePath = "/uploads/artwork_" + artworkId + ".jpg";
                             image = new Image(getClass().getResourceAsStream(resourcePath));
-                        }
-                        
-                        if (image.getWidth() == 0) {
-                            image = new Image(getClass().getResourceAsStream("/assets/default/artwork-placeholder.png"));
-                        }
-                        
-                        artworkImageView.setImage(image);
-                        
-                        // Apply blur effect if in mystery mode (same logic as above)
-                        if (selectedBetSession.isMysteriousMode()) {
-                            int numberOfBids = selectedBetSession.getNumberOfBids();
-                            if (numberOfBids < 10) {
-                                double blurAmount = (10.0 - numberOfBids) * 2.5;
-                                javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(blurAmount);
-                                artworkImageView.setEffect(blur);
-                                
-                                Label blurLabel = new Label("Mystery Mode - Current bids: " + numberOfBids + "/10");
-                                blurLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #444;");
-                                root.getChildren().add(4, blurLabel);
+                            
+                            if (image.getWidth() == 0) {
+                                resourcePath = "/uploads/artwork_" + artworkId + ".png";
+                                image = new Image(getClass().getResourceAsStream(resourcePath));
                             }
+                            
+                            if (image.getWidth() == 0) {
+                                image = new Image(getClass().getResourceAsStream("/assets/default/artwork-placeholder.png"));
+                            }
+                            
+                            artworkImageView.setImage(image);
+                        }
+                    }
+                    
+                    System.out.println("Debug - Mystery Mode: " + selectedBetSession.isMysteriousMode());
+                    System.out.println("Debug - Number of Bids: " + selectedBetSession.getNumberOfBids());
+                    
+                    // Apply blur effect only if the session is in mystery mode
+                    if (selectedBetSession.isMysteriousMode()) {
+                        // Apply blur effect based on number of bids
+                        // 0 bids = full blur (100%), 10+ bids = no blur (0%)
+                        int numberOfBids = selectedBetSession.getNumberOfBids();
+                        if (numberOfBids < 10) {
+                            // Calculate blur amount (from 10 to 0)
+                            double blurAmount = 10.0 - numberOfBids;
+                            // Scale it to a reasonable range (10 = very blurry, 0 = clear)
+                            blurAmount = Math.max(blurAmount * 2.5, 1.0); // Ensure at least some blur
+                            
+                            // Apply Gaussian blur effect
+                            javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(blurAmount);
+                            artworkImageView.setEffect(blur);
+                            System.out.println("Debug - Applied blur with strength: " + blurAmount);
+                            
+                            // Add a label showing the number of bids
+                            Label blurLabel = new Label("Mystery Mode - Current bids: " + numberOfBids + "/10");
+                            blurLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #444;");
+                            root.getChildren().add(4, blurLabel); // Insert after the image
                         }
                     }
                 } catch (Exception e) {
