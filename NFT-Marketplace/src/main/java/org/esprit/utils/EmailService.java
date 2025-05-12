@@ -68,12 +68,15 @@ public class EmailService {
     public static boolean sendPasswordResetEmail(String to, String name, String resetToken) {
         String subject = "Reset Your Password - " + EmailConfig.APP_NAME;
         
-        // Create the email content with the token directly instead of a link
+        // Create the email content with the token and a reset link
+        String resetLink = "http://localhost:8000/reset-password/" + resetToken;
         String htmlContent = 
             "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>" +
             "<h2>Hello " + name + ",</h2>" +
             "<p>We received a request to reset your password for your " + EmailConfig.APP_NAME + " account.</p>" +
-            "<p>Please use the following reset code to reset your password. This code will expire in 1 hour.</p>" +
+            // Add the reset link above the token
+            "<p style='margin-bottom: 10px;'><a href='" + resetLink + "' style='color: #007bff; text-decoration: underline;'>Reset your password using this link</a></p>" +
+            "<p>Or use the following reset code to reset your password. This code will expire in 1 hour.</p>" +
             "<div style='text-align: center; margin: 30px 0;'>" +
             "<div style='background-color: #f5f5f5; padding: 15px; border: 1px solid #ddd; border-radius: 4px; " +
             "font-family: monospace; font-size: 16px; letter-spacing: 1px; word-break: break-all;'>" + resetToken + "</div>" +
