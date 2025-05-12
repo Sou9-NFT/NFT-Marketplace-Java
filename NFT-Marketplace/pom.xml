@@ -6,6 +6,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>NFT-Marketplace</artifactId>
+
     <version>1.0-SNAPSHOT</version>   <dependencies>
         <!-- JavaFX dependencies -->
         <dependency>
@@ -48,11 +49,10 @@
 
         <!-- MySQL Connector -->
         <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
         </dependency>
-
         <!-- Password hashing library -->
         <dependency>
             <groupId>org.mindrot</groupId>
@@ -84,13 +84,23 @@
             <artifactId>json</artifactId>
             <version>20210307</version>
         </dependency>
-          <!-- JavaMail API for password reset emails -->
+
+        
+        <!-- JavaFX WebView for OAuth Web Flow -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-web</artifactId>
+            <version>21.0.2</version>
+        </dependency>
+        
+        <!-- JavaMail API for password reset emails -->
+
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
             <version>1.6.2</version>
         </dependency>
-
+        
         <!-- JavaBeans Activation Framework -->
         <dependency>
             <groupId>javax.activation</groupId>
@@ -121,9 +131,55 @@
             <artifactId>twitter-api-java-sdk</artifactId>
             <version>2.0.3</version>
         </dependency>
-
-        <!-- JSON dependency for Twitter API -->
+        
+        <!-- Animated GIF support -->
         <dependency>
+            <groupId>com.madgag</groupId>
+            <artifactId>animated-gif-lib</artifactId>
+            <version>1.4</version>
+        </dependency>
+        
+        <!-- HTTP Client for Stability API -->
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+        
+        <!-- GSON for JSON processing -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>        <!-- Twilio for SMS -->
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>9.14.1</version>
+        </dependency>
+          <!-- Apache HTTP Components (required by Twilio) -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.16</version>
+        </dependency>
+        
+        <!-- SLF4J Implementation -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.36</version>
+        </dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20231013</version>

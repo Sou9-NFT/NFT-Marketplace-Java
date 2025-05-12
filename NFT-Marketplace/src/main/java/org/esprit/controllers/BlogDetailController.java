@@ -1,19 +1,46 @@
 package org.esprit.controllers;
 
+import java.io.File;
+import java.net.URL;
+import java.time.format.DateTimeFormatter;
+import java.util.ResourceBundle;
+
+import org.esprit.models.Blog;
+import org.esprit.models.Comment;
+import org.esprit.models.User;
+import org.esprit.services.BlogService;
+import org.esprit.services.CommentService;
+import org.esprit.utils.GiphyService;
+import org.esprit.utils.TranslationService;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+
 import javafx.geometry.Insets;
 import javafx.collections.FXCollections;
 import java.time.format.DateTimeFormatter;
@@ -420,25 +447,50 @@ public class BlogDetailController implements Initializable {
             gifPreviewPane.getChildren().clear();
             String query = gifSearchField.getText().trim();
             if (query.isEmpty()) {
+                showAlert(Alert.AlertType.WARNING, "Empty Search", "Please enter a search term for GIFs");
                 return;
             }
 
+            System.out.println("Searching for GIFs with query: " + query);
             JSONArray gifs = giphyService.searchGifs(query);
+            System.out.println("Found " + gifs.length() + " GIFs");
+            
+            if (gifs.length() == 0) {
+                Label noResultsLabel = new Label("No GIFs found matching your search");
+                noResultsLabel.setStyle("-fx-text-fill: #757575;");
+                gifPreviewPane.getChildren().add(noResultsLabel);
+                return;
+            }
+
             for (int i = 0; i < gifs.length(); i++) {
                 JSONObject gif = gifs.getJSONObject(i);
                 String gifUrl = gif.getJSONObject("images")
                     .getJSONObject("fixed_height_small")
                     .getString("url");
                 
-                ImageView gifPreview = new ImageView(new Image(gifUrl));
+                ImageView gifPreview = new ImageView(new Image(gifUrl, true));
                 gifPreview.setFitHeight(100);
                 gifPreview.setPreserveRatio(true);
                 gifPreview.setOnMouseClicked(e -> selectGif(gifUrl));
                 
+                // Add loading indicator
+                ProgressIndicator loadingIndicator = new ProgressIndicator();
+                loadingIndicator.setPrefSize(30, 30);
+                
+                // Replace loading indicator with gif when loaded
+                gifPreview.imageProperty().addListener((obs, oldImg, newImg) -> {
+                    if (newImg != null && !newImg.isError()) {
+                        System.out.println("GIF loaded successfully: " + gifUrl);
+                    } else if (newImg != null && newImg.isError()) {
+                        System.out.println("Failed to load GIF: " + gifUrl);
+                    }
+                });
+                
                 gifPreviewPane.getChildren().add(gifPreview);
             }
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to search GIFs: " + e.getMessage());
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "GIF Search Failed", "Failed to search GIFs: " + e.getMessage());
         }
     }
 

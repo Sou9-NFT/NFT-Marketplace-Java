@@ -494,6 +494,54 @@ public class AdminDashboardController implements Initializable {
         }
     }
     
+    @FXML
+    private void handleUserStatistics(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/UserStatistics.fxml"));
+            Parent userStatsView = loader.load();
+            
+            UserStatisticsController controller = loader.getController();
+            controller.setCurrentUser(currentAdminUser);
+            
+            loadContentInPlace(userStatsView, "User Statistics");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load user statistics: " + e.getMessage());
+            System.err.println("Error in handleUserStatistics: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleTradeOffers(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeOfferList.fxml"));
+            Parent tradeOffersView = loader.load();
+            
+            TradeOfferListController controller = loader.getController();
+            controller.setUser(currentAdminUser);
+            
+            loadContentInPlace(tradeOffersView, "Trade Offers");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade offers: " + e.getMessage());
+            System.err.println("Error in handleTradeOffers: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void handleTradeRequests(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/TradeRequestList.fxml"));
+            Parent tradeRequestsView = loader.load();
+            
+            TradeRequestListController controller = loader.getController();
+            controller.setUser(currentAdminUser);
+            
+            loadContentInPlace(tradeRequestsView, "Trade Requests");
+        } catch (IOException e) {
+            showAlert("Error", "Could not load trade requests: " + e.getMessage());
+            System.err.println("Error in handleTradeRequests: " + e.getMessage());
+        }
+    }
+    
     /**
      * Show a "Coming Soon" message in the content area
      */
@@ -966,5 +1014,21 @@ public class AdminDashboardController implements Initializable {
         alert.setTitle(title);
         alert.setContentText(content);
         alert.showAndWait();
+    }
+
+    /**
+     * This method is called to configure the stage after the scene is fully initialized.
+     * It sets the stage to fullscreen and applies other window-specific settings.
+     */
+    public void setStageFullScreen() {
+        if (contentArea.getScene() != null && contentArea.getScene().getWindow() != null) {
+            Stage stage = (Stage) contentArea.getScene().getWindow();
+            
+            // Set to maximized (takes full screen but keeps taskbar visible)
+            stage.setMaximized(true);
+            
+            // Alternative: true fullscreen (hides taskbar)
+            // stage.setFullScreen(true);
+        }
     }
 }

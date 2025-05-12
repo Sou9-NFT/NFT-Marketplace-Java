@@ -1,17 +1,18 @@
 package org.esprit.main;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.esprit.models.Artwork;
 import org.esprit.models.Category;
 import org.esprit.models.User;
 import org.esprit.services.ArtworkService;
 import org.esprit.services.CategoryService;
 import org.esprit.services.UserService;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import org.esprit.utils.PasswordHasher;
 
 public class TestCrudArtwork {
     private static ArtworkService artworkService = new ArtworkService();
@@ -151,8 +152,7 @@ public class TestCrudArtwork {
             e.printStackTrace();
         }
     }
-    
-    private static User ensureUsersExist() {
+      private static User ensureUsersExist() {
         User firstUser = null;
         List<User> users = new ArrayList<>();
         try {
@@ -161,14 +161,18 @@ public class TestCrudArtwork {
                 System.out.println("No users found in the system. Running basic user creation...");
                 // Create a test user if none exists
                 try {
-                    User testUser = new User("test@example.com", "password", "Test User");
+                    String password1 = "Password123";
+                    String hashedPassword1 = PasswordHasher.hashPassword(password1);
+                    User testUser = new User("test@example.com", hashedPassword1, "Test User");
                     testUser.setBalance(new BigDecimal("1000.00"));
                     userService.add(testUser);
                     System.out.println("Created test user with ID: " + testUser.getId());
                     firstUser = testUser;
                     
                     // Create a second user for transfer testing
-                    User secondUser = new User("buyer@example.com", "password", "Buyer User");
+                    String password2 = "SecurePass456";
+                    String hashedPassword2 = PasswordHasher.hashPassword(password2);
+                    User secondUser = new User("buyer@example.com", hashedPassword2, "Buyer User");
                     secondUser.setBalance(new BigDecimal("2000.00"));
                     userService.add(secondUser);
                     System.out.println("Created second user with ID: " + secondUser.getId());

@@ -8,6 +8,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.text.Text;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -49,9 +50,35 @@ public class AdminTradeDisputesController {
     
     private User currentUser;
     private final TradeDisputeService disputeService = new TradeDisputeService();
-    private final ObservableList<TradeDispute> disputes = FXCollections.observableArrayList();
-    
-    public void initialize() {
+    private final ObservableList<TradeDispute> disputes = FXCollections.observableArrayList();    public void initialize() {
+        // Configure column widths and alignment
+        tradeIdColumn.setPrefWidth(70);
+        tradeIdColumn.setVisible(false);  // Hide the trade ID column
+        reporterColumn.setPrefWidth(120);
+        offeredItemColumn.setPrefWidth(150);
+        receivedItemColumn.setPrefWidth(150);
+        reasonColumn.setPrefWidth(200);
+        statusColumn.setPrefWidth(100);
+        timestampColumn.setPrefWidth(150);
+        actionsColumn.setPrefWidth(250);  // Make actions column wider to fit all buttons
+
+        // Center align specific columns
+        tradeIdColumn.setStyle("-fx-alignment: CENTER;");
+        statusColumn.setStyle("-fx-alignment: CENTER;");
+        actionsColumn.setStyle("-fx-alignment: CENTER;");
+        timestampColumn.setStyle("-fx-alignment: CENTER;");
+        
+        // Make reason column wrap text
+        reasonColumn.setCellFactory(tc -> {
+            TableCell<TradeDispute, String> cell = new TableCell<>();
+            Text text = new Text();
+            cell.setGraphic(text);
+            cell.setPrefHeight(Control.USE_COMPUTED_SIZE);
+            text.wrappingWidthProperty().bind(reasonColumn.widthProperty());
+            text.textProperty().bind(cell.itemProperty());
+            return cell;
+        });
+
         setupTableColumns();
         loadDisputes();
     }

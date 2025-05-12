@@ -158,8 +158,7 @@ public class LoginController {
             e.printStackTrace();
         }
     }
-    
-    private void navigateToAdminDashboard(ActionEvent event, User user) {
+      private void navigateToAdminDashboard(ActionEvent event, User user) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/AdminDashboard.fxml"));
             Parent adminView = loader.load();
@@ -172,7 +171,14 @@ public class LoginController {
             
             stage.setScene(new Scene(adminView, 900, 600));
             stage.setTitle("NFT Marketplace - Admin Dashboard");
+            
+            // Make the stage maximized by default
+            stage.setMaximized(true);
+            
             stage.show();
+            
+            // Call the controller's method to ensure fullscreen is set
+            controller.setStageFullScreen();
         } catch (IOException e) {
             showError("Error loading admin dashboard: " + e.getMessage());
             e.printStackTrace();
