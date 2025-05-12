@@ -141,20 +141,26 @@ public class TradeRequestListController {
                 
                 pdfButton.setOnMouseEntered(e -> pdfButton.setStyle("-fx-background-color: #0b7dda; " + hoverStyle));
                 pdfButton.setOnMouseExited(e -> pdfButton.setStyle("-fx-background-color: #2196F3; " + defaultStyle));}
-            
-            @Override
+              @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
                 if (empty) {
                     setGraphic(null);
                 } else {
                     TradeState tradeState = getTableView().getItems().get(getIndex());
+                    
+                    // Show buttons only if the current user is the receiver of this trade request
+                    // This applies to both admin and regular users
                     if (currentUser != null && 
                         tradeState.getReceiver() != null && 
                         currentUser.getId() == tradeState.getReceiver().getId()) {
                         setGraphic(buttonsBox);
                     } else {
-                        setGraphic(null);
+                        // For trades where the user is not the receiver, just show the PDF button
+                        Button pdfOnlyButton = new Button("PDF");
+                        pdfOnlyButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-min-width: 80px;");
+                        pdfOnlyButton.setOnAction(event -> generateTradeOfferPdf(tradeState));
+                        setGraphic(pdfOnlyButton);
                     }
                 }
             }
@@ -167,9 +173,8 @@ public class TradeRequestListController {
         // Check if user has admin role
         List<String> adminRoles = List.of("ROLE_USER", "ROLE_ADMIN");
         boolean isAdmin = user.getRoles().containsAll(adminRoles) && user.getRoles().size() == adminRoles.size();
-        
-        // Control visibility of admin-only elements
-        idColumn.setVisible(isAdmin);
+          // Control visibility of admin-only elements
+        idColumn.setVisible(false);  // Always hide ID column
         receiverColumn.setVisible(isAdmin);
         
         refreshTrades();
@@ -182,16 +187,16 @@ public class TradeRequestListController {
             List<String> adminRoles = List.of("ROLE_USER", "ROLE_ADMIN");
             boolean isAdmin = currentUser != null && 
                              currentUser.getRoles().containsAll(adminRoles) && 
-                             currentUser.getRoles().size() == adminRoles.size();
-
+                             currentUser.getRoles().size() == adminRoles.size();            // For regular users, only show trades where they are the receiver
             if (!isAdmin) {
-                // Filter trades to only show ones where current user is the receiver
                 trades.removeIf(trade -> 
                     currentUser == null || 
                     trade.getReceiver() == null ||
                     trade.getReceiver().getId() != currentUser.getId()
                 );
             }
+            // For admins, show all trades but they can only accept/reject their own
+            // The accept/reject buttons will only be shown for trades where they are the receiver
 
             System.out.println("Loading " + trades.size() + " trade requests for " + 
                 (isAdmin ? "admin" : "user " + currentUser.getName()));

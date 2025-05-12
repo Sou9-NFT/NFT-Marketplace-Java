@@ -255,28 +255,21 @@ public class TradeOfferListController {
                 }
             }
         });
-    }
-    
-    public void setUser(User user) {
+    }    public void setUser(User user) {
         System.out.println("Setting user in TradeOfferListController: " + (user != null ? user.getName() : "null"));
         this.currentUser = user;
         
-        // Check if user has admin role and show/hide stats button and columns
+        // Check if user has admin role and show/hide stats button
         List<String> adminRoles = List.of("ROLE_USER", "ROLE_ADMIN");
         boolean isAdmin = user.getRoles().containsAll(adminRoles) && user.getRoles().size() == adminRoles.size();
         
         // Control visibility of admin-only elements
         statsButton.setVisible(isAdmin);
-        idColumn.setVisible(isAdmin);
         
-        // For regular users, rename "Sender" column to "Receiver" and hide receiver column
-        if (!isAdmin) {
-            senderColumn.setText("Receiver");  // Change column header for regular users
-            receiverColumn.setVisible(false);
-        } else {
-            senderColumn.setText("Sender");  // Keep original header for admin
-            receiverColumn.setVisible(true);
-        }
+        // Always hide ID column and receiver column, use sender column to show receiver name
+        idColumn.setVisible(false);
+        receiverColumn.setVisible(false);
+        senderColumn.setText("Receiver");  // Always show receiver name in this column
         
         refreshTrades();
     }

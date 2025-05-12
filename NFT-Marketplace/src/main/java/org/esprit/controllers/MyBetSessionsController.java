@@ -28,9 +28,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -354,114 +356,128 @@ public class MyBetSessionsController implements Initializable {
     }
     
     /**
-     * Shows bet session details in a dialog
+     * Shows bet session details in a dialog with enhanced styling
      * @param session The selected bet session
-     */    private void showBetSessionDetails(BetSession session) {
+     */
+    private void showBetSessionDetails(BetSession session) {
         // Create a new dialog
         Stage dialog = new Stage();
         dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
         dialog.setTitle("Bet Session Details");
-        dialog.setMinWidth(700);
-        dialog.setMinHeight(500);
+        dialog.setMinWidth(720);
+        dialog.setMinHeight(520);
 
         // Create a two-column layout with image on left, details on right
-        javafx.scene.layout.HBox mainLayout = new javafx.scene.layout.HBox(20);
-        mainLayout.setPadding(new javafx.geometry.Insets(20));
+        javafx.scene.layout.HBox mainLayout = new javafx.scene.layout.HBox(25);
+        mainLayout.setPadding(new javafx.geometry.Insets(25));
         mainLayout.setAlignment(javafx.geometry.Pos.CENTER);
+        mainLayout.setStyle("-fx-background-color: linear-gradient(to bottom, #ffffff, #f5f7fa);");
 
-        // Left side - Image panel
-        javafx.scene.layout.VBox imagePanel = new javafx.scene.layout.VBox(10);
+        // Left side - Image panel with enhanced styling
+        javafx.scene.layout.VBox imagePanel = new javafx.scene.layout.VBox(15);
         imagePanel.setAlignment(javafx.geometry.Pos.CENTER);
-        imagePanel.setPadding(new javafx.geometry.Insets(0, 10, 0, 0));
-        imagePanel.setMinWidth(300);        // Display artwork image if available
+        imagePanel.setPadding(new javafx.geometry.Insets(10));
+        imagePanel.setMinWidth(320);
+        imagePanel.setStyle("-fx-background-color: white; -fx-border-radius: 8px; " +
+                            "-fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);");
+
+        // Display artwork image with enhanced container
         javafx.scene.image.ImageView artworkImageView = new javafx.scene.image.ImageView();
-        artworkImageView.setFitHeight(250);
-        artworkImageView.setFitWidth(250);
+        artworkImageView.setFitHeight(280);
+        artworkImageView.setFitWidth(280);
         artworkImageView.setPreserveRatio(true);
-          // Add a border and drop shadow to the image
+        
+        // Add a more stylish border and drop shadow to the image
         javafx.scene.layout.StackPane imageContainer = new javafx.scene.layout.StackPane();
-        imageContainer.setStyle("-fx-border-color: #cccccc; -fx-border-width: 1px; -fx-padding: 5px; -fx-background-color: white;");
-        imageContainer.setEffect(new javafx.scene.effect.DropShadow(10, javafx.scene.paint.Color.rgb(0, 0, 0, 0.2)));
+        imageContainer.setStyle("-fx-border-color: #e0e0e0; -fx-border-width: 1px; -fx-padding: 8px; " +
+                               "-fx-background-color: white; -fx-border-radius: 5px; -fx-background-radius: 5px;");
+        imageContainer.setEffect(new javafx.scene.effect.DropShadow(15, javafx.scene.paint.Color.rgb(0, 0, 0, 0.15)));
         imageContainer.getChildren().add(artworkImageView);
 
-        // Create a counter for number of bids
+        // Create a stylish counter for number of bids
         javafx.scene.control.Label bidCountLabel = new javafx.scene.control.Label(
             "Current bids: " + session.getNumberOfBids() + "/10");
-        bidCountLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #555555;");
+        bidCountLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #2c3e50; " +
+                               "-fx-background-color: #ecf0f1; -fx-padding: 5 10; -fx-background-radius: 4px;");
 
         // Add image and bid counter to the image panel
         imagePanel.getChildren().addAll(imageContainer, bidCountLabel);
         
-        // Ensure image panel has a fixed size and background so it's visible
-        imagePanel.setMinSize(300, 300);
-        imagePanel.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-width: 1px;");
-        
-        // Make sure image is displayed by adjusting settings
+        // Ensure image panel has a fixed size
+        imagePanel.setMinSize(320, 320);
+          // Make sure image is displayed by adjusting settings
         artworkImageView.setCache(true);
         artworkImageView.setSmooth(true);
-        imageContainer.setMinSize(250, 250);
-        imageContainer.setPrefSize(250, 250);if (session.getArtwork() != null && session.getArtwork().getImageName() != null) {
-            // Try multiple possible paths for the image
-            String imageName = session.getArtwork().getImageName();
-            System.out.println("Trying to load image: " + imageName);
+        imageContainer.setMinSize(280, 280);
+        imageContainer.setPrefSize(280, 280);
+        
+        if (session.getArtwork() != null && session.getArtwork().getImageName() != null) {
+            // Get the image URL directly from the imageName field
+            String imageUrl = session.getArtwork().getImageName();
+            System.out.println("Trying to load image from URL: " + imageUrl);
             
-            // Path 1: Direct path in src/main/resources
-            String imagePath1 = "src/main/resources/uploads/" + imageName;
-            // Path 2: Runtime classpath path
-            String imagePath2 = "/uploads/" + imageName;
-            // Path 3: Absolute path to target directory
-            String imagePath3 = "target/classes/uploads/" + imageName;
-            
-            java.io.File imageFile1 = new java.io.File(imagePath1);
             boolean loaded = false;
             
-            // Try first path (direct file access)
-            if (imageFile1.exists()) {
-                System.out.println("Image found at: " + imagePath1);
+            // Check if the URL is absolute (starts with http:// or https://)
+            if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
                 try {
-                    javafx.scene.image.Image image = new javafx.scene.image.Image(imageFile1.toURI().toString());
+                    // Load image directly from the web URL
+                    javafx.scene.image.Image image = new javafx.scene.image.Image(imageUrl, 
+                            true);  // true enables background loading
+                    
+                    // Add a loading indicator
+                    javafx.scene.control.ProgressIndicator progressIndicator = new javafx.scene.control.ProgressIndicator();
+                    progressIndicator.setMaxSize(50, 50);
+                    imageContainer.getChildren().add(progressIndicator);
+                      // Handle image loading errors
+                    image.errorProperty().addListener((observable, oldValue, newValue) -> {
+                        if (newValue) {
+                            System.err.println("Error loading image from URL: " + imageUrl);
+                            // Remove progress indicator
+                            imageContainer.getChildren().remove(progressIndicator);
+                            
+                            // Load default image
+                            try {
+                                java.net.URL defaultImageUrl = getClass().getResource("/assets/default/artwork-placeholder.png");
+                                if (defaultImageUrl != null) {
+                                    javafx.scene.image.Image defaultImage = new javafx.scene.image.Image(defaultImageUrl.toString());
+                                    artworkImageView.setImage(defaultImage);
+                                    System.out.println("Default image loaded successfully after URL load failure");
+                                }
+                            } catch (Exception ex) {
+                                System.err.println("Failed to load default image: " + ex.getMessage());
+                            }
+                        }
+                    });
+                    
+                    // Handle image load completion
+                    image.progressProperty().addListener((observable, oldValue, newValue) -> {
+                        if (newValue.doubleValue() == 1.0) {
+                            imageContainer.getChildren().remove(progressIndicator);
+                        }
+                    });
+                    
+                    artworkImageView.setImage(image);
+                    loaded = true;                    System.out.println("Image loading started from web URL");
+                } catch (Exception e) {
+                    System.err.println("Error setting up image loading from URL: " + e.getMessage());
+                    // Don't print stack trace to avoid warnings
+                }
+            } else {
+                // If it doesn't start with http:// or https://, assume it's a relative path
+                // and try to resolve it as a web URL by adding a prefix
+                try {
+                    String fullUrl = "https://example.com/images/" + imageUrl; // Replace with your actual base URL
+                    System.out.println("Converting relative path to URL: " + fullUrl);
+                    
+                    javafx.scene.image.Image image = new javafx.scene.image.Image(fullUrl, true);
                     artworkImageView.setImage(image);
                     loaded = true;
-                    System.out.println("Image loaded successfully from path 1");
                 } catch (Exception e) {
-                    System.err.println("Error loading image from path 1: " + e.getMessage());
+                    System.err.println("Error loading image from constructed URL: " + e.getMessage());
                 }
             }
-            
-            // Try second path (resource stream)
-            if (!loaded) {
-                try {
-                    java.net.URL resourceUrl = getClass().getResource(imagePath2);
-                    if (resourceUrl != null) {
-                        javafx.scene.image.Image image = new javafx.scene.image.Image(resourceUrl.toString());
-                        artworkImageView.setImage(image);
-                        loaded = true;
-                        System.out.println("Image loaded successfully from path 2");
-                    } else {
-                        System.out.println("Resource not found at: " + imagePath2);
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error loading image from path 2: " + e.getMessage());
-                }
-            }
-            
-            // Try third path (target directory)
-            if (!loaded) {
-                java.io.File imageFile3 = new java.io.File(imagePath3);
-                if (imageFile3.exists()) {
-                    System.out.println("Image found at: " + imagePath3);
-                    try {
-                        javafx.scene.image.Image image = new javafx.scene.image.Image(imageFile3.toURI().toString());
-                        artworkImageView.setImage(image);
-                        loaded = true;
-                        System.out.println("Image loaded successfully from path 3");
-                    } catch (Exception e) {
-                        System.err.println("Error loading image from path 3: " + e.getMessage());
-                    }
-                }
-            }
-            
-            // If the image was loaded successfully, apply effects if needed
+              // If the image was loaded successfully, apply effects if needed
             if (loaded) {
                 // Apply blur effect for mystery mode items
                 if (session.isMysteriousMode()) {
@@ -475,14 +491,15 @@ public class MyBetSessionsController implements Initializable {
                         javafx.scene.effect.GaussianBlur blur = new javafx.scene.effect.GaussianBlur(blurAmount);
                         artworkImageView.setEffect(blur);
                         
-                        // Add mystery mode indicator label
+                        // Add styled mystery mode indicator label
                         javafx.scene.control.Label mysteryLabel = new javafx.scene.control.Label("Mystery Mode - Bids: " + numberOfBids + "/10");
-                        mysteryLabel.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-text-fill: white; -fx-padding: 5px; -fx-font-weight: bold;");
+                        mysteryLabel.setStyle("-fx-background-color: rgba(142, 68, 173, 0.8); -fx-text-fill: white; " +
+                                             "-fx-padding: 8px; -fx-font-weight: bold; -fx-background-radius: 4px;");
                         imageContainer.getChildren().add(mysteryLabel);
                     }
                 }
             } else {
-                // If image wasn't loaded from any path, try to load a default image
+                // If image wasn't loaded from any URL, load a default image
                 System.out.println("Attempting to load default image");
                 try {
                     java.net.URL defaultImageUrl = getClass().getResource("/assets/default/artwork-placeholder.png");
@@ -499,37 +516,45 @@ public class MyBetSessionsController implements Initializable {
             }
         }
 
-        // Right side - Details panel
-        javafx.scene.layout.VBox detailsPanel = new javafx.scene.layout.VBox(15);
-        detailsPanel.setPadding(new javafx.geometry.Insets(10));
+        // Right side - Details panel with enhanced styling
+        javafx.scene.layout.VBox detailsPanel = new javafx.scene.layout.VBox(18);
+        detailsPanel.setPadding(new javafx.geometry.Insets(15));
         detailsPanel.setAlignment(javafx.geometry.Pos.TOP_LEFT);
-        detailsPanel.setMinWidth(350);
+        detailsPanel.setMinWidth(360);
+        detailsPanel.setStyle("-fx-background-color: white; -fx-border-radius: 8px; " +
+                             "-fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 3);");
         
-        // Style for header labels
-        String headerStyle = "-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #333333;";
+        // Style for header labels - more modern and attractive
+        String headerStyle = "-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #2c3e50; " +
+                             "-fx-border-color: transparent transparent #3498db transparent; -fx-border-width: 0 0 2 0; " +
+                             "-fx-padding: 0 0 5 0;";
         
-        // Artwork title as header
+        // Artwork title as header with enhanced styling
         javafx.scene.control.Label titleLabel = new javafx.scene.control.Label(
             session.getArtwork() != null ? session.getArtwork().getTitle() : "Unknown Artwork");
-        titleLabel.setStyle(headerStyle + "-fx-font-size: 20px;");
+        titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         titleLabel.setWrapText(true);
         
-        // Basic info section
+        // Basic info section with enhanced styling
         javafx.scene.layout.GridPane basicInfoGrid = createStyledInfoGrid();
         int row = 0;
-          // Add basic info fields
+        
+        // Add basic info fields
         addField(basicInfoGrid, "Creator:", session.getAuthor() != null ? session.getAuthor().getName() : "N/A", row++);
         addField(basicInfoGrid, "Status:", capitalizeFirstLetter(session.getStatus()), row++);
         addField(basicInfoGrid, "Mystery Mode:", session.isMysteriousMode() ? "Activated" : "Disabled", row++);
-          // Price info section with header
+        
+        // Price info section with header
         javafx.scene.control.Label priceHeaderLabel = new javafx.scene.control.Label("Price Information");
         priceHeaderLabel.setStyle(headerStyle);
         
-        javafx.scene.layout.GridPane priceInfoGrid = createStyledInfoGrid();        row = 0;
+        javafx.scene.layout.GridPane priceInfoGrid = createStyledInfoGrid();
+        row = 0;
         
         // Fetch ETH price (only once for both price displays)
         double ethPrice = cryptoService.fetchEthereumPrice();
-          // Add price info fields with both Dannous and ETH equivalent
+        
+        // Add price info fields with both Dannous and ETH equivalent
         double initialPriceInDannous = session.getInitialPrice();
         double currentPriceInDannous = session.getCurrentPrice();
         
@@ -544,10 +569,10 @@ public class MyBetSessionsController implements Initializable {
         javafx.scene.control.Label descHeaderLabel = new javafx.scene.control.Label("Description");
         descHeaderLabel.setStyle(headerStyle);
         
-        // Create description content
+        // Create description content with enhanced styling
         javafx.scene.control.Label descriptionLabel = new javafx.scene.control.Label();
         descriptionLabel.setWrapText(true);
-        descriptionLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #555555;");
+        descriptionLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #34495e; -fx-line-spacing: 1.2;");
         descriptionLabel.setMaxWidth(350);
         
         // Check if we should display description section
@@ -571,7 +596,9 @@ public class MyBetSessionsController implements Initializable {
         // Create a styled container for the description
         javafx.scene.layout.VBox descriptionContainer = new javafx.scene.layout.VBox(5);
         descriptionContainer.getChildren().add(descriptionLabel);
-        descriptionContainer.setStyle("-fx-background-color: #f8f8f8; -fx-padding: 10px; -fx-background-radius: 5px;");
+        descriptionContainer.setStyle("-fx-background-color: #f8f9fa; -fx-padding: 12px; " +
+                                     "-fx-background-radius: 6px; -fx-border-color: #e9ecef; " +
+                                     "-fx-border-radius: 6px; -fx-border-width: 1px;");
 
         // Add all sections to the details panel
         detailsPanel.getChildren().add(titleLabel);
@@ -585,15 +612,25 @@ public class MyBetSessionsController implements Initializable {
             detailsPanel.getChildren().add(descriptionContainer);
         }
 
-        // Add close button with styling
+        // Add close button with enhanced styling and hover effect
         javafx.scene.control.Button closeButton = new javafx.scene.control.Button("Close");
-        closeButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 10 20 10 20;");
+        closeButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; " +
+                             "-fx-padding: 10 25; -fx-background-radius: 5px;");
+        
+        // Add hover effects
+        closeButton.setOnMouseEntered(e -> 
+            closeButton.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; -fx-font-weight: bold; " + 
+                                "-fx-padding: 10 25; -fx-background-radius: 5px;"));
+        closeButton.setOnMouseExited(e -> 
+            closeButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; " + 
+                                "-fx-padding: 10 25; -fx-background-radius: 5px;"));
+        
         closeButton.setOnAction(e -> dialog.close());
         
         // Create a container for the button
         javafx.scene.layout.HBox buttonBox = new javafx.scene.layout.HBox();
         buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
-        buttonBox.setPadding(new javafx.geometry.Insets(20, 0, 0, 0));
+        buttonBox.setPadding(new javafx.geometry.Insets(20, 0, 10, 0));
         buttonBox.getChildren().add(closeButton);
         
         // Add image panel and details panel to the main layout
@@ -603,7 +640,7 @@ public class MyBetSessionsController implements Initializable {
         javafx.scene.layout.VBox root = new javafx.scene.layout.VBox(20);
         root.getChildren().addAll(mainLayout, buttonBox);
         root.setAlignment(javafx.geometry.Pos.CENTER);
-        root.setStyle("-fx-background-color: white;");
+        root.setStyle("-fx-background-color: linear-gradient(to bottom, #ffffff, #f5f7fa);");
 
         // Set the scene
         Scene scene = new Scene(root);
@@ -821,46 +858,100 @@ public class MyBetSessionsController implements Initializable {
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Create New Bet Session");
+        dialog.setMinWidth(500);
         
-        // Create form components
+        // Create form components with improved styling
         Label authorInfoLabel = new Label("Author: " + currentUser.getName());
+        authorInfoLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        
         ComboBox<Artwork> artworkComboBox = new ComboBox<>();
+        artworkComboBox.setMaxWidth(Double.MAX_VALUE);
+        artworkComboBox.setStyle("-fx-background-radius: 4; -fx-font-size: 13px;");
+        
         DatePicker startDatePicker = new DatePicker();
+        startDatePicker.setMaxWidth(Double.MAX_VALUE);
+        startDatePicker.setStyle("-fx-background-radius: 4;");
+        
         DatePicker endDatePicker = new DatePicker();
+        endDatePicker.setMaxWidth(Double.MAX_VALUE);
+        endDatePicker.setStyle("-fx-background-radius: 4;");
+        
         TextField initialPriceField = new TextField();
+        initialPriceField.setMaxWidth(Double.MAX_VALUE);
+        initialPriceField.setPromptText("Enter initial price in Dannous");
+        initialPriceField.setStyle("-fx-background-radius: 4; -fx-prompt-text-fill: #95a5a6;");
+        
         Label statusLabel = new Label("Status: pending (automatically set)");
+        statusLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #7f8c8d;");
         
-        // Layout
+        // Add Mystery Mode checkbox with description
+        CheckBox mysteryModeCheckBox = new CheckBox("Enable Mystery Mode");
+        mysteryModeCheckBox.setStyle("-fx-text-fill: #8e44ad; -fx-font-weight: bold;");
+        
+        Label mysteryDescLabel = new Label("Artwork will be blurred until 10 bids are placed");
+        mysteryDescLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #8e44ad; -fx-font-size: 11px;");
+        
+        // Layout with improved spacing and padding
         GridPane formLayout = new GridPane();
-        formLayout.setPadding(new Insets(10));
-        formLayout.setHgap(10);
-        formLayout.setVgap(10);
+        formLayout.setPadding(new Insets(20));
+        formLayout.setHgap(15);
+        formLayout.setVgap(15);
+        formLayout.setStyle("-fx-background-color: white;");
         
-        // Add Mystery Mode checkbox
-        javafx.scene.control.CheckBox mysteryModeCheckBox = new javafx.scene.control.CheckBox("Mystery Mode");
-        formLayout.add(new Label("Mystery Mode:"), 0, 6);
-        formLayout.add(mysteryModeCheckBox, 1, 6);
+        // Add separator for visual organization
+        Separator separator = new Separator();
+        separator.setStyle("-fx-background-color: #bdc3c7;");
         
-        formLayout.add(new Label("Author:"), 0, 0);
+        // Add fields with labels styled consistently
+        addFormLabel(formLayout, "Author:", 0, 0);
         formLayout.add(authorInfoLabel, 1, 0);
-        formLayout.add(new Label("Artwork:"), 0, 1);
+        
+        addFormLabel(formLayout, "Artwork:", 0, 1);
         formLayout.add(artworkComboBox, 1, 1);
-        formLayout.add(new Label("Start Date:"), 0, 2);
+        
+        addFormLabel(formLayout, "Start Date:", 0, 2);
         formLayout.add(startDatePicker, 1, 2);
-        formLayout.add(new Label("End Date:"), 0, 3);
+        
+        addFormLabel(formLayout, "End Date:", 0, 3);
         formLayout.add(endDatePicker, 1, 3);
-        formLayout.add(new Label("Initial Price:"), 0, 4);
+        
+        addFormLabel(formLayout, "Initial Price:", 0, 4);
         formLayout.add(initialPriceField, 1, 4);
-        formLayout.add(new Label("Status:"), 0, 5);
+        
+        addFormLabel(formLayout, "Status:", 0, 5);
         formLayout.add(statusLabel, 1, 5);
-        // Add buttons
-        Button saveButton = new Button("Save");
+        
+        formLayout.add(separator, 0, 6, 2, 1);
+        
+        // Mystery mode section
+        VBox mysteryBox = new VBox(5, mysteryModeCheckBox, mysteryDescLabel);
+        mysteryBox.setPadding(new Insets(5, 0, 0, 0));
+        formLayout.add(mysteryBox, 0, 7, 2, 1);
+        
+        // Styled buttons
+        Button saveButton = new Button("Create Bet Session");
+        saveButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-weight: bold; " +
+                           "-fx-padding: 10 20; -fx-background-radius: 4;");
+        saveButton.setOnMouseEntered(e -> saveButton.setStyle("-fx-background-color: #2980b9; -fx-text-fill: white; " +
+                                                             "-fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 4;"));
+        saveButton.setOnMouseExited(e -> saveButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; " + 
+                                                            "-fx-font-weight: bold; -fx-padding: 10 20; -fx-background-radius: 4;"));
+        
         Button cancelButton = new Button("Cancel");
+        cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; " +
+                             "-fx-padding: 10 20; -fx-background-radius: 4;");
+        cancelButton.setOnMouseEntered(e -> cancelButton.setStyle("-fx-background-color: #c0392b; -fx-text-fill: white; " +
+                                                                "-fx-padding: 10 20; -fx-background-radius: 4;"));
+        cancelButton.setOnMouseExited(e -> cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; " +
+                                                               "-fx-padding: 10 20; -fx-background-radius: 4;"));
         
-        HBox buttonLayout = new HBox(10, saveButton, cancelButton);
-        buttonLayout.setAlignment(Pos.CENTER_RIGHT);
-        buttonLayout.setPadding(new Insets(10));
-        
+        HBox buttonLayout = new HBox(15, saveButton, cancelButton);
+        buttonLayout.setAlignment(Pos.CENTER);
+        buttonLayout.setPadding(new Insets(20, 10, 10, 10));
+        // Add space at the bottom of the layout
+        VBox spacer = new VBox();
+        spacer.setMinHeight(20); // 20 pixels of bottom space
+        buttonLayout.setPadding(new Insets(20, 10, 20, 10)); // Increase bottom padding from 10 to 20
         saveButton.setOnAction(e -> {
             try {
                 // Create new BetSession from form data
@@ -959,11 +1050,19 @@ public class MyBetSessionsController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Error", "Could not load your artworks: " + ex.getMessage());
         }
         
-        // Create scene
-        VBox root = new VBox(10, formLayout, buttonLayout);
+        // Create scene with improved styling
+        VBox root = new VBox(formLayout, buttonLayout);
+        root.setStyle("-fx-background-color: #f9f9f9;");
         Scene scene = new Scene(root);
         dialog.setScene(scene);
         dialog.showAndWait();
+    }
+
+    // Helper method to add consistently styled form labels
+    private void addFormLabel(GridPane grid, String text, int col, int row) {
+        Label label = new Label(text);
+        label.setStyle("-fx-font-weight: bold; -fx-text-fill: #34495e;");
+        grid.add(label, col, row);
     }
     
     /**

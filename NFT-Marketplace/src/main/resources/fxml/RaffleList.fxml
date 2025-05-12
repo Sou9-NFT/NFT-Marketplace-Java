@@ -8,7 +8,7 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.esprit.controllers.RaffleListController">
     <!-- Main Content -->
     <center>
-        <VBox spacing="20">
+        <VBox spacing="20" styleClass="raffle-list-root">
             <padding>
                 <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>

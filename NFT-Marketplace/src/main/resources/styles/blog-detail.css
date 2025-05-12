@@ -1,35 +1,40 @@
-.gif-preview {
-    -fx-border-color: #ddd;
-    -fx-border-width: 1px;
-    -fx-border-radius: 4px;
-    -fx-padding: 5px;
-}
-
-.gif-preview ImageView {
-    -fx-cursor: hand;
-}
-
-.gif-preview ImageView:hover {
-    -fx-opacity: 0.8;
-}
-
-#gifSearchField {
-    -fx-pref-width: 300px;
-}
-
-#gifPreviewPane {
-    -fx-background-color: #f8f9fa;
-    -fx-padding: 10px;
-    -fx-border-color: #dee2e6;
-    -fx-border-radius: 4px;
-    -fx-max-height: 300px;
-}
-
-.delete-button {
-    -fx-background-color: #dc3545;
+.speak-button {
+    -fx-background-color: #4CAF50;
+    background-color: #4CAF50;
     -fx-text-fill: white;
+    color: white;
+    -fx-padding: 8px 16px;
+    padding: 8px 16px;
+    -fx-cursor: hand;
+    cursor: pointer;
 }
 
-.delete-button:hover {
-    -fx-background-color: #c82333;
+.speak-button:selected {
+    -fx-background-color: #f44336;
+    background-color: #f44336;
 }
+
+.speak-button:hover {
+    -fx-opacity: 0.9;
+    opacity: 0.9;
+}
+
+.voice-selector {
+    -fx-background-color: #f0f0f0;
+    background-color: #f0f0f0;
+    -fx-border-color: #ddd;
+    border-color: #ddd;
+    -fx-border-radius: 4px;
+    border-radius: 4px;
+    -fx-padding: 4px;
+    padding: 4px;
+    -fx-min-width: 120px;
+    min-width: 120px;
+}
+
+.voice-selector:hover {
+    -fx-background-color: #e8e8e8;
+    background-color: #e8e8e8;
+}
+
+/* Existing styles... */

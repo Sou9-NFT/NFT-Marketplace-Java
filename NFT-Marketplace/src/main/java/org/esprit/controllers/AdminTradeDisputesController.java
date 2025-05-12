@@ -50,10 +50,10 @@ public class AdminTradeDisputesController {
     
     private User currentUser;
     private final TradeDisputeService disputeService = new TradeDisputeService();
-    private final ObservableList<TradeDispute> disputes = FXCollections.observableArrayList();
-      public void initialize() {
+    private final ObservableList<TradeDispute> disputes = FXCollections.observableArrayList();    public void initialize() {
         // Configure column widths and alignment
         tradeIdColumn.setPrefWidth(70);
+        tradeIdColumn.setVisible(false);  // Hide the trade ID column
         reporterColumn.setPrefWidth(120);
         offeredItemColumn.setPrefWidth(150);
         receivedItemColumn.setPrefWidth(150);
