@@ -11,6 +11,7 @@ import org.esprit.models.User;
 import org.esprit.services.BlogService;
 import org.esprit.services.CommentService;
 import org.esprit.utils.GiphyService;
+import org.esprit.utils.TextToSpeech;
 import org.esprit.utils.TranslationService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,6 +33,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
@@ -40,23 +42,6 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
-import javafx.geometry.Insets;
-import javafx.collections.FXCollections;
-import java.time.format.DateTimeFormatter;
-import org.esprit.models.Blog;
-import org.esprit.models.User;
-import org.esprit.models.Comment;
-import org.esprit.services.BlogService;
-import org.esprit.services.CommentService;
-import org.esprit.utils.GiphyService;
-import org.esprit.utils.TranslationService;
-import org.esprit.utils.TextToSpeech;
-import java.io.File;
-import java.net.URL;
-import java.util.ResourceBundle;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 
 public class BlogDetailController implements Initializable {
